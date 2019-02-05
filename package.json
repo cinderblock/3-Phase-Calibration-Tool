@@ -1,0 +1,19 @@
+{
+  "name": "3-Phase-Calibration-Tool",
+  "version": "0.0.0",
+  "description": "Calibration tool for 3-Phase-Controller",
+  "main": "main.js",
+  "repository": "https://github.com/cinderblock/3-Phase-Calibration-Tool",
+  "author": "Cameron Tacklind <cameron@tacklind.com>",
+  "license": "MIT",
+  "dependencies": {
+    "@types/node": "^10.12.21",
+    "@types/usb": "^1.5.1",
+    "chalk": "^2.4.2",
+    "typescript": "^3.3.1",
+    "usb": "^1.5.0"
+  },
+  "devDependencies": {
+    "ts-node": "^8.0.2"
+  }
+}
