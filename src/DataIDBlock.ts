@@ -67,7 +67,7 @@ export default function DataIDBlock({
   );
   ID[USBStringSizePos] = SerialSize;
 
-  const writtenSerial = USBStringBuffer.toString('utf16le');
+  const writtenSerial = USBStringBuffer.toString('utf16le', 0, SerialSize);
 
   if (writtenSerial != serial) {
     console.log('Serial number truncated:', writtenSerial);
