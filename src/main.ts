@@ -122,7 +122,8 @@ async function loadDataFromUSB(
     // Start below "0" to give mechanics time to settle
     let step = -cycle;
 
-    // Smooth data from motor since we're getting MLX readings constantly
+    // Smooth data from motor since we're getting MLX readings constantly.
+    // TODO: Make this circular... This is wrong during alpha wrap.
     const filter = ExponentialFilter(0.1);
 
     usb.events.on(
