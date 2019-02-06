@@ -10,6 +10,8 @@ import { createReadStream, createWriteStream } from 'fs';
 import { EOL } from 'os';
 import DataIDBlock from './DataIDBlock';
 
+import MemoryMap from 'nrf-intel-hex';
+
 const cyclePerRev = 15;
 const Revs = 4;
 
@@ -43,6 +45,10 @@ data.then(async ({ forward, reverse, time }) => {
     calibrationTime: time,
     serial: Serial,
   });
+
+  const mem = new MemoryMap();
+
+  mem.set(0x4f80, data);
 
   console.log('done');
 });
