@@ -38,7 +38,7 @@ let captureNew = true;
 
 const data = captureNew
   ? loadDataFromUSB('None', cyclePerRev, Revs)
-  : loadDataFromSSV(filename);
+  : loadDataFromCSV(filename);
 
 data.then(async ({ forward, reverse, time }) => {
   // Take raw forward/reverse calibration data and calculate smoothed, averaged, and inverted
@@ -59,7 +59,7 @@ data.then(async ({ forward, reverse, time }) => {
   console.log('done');
 });
 
-async function loadDataFromSSV(
+async function loadDataFromCSV(
   file: string
 ): Promise<{
   forward: number[];
