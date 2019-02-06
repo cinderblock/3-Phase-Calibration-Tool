@@ -116,7 +116,7 @@ async function loadDataFromUSB(
 
     const logger = createWriteStream(filename);
 
-    logger.write('step,alpha,dir');
+    logger.write('step,alpha,dir' + EOL);
 
     // Non-inclusive last step of calibration routine
     const End = cycle * cyclePerRev * revolutions;
