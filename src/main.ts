@@ -21,25 +21,24 @@ const maxAmplitude = 30;
 
 const filename = 'data.csv';
 
-let Serial = new Promise<string>((resolve, reject) => {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout,
-  });
-
-  rl.question('Serial Number [None]: ', answer => {
-    resolve(answer.trim() || 'None');
-    rl.close();
-  });
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
 });
 
-let captureNew = true;
-// captureNew = false;
+function prompt(prompt: string) {
+  return new Promise<string>((resolve, reject) => {
+    rl.question(prompt, resolve);
+  });
+}
 
 async function main() {
-  const data = captureNew
-    ? loadDataFromUSB(await Serial, cyclePerRev, Revs)
-    : loadDataFromCSV(filename);
+  const Serial = (await prompt('Serial Number [None]: ')).trim() || 'None';
+
+  const data =
+    (await prompt('Capture fresh? [No]: ')).trim().toLowerCase()[0] == 'y'
+      ? loadDataFromUSB(Serial, cyclePerRev, Revs)
+      : loadDataFromCSV(filename);
 
   const { forward, reverse, time } = await data;
   // Take raw forward/reverse calibration data and calculate smoothed, averaged, and inverted
@@ -48,19 +47,18 @@ async function main() {
   const block = DataIDBlock({
     lookupTable: processed.inverseTable,
     calibrationTime: time,
-    serial: await Serial,
+    serial: Serial,
   });
 
   const mem = new MemoryMap();
 
   mem.set(0x4f80, block);
 
-  writeFileSync(
-    (await Serial) + '.hex',
-    mem.asHexString().replace(/\n/g, EOL) + EOL
-  );
+  writeFileSync(Serial + '.hex', mem.asHexString().replace(/\n/g, EOL) + EOL);
 
   console.log('done');
+
+  rl.close();
 }
 
 main();
