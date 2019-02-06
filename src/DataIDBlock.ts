@@ -39,6 +39,13 @@ export default function DataIDBlock({
     );
 
     pos += length;
+
+    let missing = length - Math.min(length, 6);
+
+    while (missing) {
+      ID[pos - missing] = 0;
+      missing--;
+    }
   }
 
   if (!serial) serial = uuid();
