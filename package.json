@@ -2,7 +2,7 @@
   "name": "3-Phase-Calibration-Tool",
   "version": "0.0.0",
   "description": "Calibration tool for 3-Phase-Controller",
-  "main": "main.js",
+  "main": "src/main",
   "repository": "https://github.com/cinderblock/3-Phase-Calibration-Tool",
   "author": "Cameron Tacklind <cameron@tacklind.com>",
   "license": "MIT",
