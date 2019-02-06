@@ -51,10 +51,13 @@ export default function DataIDBlock({
   if (!serial) serial = uuid();
 
   write(2, crc16(table));
+
   write(1, 0x00);
+
   write(8, calibrationTime.valueOf(), true);
 
   const USBStringSizePos = pos++;
+
   write(1, 0x03); // DTYPE_String
 
   const USBStringBuffer = ID.slice(pos, -2);
