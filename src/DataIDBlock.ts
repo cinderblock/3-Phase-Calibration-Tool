@@ -10,10 +10,6 @@ type Options = {
   serial?: string;
 };
 
-const inputBits = 14;
-const reductionBits = 2;
-const finalBits = inputBits - reductionBits;
-
 const TableSize = 8 * 1024;
 const IDSize = 128;
 
