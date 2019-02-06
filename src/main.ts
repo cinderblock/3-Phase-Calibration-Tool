@@ -16,8 +16,10 @@ const cycle = 3 * 256;
 
 const maxAmplitude = 30;
 
+const filename = 'data.csv';
+
 const data = loadDataFromUSB('None', cyclePerRev, Revs);
-// const data = loadDataFromSSV('data.ssv')
+// const data = loadDataFromSSV(filename)
 
 data.then(({ forward, reverse }) => {
   // Take raw forward/reverse calibration data and calculate midline
@@ -68,7 +70,7 @@ async function loadDataFromUSB(
     const reverse: number[] = [];
     const usb = USB(serial);
 
-    const logger = createWriteStream('data.ssv');
+    const logger = createWriteStream(filename);
 
     // Non-inclusive last step of calibration routine
     const End = cycle * cyclePerRev * revolutions;
