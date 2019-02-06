@@ -1,9 +1,12 @@
 {
   "compilerOptions": {
+    "target": "esnext",
     "alwaysStrict": true,
     "esModuleInterop": true,
     "lib": ["es2018"],
     "noImplicitAny": true,
-    "strict": true
+    "strict": true,
+    "baseUrl": "src/types",
+    "typeRoots": ["src/types"]
   }
 }
