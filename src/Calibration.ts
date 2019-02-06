@@ -2,8 +2,8 @@ import angleAverage from './AngleAverage';
 import PositiveModulus from './PositiveModulus';
 
 export default function processData(
-  forward: number[],
-  reverse: number[],
+  forwardData: number[],
+  reverseData: number[],
   modulus: number
 ) {
   function smoothNeighborhoodCircular(value: number, i: number, arr: number[]) {
@@ -25,12 +25,18 @@ export default function processData(
     return angleAverage(neighborhood, modulus);
   }
 
-  const forwardFits = forward.map(smoothNeighborhoodCircular);
-  const reverseFits = reverse.map(smoothNeighborhoodCircular);
+  const forward = forwardData.map(smoothNeighborhoodCircular);
+  const reverse = reverseData.map(smoothNeighborhoodCircular);
 
-  const middle = forwardFits.map((v, i) =>
-    angleAverage([v, reverseFits[i]], modulus)
-  );
+  const middle = forward.map((v, i) => angleAverage([v, reverse[i]], modulus));
 
-  return { forward, forwardFits, reverse, reverseFits, middle };
+  const inverseTable: number[] = [];
+
+  for (let i = 0; i < 2 ** 12; i++)
+    inverseTable[i] = PositiveModulus(
+      Math.round(smoothNeighborhoodCircular(0, i * 4, middle)),
+      modulus
+    );
+
+  return { forward, reverse, middle, forwardData, reverseData, inverseTable };
 }
