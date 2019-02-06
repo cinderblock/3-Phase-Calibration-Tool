@@ -7,7 +7,8 @@
   "author": "Cameron Tacklind <cameron@tacklind.com>",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node ."
+    "start": "ts-node .",
+    "test": "ts-node ./src/Oscillate"
   },
   "dependencies": {
     "@types/crc": "^3.4.0",
