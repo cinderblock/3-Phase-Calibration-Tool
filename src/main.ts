@@ -33,8 +33,12 @@ rl.question('Serial Number (default: generate UUIDv1): ', answer => {
   rl.close();
 });
 
-const data = loadDataFromUSB('None', cyclePerRev, Revs);
-// const data = loadDataFromSSV(filename)
+let captureNew = true;
+// captureNew = false;
+
+const data = captureNew
+  ? loadDataFromUSB('None', cyclePerRev, Revs)
+  : loadDataFromSSV(filename);
 
 data.then(async ({ forward, reverse, time }) => {
   // Take raw forward/reverse calibration data and calculate smoothed, averaged, and inverted
