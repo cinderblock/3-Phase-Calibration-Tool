@@ -48,7 +48,7 @@ export default function DataIDBlock({
     }
   }
 
-  if (!serial) serial = uuid();
+  if (!serial || serial == 'None') serial = uuid();
 
   write(2, crc16(table, 0xffff));
 
