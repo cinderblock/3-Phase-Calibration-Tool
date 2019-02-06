@@ -7,6 +7,7 @@ import PositiveModulus from './PositiveModulus';
 import processData from './Calibration';
 import readline from 'readline';
 import { createReadStream, createWriteStream } from 'fs';
+import { EOL } from 'os';
 
 const cyclePerRev = 15;
 const Revs = 4;
@@ -75,7 +76,7 @@ async function loadDataFromUSB(
     const mode = 'Calibration';
 
     // Running smoothed version of alpha value
-    let val: number;
+    let currentAngle: number;
 
     // Current calibration direction
     let dir = 1;
@@ -94,7 +95,7 @@ async function loadDataFromUSB(
       (data: { status: string; fault: string; rawAngle: number }) => {
         // Top bit specifies if device already thinks it is calibrated
         data.rawAngle &= (1 << 14) - 1;
-        val = filter(data.rawAngle);
+        currentAngle = filter(data.rawAngle);
       }
     );
 
@@ -108,9 +109,9 @@ async function loadDataFromUSB(
       const i = setInterval(async () => {
         // Only record data in range of good motion
         if (step >= 0 && step < End) {
-          (dir > 0 ? forward : reverse)[step] = val;
+          (dir > 0 ? forward : reverse)[step] = currentAngle;
 
-          logger.write(`${step},${val},${dir}\r\n`);
+          logger.write(`${step},${currentAngle},${dir}${EOL}`);
         }
 
         // Keep going one cycle past the End
