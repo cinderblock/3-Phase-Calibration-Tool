@@ -50,7 +50,7 @@ export default function DataIDBlock({
 
   if (!serial) serial = uuid();
 
-  if (serial.length) write(2, crc16(table));
+  write(2, crc16(table));
   write(1, 0x00);
   write(8, calibrationTime.valueOf(), true);
 
