@@ -82,7 +82,7 @@ async function loadDataFromCSV(
 
     rl.on('line', (line: string) => {
       // console.log(lineCount, line, byteCount);
-      const split = line.split(' ').map(parseInt);
+      const split = line.split(',').map(parseFloat);
 
       // Get date from solo column
       if (split.length < 3) {
