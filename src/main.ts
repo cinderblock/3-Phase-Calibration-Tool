@@ -34,10 +34,10 @@ const data = loadDataFromUSB('None', cyclePerRev, Revs);
 // const data = loadDataFromSSV(filename)
 
 data.then(async ({ forward, reverse, time }) => {
-  // Take raw forward/reverse calibration data and calculate midline
+  // Take raw forward/reverse calibration data and calculate smoothed, averaged, and inverted
   const processed = processData(forward, reverse, cyclePerRev * cycle);
   // TODO: print data
-  console.log('middle');
+  console.log('done');
 });
 
 async function loadDataFromSSV(
