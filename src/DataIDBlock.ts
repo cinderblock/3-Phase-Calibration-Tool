@@ -32,7 +32,12 @@ export default function DataIDBlock({
 
   let pos = 0;
   function write(length: number, num: number, signed = false) {
-    (signed ? ID.writeIntLE : ID.writeUIntLE).bind(ID)(num, pos, length);
+    (signed ? ID.writeIntLE : ID.writeUIntLE).bind(ID)(
+      num,
+      pos,
+      Math.min(length, 6)
+    );
+
     pos += length;
   }
 
