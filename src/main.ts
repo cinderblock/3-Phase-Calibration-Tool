@@ -50,6 +50,25 @@ async function main() {
     serial: Serial,
   });
 
+  let out = createWriteStream('record.csv');
+  out.write('step,forward,reverse' + EOL);
+  for (let i = 0; i < processed.forwardData.length; i++) {
+    out.write(
+      `${i},${processed.forwardData[i]},${processed.reverseData[i]}${EOL}`
+    );
+  }
+  out.close();
+  out = createWriteStream('fit.csv');
+  out.write('step,forward,reverse,middle' + EOL);
+  for (let i = 0; i < processed.forward.length; i++) {
+    out.write(
+      `${i},${processed.forward[i]},${processed.reverse[i]},${
+        processed.middle[i]
+      }${EOL}`
+    );
+  }
+  out.close();
+
   const mem = new MemoryMap();
 
   mem.set(0x4f80, block);

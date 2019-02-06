@@ -2,3 +2,5 @@ node_modules
 yarn-error.log
 data.*
 *.hex
+fit.csv
+record.csv
