@@ -8,6 +8,7 @@ import processData from './Calibration';
 import readline from 'readline';
 import { createReadStream, createWriteStream } from 'fs';
 import { EOL } from 'os';
+import DataIDBlock from './DataIDBlock';
 
 const cyclePerRev = 15;
 const Revs = 4;
@@ -36,7 +37,13 @@ const data = loadDataFromUSB('None', cyclePerRev, Revs);
 data.then(async ({ forward, reverse, time }) => {
   // Take raw forward/reverse calibration data and calculate smoothed, averaged, and inverted
   const processed = processData(forward, reverse, cyclePerRev * cycle);
-  // TODO: print data
+
+  const data = DataIDBlock({
+    lookupTable: processed.inverseTable,
+    calibrationTime: time,
+    serial: Serial,
+  });
+
   console.log('done');
 });
 
