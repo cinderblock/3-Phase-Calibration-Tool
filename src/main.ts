@@ -54,7 +54,7 @@ data.then(async ({ forward, reverse, time }) => {
 
   mem.set(0x4f80, data);
 
-  writeFileSync(Serial + '.hex', mem.asHexString());
+  writeFileSync(Serial + '.hex', mem.asHexString().replace(/\n/g, EOL) + EOL);
 
   console.log('done');
 });
