@@ -6,7 +6,7 @@ import ExponentialFilter from './ExponentialFilter';
 import PositiveModulus from './PositiveModulus';
 import processData from './Calibration';
 import readline from 'readline';
-import { createReadStream, createWriteStream } from 'fs';
+import { createReadStream, createWriteStream, writeFileSync } from 'fs';
 import { EOL } from 'os';
 import DataIDBlock from './DataIDBlock';
 
@@ -49,6 +49,8 @@ data.then(async ({ forward, reverse, time }) => {
   const mem = new MemoryMap();
 
   mem.set(0x4f80, data);
+
+  writeFileSync(Serial + '.hex', mem.asHexString());
 
   console.log('done');
 });
