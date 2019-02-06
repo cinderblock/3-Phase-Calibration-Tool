@@ -91,6 +91,7 @@ async function loadDataFromCSV(
       // Get date from solo column
       if (split.length < 3) {
         time = new Date(split[0]);
+        console.log('Calibration time:', time);
         return;
       }
 
