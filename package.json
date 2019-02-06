@@ -6,6 +6,9 @@
   "repository": "https://github.com/cinderblock/3-Phase-Calibration-Tool",
   "author": "Cameron Tacklind <cameron@tacklind.com>",
   "license": "MIT",
+  "scripts": {
+    "start": "ts-node ."
+  },
   "dependencies": {
     "@types/node": "^10.12.21",
     "@types/usb": "^1.5.1",
