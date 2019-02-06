@@ -21,7 +21,7 @@ const filename = 'data.csv';
 const data = loadDataFromUSB('None', cyclePerRev, Revs);
 // const data = loadDataFromSSV(filename)
 
-data.then(({ forward, reverse }) => {
+data.then(async ({ forward, reverse, time }) => {
   // Take raw forward/reverse calibration data and calculate midline
   const processed = processData(forward, reverse, cyclePerRev * cycle);
   // TODO: print data
@@ -33,6 +33,7 @@ async function loadDataFromSSV(
 ): Promise<{
   forward: number[];
   reverse: number[];
+  time: Date;
 }> {
   return new Promise((resolve, reject) => {
     const forward: number[] = [];
@@ -45,14 +46,28 @@ async function loadDataFromSSV(
       crlfDelay: Infinity,
     });
 
+    // Default to now if data file is missing timestamp
+    let time = new Date();
+
     rl.on('line', (line: string) => {
       // console.log(lineCount, line, byteCount);
-      const [step, val, dir] = line.split(' ').map(parseInt);
+      const split = line.split(' ').map(parseInt);
+
+      // Get date from solo column
+      if (split.length < 3) {
+        time = new Date(split[0]);
+        return;
+      }
+
+      const [step, val, dir] = split;
+
       (dir > 0 ? forward : reverse)[step] = val;
     });
+
     rl.on('close', function() {
-      resolve({ forward, reverse });
+      resolve({ forward, reverse, time });
     });
+
     rl.on('error', reject);
   });
 }
@@ -64,6 +79,7 @@ async function loadDataFromUSB(
 ): Promise<{
   forward: number[];
   reverse: number[];
+  time: Date;
 }> {
   return new Promise((resolve, reject) => {
     const forward: number[] = [];
@@ -125,13 +141,16 @@ async function loadDataFromUSB(
         if (dir < 0 && step <= 0) {
           clearInterval(i);
 
-          logger.close();
+          const time = new Date();
+
+          // Write to file as ms since Unix epoch
+          logger.end(time.valueOf() + EOL);
 
           usb.write({ mode, amplitude: 0, angle: 0 }, () => {
             usb.close();
           });
 
-          resolve({ forward, reverse });
+          resolve({ forward, reverse, time });
           return;
         }
 
