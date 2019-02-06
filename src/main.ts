@@ -155,8 +155,9 @@ async function loadDataFromUSB(
           logger.write(`${step},${currentAngle},${dir}${EOL}`);
         }
 
-        // Keep going one cycle past the End
+        // Keep going one cycle past the End before turning around
         if (dir > 0 && step > End + cycle) {
+          console.log('Reversing');
           dir = -dir;
         }
 
