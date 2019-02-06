@@ -143,6 +143,11 @@ async function loadDataFromUSB(
       console.log('Starting');
 
       const i = setInterval(async () => {
+        if (currentAngle === undefined) {
+          console.log('Have not yet received MLX data...');
+          return;
+        }
+
         // Only record data in range of good motion
         if (step >= 0 && step < End) {
           (dir > 0 ? forward : reverse)[step] = currentAngle;
