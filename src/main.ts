@@ -73,6 +73,9 @@ async function loadDataFromSSV(
 
       const [step, val, dir] = split;
 
+      // Header
+      if (Number.isNaN(step)) return;
+
       (dir > 0 ? forward : reverse)[step] = val;
     });
 
@@ -99,6 +102,8 @@ async function loadDataFromUSB(
     const usb = USB(serial);
 
     const logger = createWriteStream(filename);
+
+    logger.write('step,alpha,dir');
 
     // Non-inclusive last step of calibration routine
     const End = cycle * cyclePerRev * revolutions;
