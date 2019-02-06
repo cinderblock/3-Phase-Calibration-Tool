@@ -50,7 +50,7 @@ export default function DataIDBlock({
 
   if (!serial) serial = uuid();
 
-  write(2, crc16(table));
+  write(2, crc16(table, 0xffff));
 
   write(1, 0x00);
 
@@ -77,7 +77,7 @@ export default function DataIDBlock({
   }
 
   pos = ID.length - 2;
-  write(2, crc16(ID.slice(0, -2)));
+  write(2, crc16(ID.slice(0, -2), 0xffff));
 
   return data;
 }
