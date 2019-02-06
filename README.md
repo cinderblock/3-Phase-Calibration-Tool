@@ -1,5 +1,7 @@
 # 3-Phase-Calibration-Tool
 
+Generates memory .hex file of lookup table data and ID page.
+
 ## Running
 
 Some values need to be configured before running:
