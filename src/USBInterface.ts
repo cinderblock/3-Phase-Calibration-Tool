@@ -127,6 +127,11 @@ export default function USBInterface(id: string, options?: Options) {
         'OverTemperature',
       ];
 
+      if (data.length != 8) {
+        console.log(data);
+        return;
+      }
+
       let i = 0;
       function read(length: number, signed: boolean = false) {
         const pos = i;
@@ -185,6 +190,7 @@ export default function USBInterface(id: string, options?: Options) {
   const writeBuffer = Buffer.alloc(8);
 
   function close() {
+    (device.interface(0).endpoints[0] as InEndpoint).stopPoll();
     device && device.close();
   }
 
