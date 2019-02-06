@@ -58,6 +58,7 @@ export default function DataIDBlock({
   write(1, 0x03); // DTYPE_String
 
   const USBStringBuffer = ID.slice(pos, -2);
+  USBStringBuffer.fill(0);
   const SerialSize = USBStringBuffer.write(
     serial,
     0,
