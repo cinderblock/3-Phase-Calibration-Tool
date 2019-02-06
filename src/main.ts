@@ -18,6 +18,18 @@ const maxAmplitude = 30;
 
 const filename = 'data.csv';
 
+let Serial: string;
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
+rl.question('Serial Number (default: generate UUIDv1): ', answer => {
+  Serial = answer.trim();
+  rl.close();
+});
+
 const data = loadDataFromUSB('None', cyclePerRev, Revs);
 // const data = loadDataFromSSV(filename)
 
