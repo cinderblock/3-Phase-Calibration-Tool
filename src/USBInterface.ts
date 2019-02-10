@@ -12,7 +12,7 @@ const deviceVid = 0xdead;
 const devicePid = 0xbeef;
 
 // Must match USBDataINShape
-const reportLength = 8;
+const reportLength = 20;
 
 function isDeviceMotorDriver(device: usb.Device) {
   const dec = device.deviceDescriptor;
@@ -127,7 +127,7 @@ export default function USBInterface(id: string, options?: Options) {
         'OverTemperature',
       ];
 
-      if (data.length != 8) {
+      if (data.length != reportLength) {
         console.log(data);
         return;
       }
@@ -187,7 +187,7 @@ export default function USBInterface(id: string, options?: Options) {
   }
 
   // Allocate a write buffer once and keep reusing it
-  const writeBuffer = Buffer.alloc(8);
+  const writeBuffer = Buffer.alloc(12);
 
   function close() {
     (device.interface(0).endpoints[0] as InEndpoint).stopPoll();
