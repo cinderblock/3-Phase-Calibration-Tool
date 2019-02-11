@@ -190,7 +190,10 @@ export default function USBInterface(id: string, options?: Options) {
   const events: StrictEventEmitter<EventEmitter, Events> = new EventEmitter();
   let enabled = false;
 
-  function start() {
+  let polling = true;
+
+  function start(p = true) {
+    polling = p;
     // When we start, find all devices
     usb.getDeviceList().forEach(checkDevice);
     // And listen for any new devices connected
@@ -223,11 +226,12 @@ export default function USBInterface(id: string, options?: Options) {
     // Motor HID IN endpoint is always endpoint 0
     const endpoint = intf.endpoints[0] as InEndpoint;
 
-    // Start polling. 3 pending requests at all times
-    endpoint.startPoll(3, reportLength);
+    if (polling) {
+      // Start polling. 3 pending requests at all times
+      endpoint.startPoll(3, reportLength);
 
-    endpoint.on('data', d => events.emit('data', parseINBuffer(d)));
-      // console.log('data:', data);
+      endpoint.on('data', d => events.emit('data', parseINBuffer(d)));
+    }
 
     endpoint.on('error', err => {
       if (err.errno == 4) return;
