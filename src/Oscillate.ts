@@ -28,7 +28,7 @@ async function main() {
       // Top bit specifies if device already thinks it is calibrated
       data.rawAngle &= (1 << 14) - 1;
 
-      if (!calibrated && data.rawAngle & (1 << 15)) {
+      if (!calibrated && data.calibrated) {
         calibrated = true;
         console.log('Calibrated!');
       }

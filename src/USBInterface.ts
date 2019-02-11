@@ -1,18 +1,16 @@
 import EventEmitter from 'events';
 import { promisify } from 'util';
 import usb, { InEndpoint } from 'usb';
+import StrictEventEmitter from 'strict-event-emitter-types';
 import chalk from 'chalk';
 
 import clipRange from './clipRange';
 
-const clipTo_u1 = clipRange(255);
-const clip255 = clipRange(255, -255);
-
 const deviceVid = 0xdead;
 const devicePid = 0xbeef;
 
-// Must match USBDataINShape
-const reportLength = 20;
+// Must match REPORT_SIZE
+const reportLength = 29;
 
 function isDeviceMotorDriver(device: usb.Device) {
   const dec = device.deviceDescriptor;
@@ -21,12 +19,34 @@ function isDeviceMotorDriver(device: usb.Device) {
   return ven == deviceVid && prod == devicePid;
 }
 
-export type Command = {
-  mode: 'Calibration' | 'Push' | 'Servo';
-  angle?: number;
-  amplitude?: number;
-  command?: number;
-  pwmMode?:
+export type MLXCommand = {
+  mode: 'MLX';
+  data: Buffer;
+  crc?: boolean;
+};
+
+export type ThreePhaseCommand = {
+  mode: 'ThreePhase';
+  A: number;
+  B: number;
+  C: number;
+};
+
+export type CalibrationCommand = {
+  mode: 'Calibration';
+  angle: number;
+  amplitude: number;
+};
+
+export type PushCommand = {
+  mode: 'Push';
+  command: number;
+};
+
+export type ServoCommand = {
+  mode: 'Servo';
+  command: number;
+  pwmMode:
     | 'pwm'
     | 'position'
     | 'velocity'
@@ -36,6 +56,54 @@ export type Command = {
     | 'kI'
     | 'kD';
 };
+
+export type Command =
+  | MLXCommand
+  | ThreePhaseCommand
+  | CalibrationCommand
+  | PushCommand
+  | ServoCommand;
+
+// Matches main.hpp State
+export enum ControllerState {
+  Fault,
+  MLXSetup,
+  Manual,
+  Calibration,
+  Push,
+  Servo,
+}
+
+// Matches main.hpp Fault
+export enum ControllerFault {
+  Init,
+  InvalidCommand,
+  OverCurrent,
+  OverTemperature,
+}
+
+interface Events {
+  data: {
+    state: ControllerState;
+    fault: ControllerFault;
+    position: number;
+    velocity: number;
+    // Store full word. Get the low 14 bits as actual raw angle
+    rawAngle: number;
+    // Top bit specifies if controller thinks it is calibrated
+    calibrated: boolean;
+    cpuTemp: number;
+    current: number;
+    ain0: number;
+    AS: number;
+    BS: number;
+    CS: number;
+    mlxResponse: Buffer;
+    localMLXCRC: boolean;
+  };
+  error: Error;
+  status: 'ok' | 'missing';
+}
 
 async function openAndGetMotorSerial(dev: usb.Device) {
   if (!isDeviceMotorDriver(dev)) return false;
@@ -75,7 +143,7 @@ export default function USBInterface(id: string, options?: Options) {
   if (!id) throw new Error('Invalid ID');
 
   let device: usb.Device;
-  const events = new EventEmitter();
+  const events: StrictEventEmitter<EventEmitter, Events> = new EventEmitter();
   let enabled = false;
 
   function start() {
@@ -114,18 +182,8 @@ export default function USBInterface(id: string, options?: Options) {
     // Start polling. 3 pending requests at all times
     endpoint.startPoll(3, reportLength);
 
-    endpoint.on('data', data => {
+    endpoint.on('data', (data: Buffer) => {
       // console.log('data:', data);
-      // Matches main.hpp State
-      const State = ['Fault', 'Calibration', 'Push', 'Servo'];
-
-      // Matches main.hpp Fault
-      const Fault = [
-        'Init',
-        'InvalidCommand',
-        'OverCurrent',
-        'OverTemperature',
-      ];
 
       if (data.length != reportLength) {
         console.log(data);
@@ -139,16 +197,32 @@ export default function USBInterface(id: string, options?: Options) {
         if (signed) return data.readIntLE(pos, length);
         return data.readUIntLE(pos, length);
       }
+      function readBuffer(length: number) {
+        const ret = Buffer.allocUnsafe(length);
+        i += data.copy(ret, 0, i);
+        return ret;
+      }
+
+      let temp: number;
 
       // Matches USB/PacketFormats.h USBDataINShape
       events.emit('data', {
-        state: State[read(1)],
-        fault: Fault[read(1)],
-        position: read(1),
-        velocity: read(1, true),
-        cpuTemp: read(1),
-        current: read(1, true),
-        rawAngle: read(2),
+        state: read(1),
+        fault: read(1),
+        position: read(2),
+        velocity: read(2, true),
+        // Store full word. Get the low 14 bits as actual raw angle
+        rawAngle: (temp = read(2)) & ((1 << 14) - 1),
+        // Top bit specifies if controller thinks it is calibrated
+        calibrated: !!(temp & (1 << 15)),
+        cpuTemp: read(2),
+        current: read(2, true),
+        ain0: read(2),
+        AS: read(2),
+        BS: read(2),
+        CS: read(2),
+        mlxResponse: readBuffer(8),
+        localMLXCRC: !!read(1),
       });
     });
 
@@ -187,7 +261,7 @@ export default function USBInterface(id: string, options?: Options) {
   }
 
   // Allocate a write buffer once and keep reusing it
-  const writeBuffer = Buffer.alloc(12);
+  const writeBuffer = Buffer.alloc(reportLength);
 
   function close() {
     (device.interface(0).endpoints[0] as InEndpoint).stopPoll();
@@ -221,24 +295,57 @@ export default function USBInterface(id: string, options?: Options) {
     }
 
     // Matches PacketFormats.h CommandMode
-    const CommandMode = { Calibration: 0, Push: 1, Servo: 2 };
+    const CommandMode = {
+      MLXDebug: 0,
+      ThreePhaseDebug: 1,
+      Calibration: 2,
+      Push: 3,
+      Servo: 4,
+    } as { [mode: string]: number };
 
-    writeBuffer.writeUInt8(CommandMode[command.mode], 1);
+    let pos = 1;
+    function writeNumBuffer(num: number, len = 1, signed = false) {
+      if (signed) pos = writeBuffer.writeIntLE(num, pos, len);
+      else pos = writeBuffer.writeUIntLE(num, pos, len);
+    }
+
+    writeNumBuffer(CommandMode[command.mode]);
 
     try {
       switch (command.mode) {
+        case 'MLX':
+          if (command.data === undefined) throw 'Argument `data` missing';
+          if (!(command.data.length == 7 || command.data.length == 8))
+            throw 'Argument `data` has incorrect length';
+
+          command.data.copy(writeBuffer, pos);
+          pos += 8;
+          const generateCRC = command.crc || command.data.length == 7;
+          writeNumBuffer(generateCRC ? 1 : 0);
+          break;
+
+        case 'ThreePhase':
+          if (command.A === undefined) throw 'Argument `A` missing';
+          if (command.B === undefined) throw 'Argument `B` missing';
+          if (command.C === undefined) throw 'Argument `C` missing';
+
+          writeNumBuffer(command.A, 2);
+          writeNumBuffer(command.B, 2);
+          writeNumBuffer(command.C, 2);
+          break;
+
         case 'Calibration':
           if (command.angle === undefined) throw 'Argument `angle` missing';
           if (command.amplitude === undefined)
             throw 'Argument `amplitude` missing';
 
-          writeBuffer.writeUInt16LE(command.angle, 2);
-          writeBuffer.writeUInt8(command.amplitude, 4);
+          writeNumBuffer(command.angle, 2);
+          writeNumBuffer(command.amplitude, 1);
           break;
 
         case 'Push':
           if (command.command === undefined) throw 'Argument `command` missing';
-          writeBuffer.writeInt16LE(command.command, 2);
+          writeNumBuffer(command.command, 2, true);
           break;
 
         case 'Servo':
@@ -259,24 +366,20 @@ export default function USBInterface(id: string, options?: Options) {
             kD: 13,
           };
 
-          writeBuffer.writeUInt8(PWMMode[command.pwmMode], 2);
+          writeNumBuffer(PWMMode[command.pwmMode]);
 
           switch (command.pwmMode) {
-            case 'position': // case 2: setPosition
-            case 'velocity': // case 3: setVelocity
-            case 'spare': // case 4: Set Spare Mode
-              writeBuffer.writeInt32LE(command.command, 3);
-              break;
-
-            case 'pwm': // case 1: Set pwm Mode
-            case 'command': // case 1: setAmplitude  // this is redundant to pwmMode
-              writeBuffer.writeInt32LE(clip255(command.command), 3);
-              break;
-
             case 'kP': // case 11: in USBInterface.cpp, send a Proportional Gain constant
             case 'kI': // case 12:
             case 'kD': // case 13:
-              writeBuffer.writeInt32LE(clipTo_u1(command.command), 3);
+              command.command = clipRange(0, 255)(command.command);
+            case 'pwm': // case 1: Set pwm Mode
+            case 'command': // case 1: setAmplitude  // this is redundant to pwmMode
+              command.command = clipRange(-255, 255)(command.command);
+            case 'position': // case 2: setPosition
+            case 'velocity': // case 3: setVelocity
+            case 'spare': // case 4: Set Spare Mode
+              writeNumBuffer(command.command, 4, true);
               break;
           }
       }
