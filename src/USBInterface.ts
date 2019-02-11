@@ -108,7 +108,7 @@ interface Events {
 async function openAndGetMotorSerial(dev: usb.Device) {
   if (!isDeviceMotorDriver(dev)) return false;
 
-  console.log('New Motor Device!');
+  // console.log('New Motor Device!');
 
   dev.open();
 
@@ -128,7 +128,7 @@ async function openAndGetMotorSerial(dev: usb.Device) {
       .replace(/\0/g, '')
       .trim();
 
-    console.log('Found Motor device:', dataStr);
+    // console.log('Found Motor device:', dataStr);
 
     return dataStr;
   } catch (e) {
