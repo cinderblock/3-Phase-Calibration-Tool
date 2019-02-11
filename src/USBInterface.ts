@@ -139,6 +139,50 @@ async function openAndGetMotorSerial(dev: usb.Device) {
 
 type Options = {};
 
+export function parseINBuffer(data: Buffer) {
+  // console.log('data:', data);
+
+  if (data.length != reportLength) {
+    console.log('Invalid data:', data);
+    return;
+  }
+
+  let i = 0;
+  function read(length: number, signed: boolean = false) {
+    const pos = i;
+    i += length;
+    if (signed) return data.readIntLE(pos, length);
+    return data.readUIntLE(pos, length);
+  }
+  function readBuffer(length: number) {
+    const ret = Buffer.allocUnsafe(length);
+    i += data.copy(ret, 0, i);
+    return ret;
+  }
+
+  let temp: number;
+
+  // Matches USB/PacketFormats.h USBDataINShape
+  return {
+    state: read(1),
+    fault: read(1),
+    position: read(2),
+    velocity: read(2, true),
+    // Store full word. Get the low 14 bits as actual raw angle
+    rawAngle: (temp = read(2)) & ((1 << 14) - 1),
+    // Top bit specifies if controller thinks it is calibrated
+    calibrated: !!(temp & (1 << 15)),
+    cpuTemp: read(2),
+    current: read(2, true),
+    ain0: read(2),
+    AS: read(2),
+    BS: read(2),
+    CS: read(2),
+    mlxResponse: readBuffer(8),
+    localMLXCRC: !!read(1),
+  };
+}
+
 export default function USBInterface(id: string, options?: Options) {
   if (!id) throw new Error('Invalid ID');
 
@@ -182,49 +226,8 @@ export default function USBInterface(id: string, options?: Options) {
     // Start polling. 3 pending requests at all times
     endpoint.startPoll(3, reportLength);
 
-    endpoint.on('data', (data: Buffer) => {
+    endpoint.on('data', d => events.emit('data', parseINBuffer(d)));
       // console.log('data:', data);
-
-      if (data.length != reportLength) {
-        console.log(data);
-        return;
-      }
-
-      let i = 0;
-      function read(length: number, signed: boolean = false) {
-        const pos = i;
-        i += length;
-        if (signed) return data.readIntLE(pos, length);
-        return data.readUIntLE(pos, length);
-      }
-      function readBuffer(length: number) {
-        const ret = Buffer.allocUnsafe(length);
-        i += data.copy(ret, 0, i);
-        return ret;
-      }
-
-      let temp: number;
-
-      // Matches USB/PacketFormats.h USBDataINShape
-      events.emit('data', {
-        state: read(1),
-        fault: read(1),
-        position: read(2),
-        velocity: read(2, true),
-        // Store full word. Get the low 14 bits as actual raw angle
-        rawAngle: (temp = read(2)) & ((1 << 14) - 1),
-        // Top bit specifies if controller thinks it is calibrated
-        calibrated: !!(temp & (1 << 15)),
-        cpuTemp: read(2),
-        current: read(2, true),
-        ain0: read(2),
-        AS: read(2),
-        BS: read(2),
-        CS: read(2),
-        mlxResponse: readBuffer(8),
-        localMLXCRC: !!read(1),
-      });
-    });
 
     endpoint.on('error', err => {
       if (err.errno == 4) return;
