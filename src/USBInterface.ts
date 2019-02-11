@@ -183,6 +183,22 @@ export function parseINBuffer(data: Buffer) {
   };
 }
 
+export function addAttachListener(l: (id: string, device: usb.Device) => void) {
+  async function listener(dev: usb.Device) {
+    const serial = await openAndGetMotorSerial(dev);
+    dev.close();
+    if (serial === false) {
+      return;
+    }
+    l(serial, dev);
+  }
+  usb.on('attach', listener);
+
+  return () => {
+    usb.removeListener('attach', listener);
+  };
+}
+
 export default function USBInterface(id: string, options?: Options) {
   if (!id) throw new Error('Invalid ID');
 
