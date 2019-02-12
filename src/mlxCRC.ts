@@ -258,7 +258,6 @@ const mlxCRCtab = [
 ];
 
 export default function mlxCRC(data: Buffer) {
-  console.log(data);
   if (data.length != 8) throw 'InvalidLength';
 
   let crc = 0xff;
