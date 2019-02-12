@@ -3,6 +3,7 @@ import USBInterface, {
   ReadData,
   addAttachListener,
   CommandMode,
+  MlxResponseState,
 } from './USBInterface';
 import readline from 'readline';
 import chalk from 'chalk';
@@ -237,7 +238,7 @@ async function main() {
       const data = await usb.read();
 
       if (data) {
-        if (data.localMLXCRC) {
+        if (data.mlxResponseState > MlxResponseState.failedCRC) {
           result = parseMLXData(data.mlxResponse);
           if (result.data0 !== undefined && false) break;
           else console.log('Received unexpected response:', result);

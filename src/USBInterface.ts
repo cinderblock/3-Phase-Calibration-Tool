@@ -91,6 +91,18 @@ export enum ControllerFault {
   OverTemperature,
 }
 
+export enum MlxResponseState {
+  Init,
+  Ready,
+  Receiving,
+  Received,
+  failedCRC,
+  TypeA,
+  TypeAB,
+  TypeXYZ,
+  Other,
+}
+
 export type ReadData = {
   state: ControllerState;
   fault: ControllerFault;
@@ -107,7 +119,7 @@ export type ReadData = {
   BS: number;
   CS: number;
   mlxResponse: Buffer;
-  localMLXCRC: boolean;
+  mlxResponseState: MlxResponseState;
 };
 
 interface Events {
@@ -190,7 +202,7 @@ export function parseINBuffer(data: Buffer): ReadData | undefined {
     BS: read(2),
     CS: read(2),
     mlxResponse: readBuffer(8),
-    localMLXCRC: !!read(1),
+    mlxResponseState: read(1),
   };
 }
 
