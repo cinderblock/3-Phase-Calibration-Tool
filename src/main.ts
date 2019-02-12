@@ -177,7 +177,6 @@ async function loadDataFromUSB(
       'data',
       (data: { status: string; fault: string; rawAngle: number }) => {
         // Top bit specifies if device already thinks it is calibrated
-        data.rawAngle &= (1 << 14) - 1;
         currentAngle = data.rawAngle;
       }
     );
