@@ -305,8 +305,14 @@ export default function USBInterface(id: string, options?: Options) {
   const writeBuffer = Buffer.alloc(reportLength);
 
   function close() {
-    (device.interface(0).endpoints[0] as InEndpoint).stopPoll();
-    device && device.close();
+    if (!device) return;
+
+    function cl() {
+      device.close();
+    }
+
+    if (polling) endpoint.stopPoll(cl);
+    else cl();
   }
 
   function detach(dev: usb.Device) {
