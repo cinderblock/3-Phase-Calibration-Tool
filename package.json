@@ -7,7 +7,7 @@
   "author": "Cameron Tacklind <cameron@tacklind.com>",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node .",
+    "start": "ts-node ./src/main",
     "configureMLX": "ts-node ./src/MLXcontrol",
     "test": "ts-node ./src/Oscillate"
   },
