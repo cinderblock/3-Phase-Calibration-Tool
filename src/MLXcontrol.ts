@@ -28,7 +28,7 @@ async function main() {
     console.log('\r', chalk.grey(new Date().toLocaleTimeString()), id);
   });
 
-  const serial = await prompt('Serial Number [None]: ');
+  const serial = (await prompt('Serial Number [None]: ')).trim() || 'None';
   const usb = USBInterface(serial);
 
   usb.events.on('status', async (s: string) => {
