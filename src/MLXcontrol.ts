@@ -140,7 +140,7 @@ function parseMLXData(data: Buffer) {
           throw 'This is data sent TO device...';
 
         case Opcode.Get3Ready:
-          throw 'Not yet implmented';
+          throw 'Not yet implemented';
           return { crc, opcode, marker };
 
         case Opcode.MemoryRead_Answer:
@@ -175,7 +175,7 @@ function parseMLXData(data: Buffer) {
         case Opcode.OscCounterStart_Acknowledge:
         case Opcode.OscCounterStopAck_CounterValue:
         case Opcode.StandbyAck:
-          throw 'Not yet implmented';
+          throw 'Not yet implemented';
           return { crc, opcode, marker };
 
         case Opcode.Error_frame:
