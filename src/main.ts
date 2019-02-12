@@ -1,6 +1,6 @@
 'use strict';
 
-import USB, { Command } from './USBInterface';
+import USB, { addAttachListener } from './USBInterface';
 
 import ExponentialFilter from './ExponentialFilter';
 import PositiveModulus from './PositiveModulus';
@@ -9,7 +9,7 @@ import readline from 'readline';
 import { createReadStream, createWriteStream, writeFileSync } from 'fs';
 import { EOL } from 'os';
 import DataIDBlock from './DataIDBlock';
-
+import chalk from 'chalk';
 import MemoryMap from 'nrf-intel-hex';
 
 const cyclePerRev = 15;
@@ -33,6 +33,10 @@ function prompt(prompt: string) {
 }
 
 async function main() {
+  await addAttachListener(id => {
+    console.log('\r', chalk.grey(new Date().toLocaleTimeString()), id);
+  });
+
   const Serial = (await prompt('Serial Number [None]: ')).trim() || 'None';
 
   const data =

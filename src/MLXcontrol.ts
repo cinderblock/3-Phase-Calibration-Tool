@@ -1,5 +1,14 @@
-import USBInterface from './USBInterface';
+import USBInterface, {
+  MLXCommand,
+  ReadData,
+  addAttachListener,
+} from './USBInterface';
 import readline from 'readline';
+import chalk from 'chalk';
+
+function delay(ms: number) {
+  return new Promise(res => setTimeout(res, ms));
+}
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -15,28 +24,65 @@ function prompt(prompt: string) {
 let calibrated = false;
 
 async function main() {
+  await addAttachListener(id => {
+    console.log('\r', chalk.grey(new Date().toLocaleTimeString()), id);
+  });
+
   const serial = await prompt('Serial Number [None]: ');
   const usb = USBInterface(serial);
 
-  usb.events.on('data', data => {
-    if (!calibrated && data.calibrated) {
-      calibrated = true;
-      console.log('Calibrated!');
-    }
-
-    console.log(data);
-  });
-
-  usb.events.on('status', (s: string) => {
+  usb.events.on('status', async (s: string) => {
     if (s != 'ok') return;
 
     // Motor connected
 
     console.log('Starting');
+
+    const mode = 'MLX';
+    const data = Buffer.allocUnsafe(7);
+
+    const command = { mode, data } as MLXCommand;
+
+    const MAPXYZ = 0x102a;
+
+    const addr = MAPXYZ;
+
+    // Read same location twice for now...
+    data.writeUInt16LE(addr, 0);
+    data.writeUInt16LE(addr, 2);
+    data[6] = 0b11000010;
+
+    let result: ReadData;
+
+    while (true) {
+      await new Promise(res => usb.write(command, res));
+      await delay(1000);
+      const data = await usb.read();
+
+      if (!data) {
+        console.log('Response missing?');
+        await delay(100);
+        continue;
+      }
+
+      if (!data.localMLXCRC) {
+        console.log('CRC Invalid on device?');
+        await delay(100);
+        continue;
+      }
+
+      result = data;
+
+      break;
+    }
+
+    await prompt('EEWrite?');
+
+    usb.write(command);
   });
 
-  // Actually start looking for the usb device
-  usb.start();
+  // Actually start looking for the usb device without automatic polling
+  usb.start(false);
 }
 
 main();

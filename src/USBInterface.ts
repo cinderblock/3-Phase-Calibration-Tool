@@ -1,8 +1,8 @@
 import EventEmitter from 'events';
 import { promisify } from 'util';
-import usb, { InEndpoint } from 'usb';
-import StrictEventEmitter from 'strict-event-emitter-types';
 import chalk from 'chalk';
+import usb, { InEndpoint } from 'usb';
+// import StrictEventEmitter from './strict-event-emitter-types';
 
 import clipRange from './clipRange';
 
@@ -82,27 +82,29 @@ export enum ControllerFault {
   OverTemperature,
 }
 
+export type ReadData = {
+  state: ControllerState;
+  fault: ControllerFault;
+  position: number;
+  velocity: number;
+  // Store full word. Get the low 14 bits as actual raw angle
+  rawAngle: number;
+  // Top bit specifies if controller thinks it is calibrated
+  calibrated: boolean;
+  cpuTemp: number;
+  current: number;
+  ain0: number;
+  AS: number;
+  BS: number;
+  CS: number;
+  mlxResponse: Buffer;
+  localMLXCRC: boolean;
+};
+
 interface Events {
-  data: {
-    state: ControllerState;
-    fault: ControllerFault;
-    position: number;
-    velocity: number;
-    // Store full word. Get the low 14 bits as actual raw angle
-    rawAngle: number;
-    // Top bit specifies if controller thinks it is calibrated
-    calibrated: boolean;
-    cpuTemp: number;
-    current: number;
-    ain0: number;
-    AS: number;
-    BS: number;
-    CS: number;
-    mlxResponse: Buffer;
-    localMLXCRC: boolean;
-  };
-  error: Error;
-  status: 'ok' | 'missing';
+  data(arg: ReadData): void;
+  error(): Error;
+  status(): 'ok' | 'missing';
 }
 
 async function openAndGetMotorSerial(dev: usb.Device) {
@@ -139,7 +141,7 @@ async function openAndGetMotorSerial(dev: usb.Device) {
 
 type Options = {};
 
-export function parseINBuffer(data: Buffer) {
+export function parseINBuffer(data: Buffer): ReadData | undefined {
   // console.log('data:', data);
 
   if (data.length != reportLength) {
@@ -183,19 +185,24 @@ export function parseINBuffer(data: Buffer) {
   };
 }
 
-export function addAttachListener(l: (id: string, device: usb.Device) => void) {
-  async function listener(dev: usb.Device) {
+export async function addAttachListener(
+  listener: (id: string, device: usb.Device) => void
+) {
+  async function checker(dev: usb.Device) {
     const serial = await openAndGetMotorSerial(dev);
     dev.close();
-    if (serial === false) {
-      return;
-    }
-    l(serial, dev);
+    if (serial === false) return;
+    listener(serial, dev);
   }
-  usb.on('attach', listener);
+
+  const checkExisting = Promise.all(usb.getDeviceList().map(checker));
+
+  usb.on('attach', checker);
+
+  await checkExisting;
 
   return () => {
-    usb.removeListener('attach', listener);
+    usb.removeListener('attach', checker);
   };
 }
 
@@ -203,7 +210,7 @@ export default function USBInterface(id: string, options?: Options) {
   if (!id) throw new Error('Invalid ID');
 
   let device: usb.Device;
-  const events: StrictEventEmitter<EventEmitter, Events> = new EventEmitter();
+  const events = new EventEmitter(); // as StrictEventEmitter<EventEmitter, Events>;
   let enabled = false;
 
   let polling = true;
@@ -302,6 +309,42 @@ export default function USBInterface(id: string, options?: Options) {
     usb.on('attach', checkDevice);
 
     enabled = false;
+  }
+
+  async function read() {
+    if (!enabled || !device) {
+      console.log(
+        chalk.magenta('USBInterface not enabled.'),
+        chalk.grey('Motor', id)
+      );
+      return false;
+    }
+
+    return new Promise<ReadData>((resolve, reject) => {
+      device.controlTransfer(
+        // bmRequestType (constant for this control request)
+        usb.LIBUSB_REQUEST_TYPE_STANDARD |
+          usb.LIBUSB_ENDPOINT_IN |
+          usb.LIBUSB_RECIPIENT_DEVICE,
+        // bmRequest (constant for this control request)
+        0x08,
+        // wValue (MSB is report type, LSB is report number)
+        0,
+        // wIndex (interface number)
+        0,
+        // Number of bytes to receive
+        reportLength,
+        (err, data) => {
+          if (
+            err ||
+            // && err.errno != 4
+            !data
+          )
+            reject(err);
+          else resolve(parseINBuffer(data));
+        }
+      );
+    });
   }
 
   /*
@@ -433,5 +476,5 @@ export default function USBInterface(id: string, options?: Options) {
       cb && cb();
     }
   }
-  return { events, write, start, close };
+  return { events, write, read, start, close };
 }
