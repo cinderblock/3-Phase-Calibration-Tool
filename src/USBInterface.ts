@@ -210,6 +210,7 @@ export default function USBInterface(id: string, options?: Options) {
   if (!id) throw new Error('Invalid ID');
 
   let device: usb.Device;
+  let endpoint: usb.InEndpoint;
   const events = new EventEmitter(); // as StrictEventEmitter<EventEmitter, Events>;
   let enabled = false;
 
@@ -247,7 +248,7 @@ export default function USBInterface(id: string, options?: Options) {
     writeBuffer[0] = intf.interfaceNumber;
 
     // Motor HID IN endpoint is always endpoint 0
-    const endpoint = intf.endpoints[0] as InEndpoint;
+    endpoint = intf.endpoints[0] as InEndpoint;
 
     if (polling) {
       // Start polling. 3 pending requests at all times
@@ -270,6 +271,7 @@ export default function USBInterface(id: string, options?: Options) {
 
     // console.log('Motor', id, 'attached.');
 
+    // Sample set configuration (not needed for our simple device)
     // hidDevice.controlTransfer(
     //   // bmRequestType
     //   usb.LIBUSB_RECIPIENT_DEVICE | usb.LIBUSB_REQUEST_TYPE_STANDARD | usb.LIBUSB_ENDPOINT_OUT,
@@ -320,30 +322,18 @@ export default function USBInterface(id: string, options?: Options) {
       return false;
     }
 
+    console.log('Reading...');
+
     return new Promise<ReadData>((resolve, reject) => {
-      device.controlTransfer(
-        // bmRequestType (constant for this control request)
-        usb.LIBUSB_REQUEST_TYPE_STANDARD |
-          usb.LIBUSB_ENDPOINT_IN |
-          usb.LIBUSB_RECIPIENT_DEVICE,
-        // bmRequest (constant for this control request)
-        0x08,
-        // wValue (MSB is report type, LSB is report number)
-        0,
-        // wIndex (interface number)
-        0,
-        // Number of bytes to receive
-        reportLength,
-        (err, data) => {
-          if (
-            err ||
-            // && err.errno != 4
-            !data
-          )
-            reject(err);
-          else resolve(parseINBuffer(data));
-        }
-      );
+      endpoint.transfer(reportLength, (err, data) => {
+        if (
+          err ||
+          // && err.errno != 4
+          !data
+        )
+          reject(err);
+        else resolve(parseINBuffer(data));
+      });
     });
   }
 
