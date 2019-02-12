@@ -19,32 +19,41 @@ function isDeviceMotorDriver(device: usb.Device) {
   return ven == deviceVid && prod == devicePid;
 }
 
+// Matches PacketFormats.h CommandMode
+export enum CommandMode {
+  MLXDebug,
+  ThreePhase,
+  Calibration,
+  Push,
+  Servo,
+}
+
 export type MLXCommand = {
-  mode: 'MLX';
+  mode: CommandMode.MLXDebug;
   data: Buffer;
   crc?: boolean;
 };
 
 export type ThreePhaseCommand = {
-  mode: 'ThreePhase';
+  mode: CommandMode.ThreePhase;
   A: number;
   B: number;
   C: number;
 };
 
 export type CalibrationCommand = {
-  mode: 'Calibration';
+  mode: CommandMode.Calibration;
   angle: number;
   amplitude: number;
 };
 
 export type PushCommand = {
-  mode: 'Push';
+  mode: CommandMode.Push;
   command: number;
 };
 
 export type ServoCommand = {
-  mode: 'Servo';
+  mode: CommandMode.Servo;
   command: number;
   pwmMode:
     | 'pwm'
@@ -350,26 +359,17 @@ export default function USBInterface(id: string, options?: Options) {
       return false;
     }
 
-    // Matches PacketFormats.h CommandMode
-    const CommandMode = {
-      MLXDebug: 0,
-      ThreePhaseDebug: 1,
-      Calibration: 2,
-      Push: 3,
-      Servo: 4,
-    } as { [mode: string]: number };
-
     let pos = 1;
     function writeNumBuffer(num: number, len = 1, signed = false) {
       if (signed) pos = writeBuffer.writeIntLE(num, pos, len);
       else pos = writeBuffer.writeUIntLE(num, pos, len);
     }
 
-    writeNumBuffer(CommandMode[command.mode]);
+    writeNumBuffer(command.mode);
 
     try {
       switch (command.mode) {
-        case 'MLX':
+        case CommandMode.MLXDebug:
           if (command.data === undefined) throw 'Argument `data` missing';
           if (!(command.data.length == 7 || command.data.length == 8))
             throw 'Argument `data` has incorrect length';
@@ -380,7 +380,7 @@ export default function USBInterface(id: string, options?: Options) {
           writeNumBuffer(generateCRC ? 1 : 0);
           break;
 
-        case 'ThreePhase':
+        case CommandMode.ThreePhase:
           if (command.A === undefined) throw 'Argument `A` missing';
           if (command.B === undefined) throw 'Argument `B` missing';
           if (command.C === undefined) throw 'Argument `C` missing';
@@ -390,7 +390,7 @@ export default function USBInterface(id: string, options?: Options) {
           writeNumBuffer(command.C, 2);
           break;
 
-        case 'Calibration':
+        case CommandMode.Calibration:
           if (command.angle === undefined) throw 'Argument `angle` missing';
           if (command.amplitude === undefined)
             throw 'Argument `amplitude` missing';
@@ -399,12 +399,12 @@ export default function USBInterface(id: string, options?: Options) {
           writeNumBuffer(command.amplitude, 1);
           break;
 
-        case 'Push':
+        case CommandMode.Push:
           if (command.command === undefined) throw 'Argument `command` missing';
           writeNumBuffer(command.command, 2, true);
           break;
 
-        case 'Servo':
+        case CommandMode.Servo:
           if (command.command === undefined) throw 'Argument `command` missing';
           if (command.pwmMode === undefined) throw 'Argument `pwmMode` missing';
 

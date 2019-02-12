@@ -2,6 +2,7 @@ import USBInterface, {
   MLXCommand,
   ReadData,
   addAttachListener,
+  CommandMode,
 } from './USBInterface';
 import readline from 'readline';
 import chalk from 'chalk';
@@ -38,10 +39,10 @@ async function main() {
 
     console.log('Starting');
 
-    const mode = 'MLX';
+    const mode = CommandMode.MLXDebug;
     const data = Buffer.allocUnsafe(7);
 
-    const command = { mode, data } as MLXCommand;
+    const command: MLXCommand = { mode, data };
 
     const MAPXYZ = 0x102a;
 

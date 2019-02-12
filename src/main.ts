@@ -1,6 +1,6 @@
 'use strict';
 
-import USB, { addAttachListener } from './USBInterface';
+import USB, { addAttachListener, CommandMode } from './USBInterface';
 
 import ExponentialFilter from './ExponentialFilter';
 import PositiveModulus from './PositiveModulus';
@@ -155,7 +155,7 @@ async function loadDataFromUSB(
     // Non-inclusive last step of calibration routine
     const End = cycle * cyclePerRev * revolutions;
 
-    const mode = 'Calibration';
+    const mode = CommandMode.Calibration;
 
     // Running smoothed version of alpha value
     let currentAngle: number;
