@@ -7,14 +7,7 @@ import USBInterface, {
 } from './USBInterface';
 import readline from 'readline';
 import chalk from 'chalk';
-import {
-  CRC,
-  Opcode,
-  parseMLXData,
-  makeMLXPacket,
-  EECode,
-  EEchallenge,
-} from './MLX90363';
+import { Opcode, parseMLXData, makeMLXPacket, EEchallenge } from './MLX90363';
 
 function delay(ms: number) {
   return new Promise(res => setTimeout(res, ms));
@@ -96,26 +89,38 @@ async function main() {
 
     console.log(result);
 
-    await prompt('EEWrite?');
-
-    const eeAddr = MAPXYZ;
     const eeKey = EEchallenge[(MAPXYZ / 2) & 0b11111];
-    const eeValue = 49664;
+    const eeValue = (result.data0 & ~0b11) | 1;
+
+    if (eeValue === result.data0) {
+      console.log('EEPROM already has expected value!');
+      return;
+    }
+
+    await prompt(
+      `EEWrite value: 0x${eeValue.toString(16)} to: 0x${addr.toString(16)}?`
+    );
 
     command.data = makeMLXPacket({
       opcode: Opcode.EEPROMWrite,
-      data8: [0, MAPXYZ],
+      data8: [0, addr],
       data16: [, eeKey, eeValue],
     });
 
+    console.log('Sending EEPROM Write');
+
     await sendCommand(command);
 
-    await delay(1);
+    // Don't need to read response from previous command
+
+    // Make sure MLX has some time
+    await delay(10);
 
     command.data = makeMLXPacket({
       opcode: Opcode.EEReadChallenge,
     });
 
+    console.log('Reading EEPROM Write challenge');
     await sendCommand(command);
 
     await usb.read();
@@ -125,14 +130,16 @@ async function main() {
 
     result = parseMLXData(data.mlxResponse);
 
-    console.log('EEWrite Response:', result);
-
     if (result.opcode == Opcode.EEPROMWrite_Status) {
       console.log('Wrong key. Used:', eeKey);
+      throw 'Wrong Key';
     }
+
+    console.log('EEWrite Challenge:', result);
 
     if (result.challengeKey === undefined) throw 'wtf2!';
 
+    // Magic "hashing" algorithm
     const keyEcho = result.challengeKey ^ 0x1234;
 
     command.data = makeMLXPacket({
@@ -140,33 +147,49 @@ async function main() {
       data16: [, keyEcho, ~keyEcho & 0xffff],
     });
 
+    console.log('Sending challenge response');
     await sendCommand(command);
 
     await usb.read();
     data = await usb.read();
 
-    if (data && parseMLXData(data.mlxResponse).opcode == Opcode.EEReadAnswer) {
-      // ok
-    } else throw 'not ok';
+    if (!data) throw '...';
+
+    result = parseMLXData(data.mlxResponse);
+
+    if (result.opcode != Opcode.EEReadAnswer) {
+      console.log('Received unexpected response to EEReadChallenge from MLX');
+      throw 'not ok';
+    }
+
+    console.log('Received ReadAnswer as expected');
 
     // Only need tEEWrite, which is 1ms, but whatever
-    await delay(10);
+    await delay(100);
 
     command.data = makeMLXPacket({ opcode: Opcode.NOP__Challenge });
 
+    console.log('Sending NOP to retrieve EEWrite status');
     await sendCommand(command);
 
     await usb.read();
     data = await usb.read();
 
     if (!data) throw 'wtf';
+
     result = parseMLXData(data.mlxResponse);
-    console.log('EE result:', result);
+    console.log('EE Write result:', result);
 
     if (result.opcode != Opcode.EEPROMWrite_Status) throw 'Ugh';
 
+    if (result.code === 1) console.log('EEPROM Write successful!');
+
     command.data = makeMLXPacket({ opcode: Opcode.Reboot });
+
+    console.log('Rebooting MLX');
     await sendCommand(command);
+
+    usb.close();
   });
 
   // Actually start looking for the usb device without automatic polling
