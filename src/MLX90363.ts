@@ -484,7 +484,7 @@ export type MLXPacket = {
 };
 
 export function makeMLXPacket(data: MLXPacket) {
-  const ret = Buffer.allocUnsafe(8);
+  const ret = Buffer.alloc(8);
 
   if (data.data8)
     data.data8.forEach((n, i) => {
