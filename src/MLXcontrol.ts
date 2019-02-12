@@ -216,35 +216,42 @@ async function main() {
     console.log('Starting');
 
     const mode = CommandMode.MLXDebug;
-    const data = Buffer.alloc(7);
+    const buff = Buffer.alloc(7);
 
-    const command: MLXCommand = { mode, data };
+    const command: MLXCommand = { mode, data: buff };
 
     const MAPXYZ = 0x102a;
 
     const addr = MAPXYZ;
 
     // Read same location twice for now...
-    data.writeUInt16LE(addr, 0);
-    data.writeUInt16LE(addr, 2);
-    data[6] = 0b11000000 | Opcode.MemoryRead;
+    buff.writeUInt16LE(addr, 0);
+    buff.writeUInt16LE(addr, 2);
+    buff[6] = 0b11000000 | Opcode.MemoryRead;
 
     let result;
 
     while (true) {
       await new Promise(res => usb.write(command, res));
-
-      await delay(5);
+      // Read once extra to force AVR to update internal data
+      await usb.read();
       const data = await usb.read();
+
+      const halfSecWaitMinimum = delay(500);
 
       if (data) {
         if (data.mlxResponseState > MlxResponseState.failedCRC) {
           result = parseMLXData(data.mlxResponse);
-          if (result.data0 !== undefined && false) break;
+          if (result.data0 !== undefined) break;
           else console.log('Received unexpected response:', result);
         } else console.log('CRC Invalid on device?');
       } else console.log('Response missing?');
-      await prompt('Again? ');
+      let v;
+      if ((v = (await prompt('Again? ')).trim())) {
+        buff[0] = parseInt(v, 16);
+      }
+
+      await halfSecWaitMinimum;
     }
 
     console.log(result);
