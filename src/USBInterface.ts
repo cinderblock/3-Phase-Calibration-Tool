@@ -337,8 +337,6 @@ export default function USBInterface(id: string, options?: Options) {
       return false;
     }
 
-    console.log('Reading...');
-
     return new Promise<ReadData>((resolve, reject) => {
       endpoint.transfer(reportLength, (err, data) => {
         if (
