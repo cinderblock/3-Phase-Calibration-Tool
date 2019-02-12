@@ -8,7 +8,7 @@
   "license": "MIT",
   "scripts": {
     "start": "ts-node ./src/main",
-    "configureMLX": "ts-node ./src/MLXcontrol",
+    "mlx": "ts-node ./src/MLXcontrol",
     "test": "ts-node ./src/Oscillate"
   },
   "dependencies": {
