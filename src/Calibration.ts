@@ -15,9 +15,9 @@ export default function processData(
     const minWidth = 5;
     const minPoints = 4;
 
-    var neighborhood: number[] = [];
+    let neighborhood: number[] = [];
 
-    var j = 0;
+    let j = 0;
 
     do {
       neighborhood = neighborhood.concat(
