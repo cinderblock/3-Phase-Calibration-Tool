@@ -47,12 +47,14 @@ function prompt(prompt: string) {
 async function main() {
   let def = 'None';
 
-  await addAttachListener(id => {
+  const stopListening = await addAttachListener(id => {
     console.log('\r', chalk.grey(new Date().toLocaleTimeString()), id);
     def = id;
   });
 
   const serial = (await prompt(`Serial Number [${def}]: `)).trim() || def;
+
+  stopListening();
 
   const data =
     (await prompt('Capture fresh? [No]: ')).trim().toLowerCase()[0] == 'y'
