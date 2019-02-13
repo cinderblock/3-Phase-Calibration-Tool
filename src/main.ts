@@ -33,15 +33,18 @@ function prompt(prompt: string) {
 }
 
 async function main() {
+  let def = 'None';
+
   await addAttachListener(id => {
     console.log('\r', chalk.grey(new Date().toLocaleTimeString()), id);
+    def = id;
   });
 
-  const Serial = (await prompt('Serial Number [None]: ')).trim() || 'None';
+  const serial = (await prompt(`Serial Number [${def}]: `)).trim() || def;
 
   const data =
     (await prompt('Capture fresh? [No]: ')).trim().toLowerCase()[0] == 'y'
-      ? loadDataFromUSB(Serial, cyclePerRev, Revs)
+      ? loadDataFromUSB(serial, cyclePerRev, Revs)
       : loadDataFromCSV(filename);
 
   const { forward, reverse, time } = await data;
@@ -51,7 +54,7 @@ async function main() {
   const block = DataIDBlock({
     lookupTable: processed.inverseTable,
     calibrationTime: time,
-    serial: Serial,
+    serial: serial,
   });
 
   let out = createWriteStream('record.csv');
@@ -77,7 +80,7 @@ async function main() {
 
   mem.set(0x4f80, block);
 
-  writeFileSync(Serial + '.hex', mem.asHexString().replace(/\n/g, EOL) + EOL);
+  writeFileSync(serial + '.hex', mem.asHexString().replace(/\n/g, EOL) + EOL);
 
   console.log('done');
 

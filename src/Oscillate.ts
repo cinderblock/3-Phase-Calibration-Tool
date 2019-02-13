@@ -19,7 +19,15 @@ const amplitude = 40;
 let calibrated = false;
 
 async function main() {
-  const serial = await prompt('Serial Number [None]: ');
+  let def = 'None';
+
+  await addAttachListener(id => {
+    console.log('\r', chalk.grey(new Date().toLocaleTimeString()), id);
+    def = id;
+  });
+
+  const serial = (await prompt(`Serial Number [${def}]: `)).trim() || def;
+
   const usb = USBInterface(serial);
 
   usb.events.on(
