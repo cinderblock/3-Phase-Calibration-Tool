@@ -17,6 +17,10 @@ import DataIDBlock from './DataIDBlock';
 import chalk from 'chalk';
 import MemoryMap from 'nrf-intel-hex';
 import { parseMLXData, makeMLXPacket, Opcode, Marker } from './MLX90363';
+import ChartjsNode from 'chartjs-node';
+
+// 600x600 canvas size
+var chartNode = new ChartjsNode(600, 600);
 
 const cyclePerRev = 15;
 const Revs = 4;
@@ -71,7 +75,7 @@ async function main() {
     serial: serial,
   });
 
-  let out = createWriteStream('record.csv');
+  let out = createWriteStream('Reordered Original Data.csv');
   out.write('step,forward,reverse' + EOL);
   for (let i = 0; i < processed.forwardData.length; i++) {
     out.write(
@@ -79,7 +83,37 @@ async function main() {
     );
   }
   out.close();
-  out = createWriteStream('fit.csv');
+
+  await chartNode.drawChart({
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: 'Forward',
+          data: processed.forwardData.map((y, x) => ({ x, y })),
+        },
+        {
+          label: 'Reverse',
+          data: processed.reverseData.map((y, x) => ({ x, y })),
+        },
+      ],
+    },
+    options: {
+      scales: {
+        yAxes: [
+          {
+            ticks: {
+              beginAtZero: true,
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  const dataChart = chartNode.writeImageToFile('image/png', './data.png');
+
+  out = createWriteStream('Smoothed.csv');
   out.write('step,forward,reverse,middle' + EOL);
   for (let i = 0; i < processed.forward.length; i++) {
     out.write(
@@ -94,11 +128,76 @@ async function main() {
 
   mem.set(0x4f80, block);
 
+  await dataChart;
+
+  await chartNode.drawChart({
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: 'Forward',
+          data: processed.forward.map((y, x) => ({ x, y })),
+        },
+        {
+          label: 'Reverse',
+          data: processed.reverse.map((y, x) => ({ x, y })),
+        },
+        {
+          label: 'Middle',
+          data: processed.middle.map((y, x) => ({ x, y })),
+        },
+      ],
+    },
+    options: {
+      scales: {
+        yAxes: [
+          {
+            ticks: {
+              beginAtZero: true,
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  const smoothedWrite = chartNode.writeImageToFile(
+    'image/png',
+    './Smoothed.png'
+  );
+
   writeFileSync(serial + '.hex', mem.asHexString().replace(/\n/g, EOL) + EOL);
 
   console.log('done');
 
   rl.close();
+
+  await smoothedWrite;
+
+  await chartNode.drawChart({
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: 'Lookup',
+          data: processed.inverseTable.map((y, x) => ({ x, y })),
+        },
+      ],
+    },
+    options: {
+      scales: {
+        yAxes: [
+          {
+            ticks: {
+              beginAtZero: true,
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  chartNode.writeImageToFile('image/png', './Lookup Table.png');
 }
 
 main();
