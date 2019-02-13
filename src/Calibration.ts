@@ -30,22 +30,44 @@ export default function processData(
     return average(neighborhood);
   }
 
-  // Smooth the
   const forward = forwardData.map(smoothNeighborhoodCircular);
   const reverse = reverseData.map(smoothNeighborhoodCircular);
 
-  // TODO: This is not quite the right average. We want to find the middle in x not y. Close enough.
   const middle = forward.map((v, i) => average([v, reverse[i]]));
+
+  const inverses: (number[] | undefined)[] = [];
+
+  for (let i = 0; i < middle.length; i++) {
+    const mlxValue = Math.round(middle[i]) % (1 << 14);
+
+    const angle = i % countsPerMechanicalRevolution;
+
+    let t;
+    if ((t = inverses[mlxValue])) t.push(angle);
+    else inverses[mlxValue] = [angle];
+  }
 
   const inverseTable: number[] = [];
 
-  // Only generate 12-bit lookup table (of 14)
-  for (let i = 0; i < 2 ** 12; i++)
-    inverseTable[i] = PositiveModulus(
-      // Get the
-      Math.round(smoothNeighborhoodCircular(0, i * 4, middle)),
-      countsPerMechanicalRevolution
-    );
+  // Only generate 12-bit inverted lookup table (of 14)
+  for (let i = 0; i < 2 ** 12; i++) {
+    const minWidth = 3;
+    const minPoints = middle.length / countsPerMechanicalRevolution;
+
+    let neighborhood: number[] = inverses[i * 4] || [];
+
+    for (let j = 1; j <= minWidth || neighborhood.length < minPoints; j++) {
+      neighborhood = neighborhood.concat(
+        // Inverses were stored in original 14-bit values
+        inverses[PositiveModulus(i * 4 - j, 2 ** 14)] || [],
+        inverses[PositiveModulus(i * 4 + j, 2 ** 14)] || []
+      );
+    }
+
+    inverseTable[i] =
+      Math.round(angleAverage(neighborhood, countsPerMechanicalRevolution)) %
+      countsPerMechanicalRevolution;
+  }
 
   return { forward, reverse, middle, forwardData, reverseData, inverseTable };
 }
