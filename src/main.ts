@@ -1,6 +1,11 @@
 'use strict';
 
-import USB, { addAttachListener, CommandMode } from './USBInterface';
+import USB, {
+  addAttachListener,
+  CommandMode,
+  MLXCommand,
+  Command,
+} from './USBInterface';
 
 import ExponentialFilter from './ExponentialFilter';
 import PositiveModulus from './PositiveModulus';
@@ -11,6 +16,7 @@ import { EOL } from 'os';
 import DataIDBlock from './DataIDBlock';
 import chalk from 'chalk';
 import MemoryMap from 'nrf-intel-hex';
+import { parseMLXData, makeMLXPacket, Opcode, Marker } from './MLX90363';
 
 const cyclePerRev = 15;
 const Revs = 4;
@@ -21,10 +27,16 @@ const maxAmplitude = 30;
 
 const filename = 'data.csv';
 
+const RecordXYZAlso = true;
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
+
+function delay(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
 function prompt(prompt: string) {
   return new Promise<string>((resolve, reject) => {
@@ -152,8 +164,10 @@ async function loadDataFromUSB(
     const usb = USB(serial);
 
     const logger = createWriteStream(filename);
+    const loggerXYZ = createWriteStream('XYZ' + filename);
 
     logger.write('step,alpha,dir' + EOL);
+    loggerXYZ.write('step,dir,x,y,z,alpha' + EOL);
 
     // Non-inclusive last step of calibration routine
     const End = cycle * cyclePerRev * revolutions;
@@ -161,7 +175,7 @@ async function loadDataFromUSB(
     const mode = CommandMode.Calibration;
 
     // Running smoothed version of alpha value
-    let currentAngle: number;
+    let alpha: number;
 
     // Current calibration direction
     let dir = 1;
@@ -172,38 +186,88 @@ async function loadDataFromUSB(
     // Start below "0" to give mechanics time to settle
     let step = -cycle;
 
-    // Smooth data from motor since we're getting MLX readings constantly.
-    // TODO: Make this circular... This is wrong during alpha wrap.
-    const filter = ExponentialFilter(0.1);
+    const GetAlpha: MLXCommand = {
+      mode: CommandMode.MLXDebug,
+      data: makeMLXPacket({
+        opcode: Opcode.GET1,
+        marker: Marker.Alpha,
+        data16: [, 0xffff],
+      }),
+    };
+    const GetXYZ: MLXCommand = {
+      mode: CommandMode.MLXDebug,
+      data: makeMLXPacket({
+        opcode: Opcode.GET1,
+        marker: Marker.XYZ,
+        data16: [, 0xffff],
+      }),
+    };
+    const MLXNOP: MLXCommand = {
+      mode: CommandMode.MLXDebug,
+      data: makeMLXPacket({ opcode: Opcode.NOP__Challenge }),
+    };
 
-    usb.events.on(
-      'data',
-      (data: { status: string; fault: string; rawAngle: number }) => {
-        // Top bit specifies if device already thinks it is calibrated
-        currentAngle = data.rawAngle;
-      }
-    );
+    function sendCommand(command: Command) {
+      return new Promise(res => usb.write(command, res));
+    }
 
-    usb.events.on('status', (s: string) => {
+    usb.events.on('status', async (s: string) => {
       if (s != 'ok') return;
 
       // Motor connected
 
       console.log('Starting');
 
-      const i = setInterval(async () => {
+      while (true) {
         // Only record data in range of good motion
         if (step >= 0 && step < End) {
-          if (currentAngle === undefined) {
-            console.log('Have not yet received MLX data...');
-            usb.write({ mode, amplitude: 0, angle: 0 }, () => {
-              usb.close();
-            });
+          await sendCommand(GetAlpha);
+          // Give sensor time to make reading
+          await delay(2);
+          await sendCommand(GetXYZ);
+
+          const xyzDelay = delay(2);
+
+          await usb.read();
+          const data = await usb.read();
+          if (!data) throw 'Data missing';
+
+          if (!data.mlxParsedResponse) {
+            console.log('Response not parsable');
+            continue;
           }
 
-          (dir > 0 ? forward : reverse)[step] = currentAngle;
+          if (data.mlxParsedResponse.opcode == Opcode.Error_frame) {
+            console.log('Error frame. Error:', data.mlxParsedResponse.error);
+            throw 'Received Error Frame';
+          }
 
-          logger.write(`${step},${currentAngle},${dir}${EOL}`);
+          if (data.mlxParsedResponse.opcode == Opcode.NothingToTransmit) {
+            throw 'Nothing to transmit';
+          }
+
+          const { alpha } = data.mlxParsedResponse;
+
+          (dir > 0 ? forward : reverse)[step] = alpha;
+
+          await xyzDelay;
+
+          await sendCommand(MLXNOP);
+          await delay(2);
+
+          await usb.read();
+          const dataXYZ = await usb.read();
+          if (!dataXYZ) throw 'Data missing';
+
+          if (!dataXYZ.mlxParsedResponse) {
+            console.log('Response not parsable');
+            continue;
+          }
+
+          const { x, y, z } = dataXYZ.mlxParsedResponse;
+
+          logger.write(`${step},${alpha},${dir}${EOL}`);
+          loggerXYZ.write(`${step},${dir},${x},${y},${z},${alpha}${EOL}`);
         }
 
         // Keep going one cycle past the End before turning around
@@ -214,19 +278,18 @@ async function loadDataFromUSB(
 
         // All done
         if (dir < 0 && step <= 0) {
-          clearInterval(i);
-
           const time = new Date();
 
           // Write to file as ms since Unix epoch
           logger.end(time.valueOf() + EOL);
+          loggerXYZ.end();
 
           usb.write({ mode, amplitude: 0, angle: 0 }, () => {
             usb.close();
           });
 
           resolve({ forward, reverse, time });
-          return;
+          break;
         }
 
         // Normal step
@@ -237,11 +300,11 @@ async function loadDataFromUSB(
 
         const angle = PositiveModulus(step, cycle);
 
-        usb.write({ mode, amplitude, angle });
-      }, 7);
+        await sendCommand({ mode, amplitude, angle });
+      }
     });
 
     // Actually start looking for the usb device
-    usb.start();
+    usb.start(false);
   });
 }

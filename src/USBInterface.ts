@@ -5,6 +5,7 @@ import usb, { InEndpoint } from 'usb';
 // import StrictEventEmitter from './strict-event-emitter-types';
 
 import clipRange from './clipRange';
+import { parseMLXData, MLXPacket } from './MLX90363';
 
 const deviceVid = 0xdead;
 const devicePid = 0xbeef;
@@ -109,7 +110,7 @@ export type ReadData = {
   position: number;
   velocity: number;
   // Store full word. Get the low 14 bits as actual raw angle
-  rawAngle: number;
+  statusBitsWord: number;
   // Top bit specifies if controller thinks it is calibrated
   calibrated: boolean;
   cpuTemp: number;
@@ -118,8 +119,10 @@ export type ReadData = {
   AS: number;
   BS: number;
   CS: number;
-  mlxResponse: Buffer;
-  mlxResponseState: MlxResponseState;
+  mlxResponse?: Buffer;
+  mlxResponseState?: MlxResponseState;
+  // TODO: Strict Typing
+  mlxParsedResponse?: any;
 };
 
 interface Events {
@@ -162,12 +165,11 @@ async function openAndGetMotorSerial(dev: usb.Device) {
 
 type Options = {};
 
-export function parseINBuffer(data: Buffer): ReadData | undefined {
+export function parseINBuffer(data: Buffer): ReadData {
   // console.log('data:', data);
 
   if (data.length != reportLength) {
-    console.log('Invalid data:', data);
-    return;
+    throw 'Invalid data';
   }
 
   let i = 0;
@@ -183,27 +185,59 @@ export function parseINBuffer(data: Buffer): ReadData | undefined {
     return ret;
   }
 
-  let temp: number;
-
   // Matches USB/PacketFormats.h USBDataINShape
-  return {
-    state: read(1),
-    fault: read(1),
-    position: read(2),
-    velocity: read(2, true),
-    // Store full word. Get the low 14 bits as actual raw angle
-    rawAngle: (temp = read(2)) & ((1 << 14) - 1),
-    // Top bit specifies if controller thinks it is calibrated
-    calibrated: !!(temp & (1 << 15)),
-    cpuTemp: read(2),
-    current: read(2, true),
-    ain0: read(2),
-    AS: read(2),
-    BS: read(2),
-    CS: read(2),
-    mlxResponse: readBuffer(8),
-    mlxResponseState: read(1),
-  };
+  const state = read(1);
+  const fault = read(1);
+  const position = read(2);
+  const velocity = read(2, true);
+  // Store full word. Get the low 14 bits as actual raw angle
+  const statusBitsWord = read(2);
+  const cpuTemp = read(2);
+  const current = read(2, true);
+  const ain0 = read(2);
+  const AS = read(2);
+  const BS = read(2);
+  const CS = read(2);
+
+  const mlxResponse = readBuffer(8);
+  const mlxResponseState = read(1);
+
+  // Top bit specifies if controller thinks it is calibrated
+  const calibrated = !!(statusBitsWord & (1 << 15));
+  const mlxDataValid = !!(statusBitsWord & (1 << 14));
+
+  return mlxDataValid
+    ? {
+        state,
+        fault,
+        position,
+        velocity,
+        statusBitsWord,
+        calibrated,
+        cpuTemp,
+        current,
+        ain0,
+        AS,
+        BS,
+        CS,
+        mlxResponse,
+        mlxResponseState,
+        mlxParsedResponse: parseMLXData(mlxResponse),
+      }
+    : {
+        state,
+        fault,
+        position,
+        velocity,
+        statusBitsWord,
+        calibrated,
+        cpuTemp,
+        current,
+        ain0,
+        AS,
+        BS,
+        CS,
+      };
 }
 
 export async function addAttachListener(
