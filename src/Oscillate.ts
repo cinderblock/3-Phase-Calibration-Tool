@@ -1,5 +1,6 @@
-import USBInterface from './USBInterface';
+import USBInterface, { CommandMode, addAttachListener } from './USBInterface';
 import readline from 'readline';
+import chalk from 'chalk';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -12,7 +13,7 @@ function prompt(prompt: string) {
   });
 }
 
-const mode = 'Push';
+const mode = CommandMode.Push;
 
 const amplitude = 40;
 
@@ -32,10 +33,12 @@ async function main() {
 
   usb.events.on(
     'data',
-    (data: { status: string; fault: string; rawAngle: number }) => {
-      // Top bit specifies if device already thinks it is calibrated
-      data.rawAngle &= (1 << 14) - 1;
-
+    (data: {
+      status: string;
+      fault: string;
+      rawAngle: number;
+      calibrated: boolean;
+    }) => {
       if (!calibrated && data.calibrated) {
         calibrated = true;
         console.log('Calibrated!');
