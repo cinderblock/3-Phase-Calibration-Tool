@@ -4,8 +4,13 @@ import PositiveModulus from './PositiveModulus';
 export default function processData(
   forwardData: number[],
   reverseData: number[],
-  modulus: number
+  countsPerMechanicalRevolution: number
 ) {
+  function average(angles: number[]) {
+    return angleAverage(angles, 1 << 14);
+  }
+
+  // Helper function
   function smoothNeighborhoodCircular(value: number, i: number, arr: number[]) {
     const minWidth = 5;
     const minPoints = 4;
@@ -22,20 +27,24 @@ export default function processData(
       j++;
     } while (j <= minWidth || neighborhood.length < minPoints);
 
-    return angleAverage(neighborhood, modulus);
+    return average(neighborhood);
   }
 
+  // Smooth the
   const forward = forwardData.map(smoothNeighborhoodCircular);
   const reverse = reverseData.map(smoothNeighborhoodCircular);
 
-  const middle = forward.map((v, i) => angleAverage([v, reverse[i]], modulus));
+  // TODO: This is not quite the right average. We want to find the middle in x not y. Close enough.
+  const middle = forward.map((v, i) => average([v, reverse[i]]));
 
   const inverseTable: number[] = [];
 
+  // Only generate 12-bit lookup table (of 14)
   for (let i = 0; i < 2 ** 12; i++)
     inverseTable[i] = PositiveModulus(
+      // Get the
       Math.round(smoothNeighborhoodCircular(0, i * 4, middle)),
-      modulus
+      countsPerMechanicalRevolution
     );
 
   return { forward, reverse, middle, forwardData, reverseData, inverseTable };
