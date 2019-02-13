@@ -479,12 +479,15 @@ export function parseMLXData(data: Buffer) {
 
 export type MLXPacket = {
   opcode: Opcode;
+  marker?: Marker;
   data8?: (undefined | number)[];
   data16?: (undefined | number)[];
 };
 
 export function makeMLXPacket(data: MLXPacket) {
   const ret = Buffer.alloc(8);
+
+  const marker = data.marker === undefined ? Marker.Opcode : data.marker;
 
   if (data.data8)
     data.data8.forEach((n, i) => {
@@ -496,7 +499,7 @@ export function makeMLXPacket(data: MLXPacket) {
       if (n !== undefined) ret.writeUInt16LE(n, i * 2);
     });
 
-  ret[6] = 0b11000000 | data.opcode;
+  ret[6] = (marker << 6) | data.opcode;
 
   ret[7] = CRC(ret);
   return ret;
