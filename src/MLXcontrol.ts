@@ -94,7 +94,7 @@ async function main() {
     console.log(result);
 
     const eeKey = EEchallenge[(MAPXYZ / 2) & 0b11111];
-    const eeValue = (result.data0 & ~0b11) | 1;
+    const eeValue = (result.data0 & ~0b111) | 0;
 
     if (eeValue === result.data0) {
       console.log('EEPROM already has expected value!');
