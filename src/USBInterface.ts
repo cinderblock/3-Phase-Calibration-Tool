@@ -389,9 +389,10 @@ export default function USBInterface(id: string, options?: Options) {
           err ||
           // && err.errno != 4
           !data
-        )
+        ) {
+          console.log('Rejected trying to receive.', data);
           reject(err);
-        else resolve(parseINBuffer(data));
+        } else resolve(parseINBuffer(data));
       });
     });
   }
