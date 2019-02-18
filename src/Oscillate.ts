@@ -44,7 +44,7 @@ async function main() {
         console.log('Calibrated!');
       }
 
-      console.log({ calibrated, ...data });
+      // console.log({ calibrated, ...data });
     }
   );
 
