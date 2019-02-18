@@ -388,13 +388,18 @@ export function parseMLXData(data: Buffer) {
         diagnosticStatus,
       };
     case Marker.XYZ:
+      const b = Buffer.allocUnsafe(6);
+      data.copy(b);
+      for (let i = 0; i < 3; i++)
+        if (b[i * 2 + 1] & 0b100000) b[i * 2 + 1] |= 0b11000000;
+
       return {
         crc,
         roll,
         marker,
-        x: data.readInt16LE(0) & 0x3fff,
-        y: data.readInt16LE(2) & 0x3fff,
-        z: data.readInt16LE(4) & 0x3fff,
+        x: b.readInt16LE(0),
+        y: b.readInt16LE(2),
+        z: b.readInt16LE(4),
         diagnosticStatus,
       };
     case Marker.Opcode:
