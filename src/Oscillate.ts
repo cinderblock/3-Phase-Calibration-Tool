@@ -62,7 +62,7 @@ async function main() {
     const i = setInterval(async () => {
       const command =
         amplitude *
-        Math.sin(((Date.now() - zero) / 1000 / Frequency) * 2 * Math.PI);
+        Math.sin(((Date.now() - zero) / 1000) * 2 * Math.PI * Frequency);
 
       usb.write({ mode, command });
     }, 1000 / 60);
