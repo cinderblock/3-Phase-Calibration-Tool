@@ -5,33 +5,31 @@ import USB, {
   CommandMode,
   MLXCommand,
   Command,
+  ReadData,
 } from './USBInterface';
 
-import ExponentialFilter from './ExponentialFilter';
 import PositiveModulus from './PositiveModulus';
-import processData from './Calibration';
+import processData, { ProcessedData } from './Calibration';
 import readline from 'readline';
 import { createReadStream, createWriteStream, writeFileSync } from 'fs';
 import { EOL } from 'os';
 import DataIDBlock from './DataIDBlock';
 import chalk from 'chalk';
 import MemoryMap from 'nrf-intel-hex';
-import { parseMLXData, makeMLXPacket, Opcode, Marker } from './MLX90363';
+import { makeMLXPacket, Opcode, Marker } from './MLX90363';
 import ChartjsNode from 'chartjs-node';
 
-// 600x600 canvas size
-var chartNode = new ChartjsNode(600, 600);
+const chartWidth = 600;
+const chartHeight = chartWidth;
 
 const cyclePerRev = 15;
 const Revs = 4;
 
 const cycle = 3 * 256;
 
-const maxAmplitude = 30;
+const maxAmplitude = 50;
 
-const filename = 'data.csv';
-
-const RecordXYZAlso = true;
+const rawDataFilename = 'data.csv';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -63,9 +61,12 @@ async function main() {
   const data =
     (await prompt('Capture fresh? [No]: ')).trim().toLowerCase()[0] == 'y'
       ? loadDataFromUSB(serial, cyclePerRev, Revs)
-      : loadDataFromCSV(filename);
+      : loadDataFromCSV(rawDataFilename);
+
+  rl.close();
 
   const { forward, reverse, time } = await data;
+
   // Take raw forward/reverse calibration data and calculate smoothed, averaged, and inverted
   const processed = processData(forward, reverse, cyclePerRev * cycle);
 
@@ -75,129 +76,24 @@ async function main() {
     serial: serial,
   });
 
-  let out = createWriteStream('Reordered Original Data.csv');
-  out.write('step,forward,reverse' + EOL);
-  for (let i = 0; i < processed.forwardData.length; i++) {
-    out.write(
-      `${i},${processed.forwardData[i]},${processed.reverseData[i]}${EOL}`
-    );
-  }
-  out.close();
+  console.log('Done recording. Generating outputs.');
 
-  await chartNode.drawChart({
-    type: 'scatter',
-    data: {
-      datasets: [
-        {
-          label: 'Forward',
-          data: processed.forwardData.map((y, x) => ({ x, y })),
-        },
-        {
-          label: 'Reverse',
-          data: processed.reverseData.map((y, x) => ({ x, y })),
-        },
-      ],
-    },
-    options: {
-      scales: {
-        yAxes: [
-          {
-            ticks: {
-              beginAtZero: true,
-            },
-          },
-        ],
-      },
-    },
-  });
-
-  const dataChart = chartNode.writeImageToFile('image/png', './data.png');
-
-  out = createWriteStream('Smoothed.csv');
-  out.write('step,forward,reverse,middle' + EOL);
-  for (let i = 0; i < processed.forward.length; i++) {
-    out.write(
-      `${i},${processed.forward[i]},${processed.reverse[i]},${
-        processed.middle[i]
-      }${EOL}`
-    );
-  }
-  out.close();
-
-  const mem = new MemoryMap();
-
-  mem.set(0x4f80, block);
-
-  await dataChart;
-
-  await chartNode.drawChart({
-    type: 'scatter',
-    data: {
-      datasets: [
-        {
-          label: 'Forward',
-          data: processed.forward.map((y, x) => ({ x, y })),
-        },
-        {
-          label: 'Reverse',
-          data: processed.reverse.map((y, x) => ({ x, y })),
-        },
-        {
-          label: 'Middle',
-          data: processed.middle.map((y, x) => ({ x, y })),
-        },
-      ],
-    },
-    options: {
-      scales: {
-        yAxes: [
-          {
-            ticks: {
-              beginAtZero: true,
-            },
-          },
-        ],
-      },
-    },
-  });
-
-  const smoothedWrite = chartNode.writeImageToFile(
-    'image/png',
-    './Smoothed.png'
-  );
-
-  writeFileSync(serial + '.hex', mem.asHexString().replace(/\n/g, EOL) + EOL);
+  await Promise.all([
+    writeRawDataToPNG('data.png', processed).then(() =>
+      console.log('Raw PNG Written')
+    ),
+    // writeSortedDataToFile('Reordered Original Data.csv', processed).then(() => console.log('Sorted Data Written')),
+    // writeSmoothedDataToFile('Smoothed.csv', processed).then(() => console.log('Smoothed Data Written')),
+    // writeSmoothedDataToPNG('Smoothed.png', processed).then(() => console.log('Smoothed PNG Written')),
+    writeLookupTableToPNG('Lookup Table.png', processed).then(() =>
+      console.log('Lookup Table PNG Written')
+    ),
+    writeCalibrationBlock(serial + '.hex', block).then(() =>
+      console.log('HEX Block Written')
+    ),
+  ]);
 
   console.log('done');
-
-  rl.close();
-
-  await smoothedWrite;
-
-  await chartNode.drawChart({
-    type: 'scatter',
-    data: {
-      datasets: [
-        {
-          label: 'Lookup',
-          data: processed.inverseTable.map((y, x) => ({ x, y })),
-        },
-      ],
-    },
-    options: {
-      scales: {
-        yAxes: [
-          {
-            ticks: {
-              beginAtZero: true,
-            },
-          },
-        ],
-      },
-    },
-  });
-
-  chartNode.writeImageToFile('image/png', './Lookup Table.png');
 }
 
 main();
@@ -264,8 +160,8 @@ async function loadDataFromUSB(
     const reverse: number[] = [];
     const usb = USB(serial);
 
-    const logger = createWriteStream(filename);
-    const loggerXYZ = createWriteStream('XYZ' + filename);
+    const logger = createWriteStream(rawDataFilename);
+    const loggerXYZ = createWriteStream('XYZ' + rawDataFilename);
 
     logger.write('step,alpha,dir' + EOL);
     loggerXYZ.write('step,dir,x,y,z,alpha' + EOL);
@@ -309,7 +205,14 @@ async function loadDataFromUSB(
     };
 
     function sendCommand(command: Command) {
-      return new Promise(res => usb.write(command, res));
+      return new Promise(res => {
+        try {
+          usb.write(command, res);
+        } catch (e) {
+          console.log('not Sent because:', e);
+          res();
+        }
+      });
     }
 
     usb.events.on('status', async (s: string) => {
@@ -320,30 +223,47 @@ async function loadDataFromUSB(
       console.log('Starting');
 
       while (true) {
+        await delay(10);
         // Only record data in range of good motion
         if (step >= 0 && step < End) {
           await sendCommand(GetAlpha);
           // Give sensor time to make reading
-          await delay(2);
+          await delay(5);
           await sendCommand(GetXYZ);
 
-          const xyzDelay = delay(2);
+          const xyzDelay = delay(5);
 
+          // Double read to force reading of newest data
           await usb.read();
-          const data = await usb.read();
-          if (!data) throw 'Data missing';
+          let data: false | ReadData;
 
-          if (!data.mlxParsedResponse) {
-            console.log('Response not parsable');
-            continue;
+          await delay(1);
+
+          while (true) {
+            data = await usb.read();
+            if (!data) throw 'Data missing?';
+            if (!data.mlxParsedResponse) {
+              console.log('No parsed response', step);
+              await delay(5);
+              continue;
+            } else break;
           }
 
           if (data.mlxParsedResponse.opcode == Opcode.Error_frame) {
-            console.log('Error frame. Error:', data.mlxParsedResponse.error);
+            console.log(
+              'Error frame. Error:',
+              data.mlxParsedResponse.error,
+              step
+            );
+            await delay(5);
+            continue;
             throw 'Received Error Frame';
           }
 
           if (data.mlxParsedResponse.opcode == Opcode.NothingToTransmit) {
+            console.log('NTT', step);
+            await delay(5);
+            continue;
             throw 'Nothing to transmit';
           }
 
@@ -354,18 +274,21 @@ async function loadDataFromUSB(
           await xyzDelay;
 
           await sendCommand(MLXNOP);
-          await delay(2);
+          await delay(5);
 
+          // Double read to force reading of newest data
           await usb.read();
-          const dataXYZ = await usb.read();
-          if (!dataXYZ) throw 'Data missing';
 
-          if (!dataXYZ.mlxParsedResponse) {
-            console.log('Response not parsable');
+          // while (true) {
+          data = await usb.read();
+          if (!data) throw 'Data missing?';
+          if (!data.mlxParsedResponse) {
+            await delay(5);
             continue;
           }
+          // }
 
-          const { x, y, z } = dataXYZ.mlxParsedResponse;
+          const { x, y, z } = data.mlxParsedResponse;
 
           logger.write(`${step},${alpha},${dir}${EOL}`);
           loggerXYZ.write(`${step},${dir},${x},${y},${z},${alpha}${EOL}`);
@@ -408,4 +331,144 @@ async function loadDataFromUSB(
     // Actually start looking for the usb device
     usb.start(false);
   });
+}
+
+async function writeSortedDataToFile(
+  filename: string,
+  processed: ProcessedData
+) {
+  const out = createWriteStream(filename);
+  out.write('step,forward,reverse' + EOL);
+  for (let i = 0; i < processed.forwardData.length; i++) {
+    out.write(
+      `${i},${processed.forwardData[i]},${processed.reverseData[i]}${EOL}`
+    );
+  }
+  out.close();
+}
+
+async function writeRawDataToPNG(filename: string, processed: ProcessedData) {
+  const chartNode = new ChartjsNode(chartWidth, chartHeight);
+  await chartNode.drawChart({
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: 'Forward',
+          data: processed.forwardData.map((y, x) => ({ x, y })),
+        },
+        {
+          label: 'Reverse',
+          data: processed.reverseData.map((y, x) => ({ x, y })),
+        },
+      ],
+    },
+    options: {
+      scales: {
+        yAxes: [
+          {
+            ticks: {
+              beginAtZero: true,
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  chartNode.writeImageToFile('image/png', './data.png');
+}
+
+async function writeSmoothedDataToFile(
+  filename: string,
+  processed: ProcessedData
+) {
+  const out = createWriteStream(filename);
+  out.write('step,forward,reverse,middle' + EOL);
+  for (let i = 0; i < processed.forward.length; i++) {
+    out.write(
+      `${i},${processed.forward[i]},${processed.reverse[i]},${
+        processed.middle[i]
+      }${EOL}`
+    );
+  }
+  out.close();
+}
+
+async function writeSmoothedDataToPNG(
+  filename: string,
+  processed: ProcessedData
+) {
+  const chartNode = new ChartjsNode(chartWidth, chartHeight);
+  await chartNode.drawChart({
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: 'Forward',
+          data: processed.forward.map((y, x) => ({ x, y })),
+        },
+        {
+          label: 'Reverse',
+          data: processed.reverse.map((y, x) => ({ x, y })),
+        },
+        {
+          label: 'Middle',
+          data: processed.middle.map((y, x) => ({ x, y })),
+        },
+      ],
+    },
+    options: {
+      scales: {
+        yAxes: [
+          {
+            ticks: {
+              beginAtZero: true,
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  chartNode.writeImageToFile('image/png', './Smoothed.png');
+}
+
+async function writeCalibrationBlock(filename: string, block: Buffer) {
+  const mem = new MemoryMap();
+
+  mem.set(0x4f80, block);
+
+  writeFileSync(filename, mem.asHexString().replace(/\n/g, EOL) + EOL);
+}
+
+async function writeLookupTableToPNG(
+  filename: string,
+  processed: ProcessedData
+) {
+  const chartNode = new ChartjsNode(chartWidth, chartHeight);
+  await chartNode.drawChart({
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: 'Lookup',
+          data: processed.inverseTable.map((y, x) => ({ x, y })),
+        },
+      ],
+    },
+    options: {
+      scales: {
+        yAxes: [
+          {
+            ticks: {
+              beginAtZero: true,
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  chartNode.writeImageToFile('image/png', filename);
 }
