@@ -27,7 +27,7 @@ function prompt(prompt: string) {
 async function main() {
   let def = 'None';
 
-  await addAttachListener(id => {
+  const stopListening = await addAttachListener(id => {
     console.log('\r', chalk.grey(new Date().toLocaleTimeString()), id);
     def = id;
   });
@@ -35,6 +35,8 @@ async function main() {
   const serial = (await prompt(`Serial Number [${def}]: `)).trim() || def;
 
   const usb = USBInterface(serial);
+
+  stopListening();
 
   usb.events.on('status', async (s: string) => {
     if (s != 'ok') return;
@@ -49,6 +51,7 @@ async function main() {
     const command: MLXCommand = { mode, data: buff };
 
     function sendCommand(command: MLXCommand) {
+      // console.log(command);
       return new Promise(res => usb.write(command, res));
     }
 
@@ -76,7 +79,7 @@ async function main() {
 
       const halfSecWaitMinimum = delay(500);
 
-      if (data) {
+      if (data && data.mlxResponseState && data.mlxResponse) {
         if (data.mlxResponseState > MlxResponseState.failedCRC) {
           result = parseMLXData(data.mlxResponse);
           if (result.data0 !== undefined) break;
@@ -98,12 +101,16 @@ async function main() {
 
     if (eeValue === result.data0) {
       console.log('EEPROM already has expected value!');
+      usb.close();
+      rl.close();
       return;
     }
 
     await prompt(
       `EEWrite value: 0x${eeValue.toString(16)} to: 0x${addr.toString(16)}?`
     );
+
+    rl.close();
 
     command.data = makeMLXPacket({
       opcode: Opcode.EEPROMWrite,
@@ -130,7 +137,7 @@ async function main() {
     await usb.read();
     let data = await usb.read();
 
-    if (!data) throw 'wtf!';
+    if (!data || !data.mlxResponse) throw 'wtf!';
 
     result = parseMLXData(data.mlxResponse);
 
@@ -157,7 +164,7 @@ async function main() {
     await usb.read();
     data = await usb.read();
 
-    if (!data) throw '...';
+    if (!data || !data.mlxResponse) throw '...';
 
     result = parseMLXData(data.mlxResponse);
 
@@ -179,7 +186,7 @@ async function main() {
     await usb.read();
     data = await usb.read();
 
-    if (!data) throw 'wtf';
+    if (!data || !data.mlxResponse) throw 'wtf';
 
     result = parseMLXData(data.mlxResponse);
     console.log('EE Write result:', result);
