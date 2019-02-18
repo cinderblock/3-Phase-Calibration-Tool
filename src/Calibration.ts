@@ -1,11 +1,20 @@
 import angleAverage from './AngleAverage';
 import PositiveModulus from './PositiveModulus';
 
+export type ProcessedData = {
+  forward: number[];
+  middle: number[];
+  reverse: number[];
+  forwardData: number[];
+  reverseData: number[];
+  inverseTable: number[];
+};
+
 export default function processData(
   forwardData: number[],
   reverseData: number[],
   countsPerMechanicalRevolution: number
-) {
+): ProcessedData {
   function average(angles: number[]) {
     return angleAverage(angles, 1 << 14);
   }
