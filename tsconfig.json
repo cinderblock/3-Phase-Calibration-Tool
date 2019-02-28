@@ -6,8 +6,9 @@
     "lib": ["es2018"],
     "noImplicitAny": true,
     "strict": true,
-    "baseUrl": "src/types",
-    "types": ["node"],
-    "typeRoots": ["src/types"]
+    "baseUrl": "src/types"
+    // "types": ["node"],
+    // "typeRoots": ["src/types"]
+    // "typeRoots": ["node_modules/@types", "node_modules", "src/types"]
   }
 }
