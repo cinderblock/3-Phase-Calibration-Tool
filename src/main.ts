@@ -195,7 +195,9 @@ async function main() {
     },
   });
 
-  chartNode.writeImageToFile('image/png', './Lookup Table.png');
+  await chartNode.writeImageToFile('image/png', './Lookup Table.png');
+
+  console.log('All done.');
 }
 
 main();
