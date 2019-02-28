@@ -121,8 +121,7 @@ export type ReadData = {
   CS: number;
   mlxResponse?: Buffer;
   mlxResponseState?: MlxResponseState;
-  // TODO: Strict Typing
-  mlxParsedResponse?: any;
+  mlxParsedResponse?: ReturnType<typeof parseMLXData>;
 };
 
 interface Events {
