@@ -294,7 +294,7 @@ async function loadDataFromUSB(
         }
 
         // Keep going one cycle past the End before turning around
-        if (dir > 0 && step > End + cycle) {
+        if (dir > 0 && step > End + cycle / 2) {
           console.log('Reversing');
           dir = -dir;
         }
