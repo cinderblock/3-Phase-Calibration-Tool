@@ -312,7 +312,7 @@ async function loadDataFromUSB(
       return new Promise(res => usb.write(command, res));
     }
 
-    usb.events.on('status', async (s: string) => {
+    usb.events.once('status', async (s: string) => {
       if (s != 'ok') return;
 
       // Motor connected
