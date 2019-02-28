@@ -6,8 +6,6 @@ import USB, {
   MLXCommand,
   Command,
 } from './USBInterface';
-
-import ExponentialFilter from './ExponentialFilter';
 import PositiveModulus from './PositiveModulus';
 import processData from './Calibration';
 import readline from 'readline';
