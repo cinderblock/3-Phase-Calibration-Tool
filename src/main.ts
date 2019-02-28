@@ -20,16 +20,14 @@ import ChartjsNode from 'chartjs-node';
 // 600x600 canvas size
 var chartNode = new ChartjsNode(600, 600);
 
-const cyclePerRev = 15;
-const Revs = 4;
-
-const cycle = 3 * 256;
-
-const maxAmplitude = 30;
+// Main Calibration Constants
+const cyclePerRev = 7;
+const Revs = 2;
+const maxAmplitude = 5;
 
 const filename = 'data.csv';
 
-const RecordXYZAlso = true;
+const cycle = 3 * 256;
 
 const rl = readline.createInterface({
   input: process.stdin,
