@@ -15,7 +15,7 @@ import { EOL } from 'os';
 import DataIDBlock from './DataIDBlock';
 import chalk from 'chalk';
 import MemoryMap from 'nrf-intel-hex';
-import { makeMLXPacket, Opcode, Marker } from './MLX90363';
+import { makeMLXPacket, Opcode, Marker, ErrorCode } from './MLX90363';
 import ChartjsNode from 'chartjs-node';
 
 const chartWidth = 600;
@@ -214,6 +214,19 @@ async function loadDataFromUSB(
       });
     }
 
+    let errors = 0;
+    setInterval(() => {
+      errors -= 0.1;
+    }, 100);
+    function maybeThrow(message: String) {
+      errors++;
+      if (errors < 5) {
+        console.error('Error suppressed:', message);
+        return;
+      }
+      throw message;
+    }
+
     usb.events.once('status', async (s: string) => {
       if (s != 'ok') return;
 
@@ -222,73 +235,80 @@ async function loadDataFromUSB(
       console.log('Starting');
 
       while (true) {
-        await delay(10);
+        await sendCommand(GetAlpha);
+        // Give sensor time to make reading
+        await delay(2);
+        await sendCommand(GetXYZ);
+
+        const xyzDelay = delay(1);
+
+        // Force AVR USB to update USB buffer data once
+        let data = await usb.read();
+
+        do {
+          data = await usb.read();
+          if (!data) throw 'Data missing';
+        } while (!data.mlxParsedResponse);
+
+        if (data.mlxParsedResponse.opcode == Opcode.Error_frame) {
+          console.log(
+            'Error frame. Error:',
+            data.mlxParsedResponse.error === undefined
+              ? 'undefined??'
+              : ErrorCode[data.mlxParsedResponse.error]
+          );
+          maybeThrow('Received Error Frame');
+          continue;
+        }
+
+        if (data.mlxParsedResponse.opcode == Opcode.NothingToTransmit) {
+          maybeThrow('Nothing to transmit');
+          continue;
+        }
+
+        if (data.mlxParsedResponse.alpha === undefined)
+          throw 'Parsing failure? - Alpha';
+
+        const { alpha } = data.mlxParsedResponse;
+
+        (dir > 0 ? forward : reverse)[step] = alpha;
+
+        await xyzDelay;
+
+        await sendCommand(MLXNOP);
+
+        // Force AVR USB to update USB buffer data once
+        let dataXYZ = await usb.read();
+
+        do {
+          dataXYZ = await usb.read();
+          if (!dataXYZ) throw 'XYZ data missing';
+        } while (!dataXYZ.mlxParsedResponse);
+
+        if (dataXYZ.mlxParsedResponse.opcode == Opcode.Error_frame) {
+          console.log(
+            'Error frame. Error:',
+            dataXYZ.mlxParsedResponse.error === undefined
+              ? 'undefined??'
+              : ErrorCode[dataXYZ.mlxParsedResponse.error]
+          );
+          maybeThrow('Received Error Frame XYZ');
+          continue;
+        }
+
+        if (dataXYZ.mlxParsedResponse.opcode == Opcode.NothingToTransmit) {
+          maybeThrow('Nothing to transmit XYZ');
+          continue;
+        }
+
+        const { x, y, z } = dataXYZ.mlxParsedResponse;
+
+        if (x === undefined) throw 'Parsing failure? - x';
+        if (y === undefined) throw 'Parsing failure? - y';
+        if (z === undefined) throw 'Parsing failure? - z';
+
         // Only record data in range of good motion
         if (step >= 0 && step < End) {
-          await sendCommand(GetAlpha);
-          // Give sensor time to make reading
-          await delay(5);
-          await sendCommand(GetXYZ);
-
-          const xyzDelay = delay(5);
-
-          // Double read to force reading of newest data
-          await usb.read();
-          let data: false | ReadData;
-
-          await delay(1);
-
-          while (true) {
-            data = await usb.read();
-            if (!data) throw 'Data missing?';
-            if (!data.mlxParsedResponse) {
-              console.log('No parsed response', step);
-              await delay(5);
-              continue;
-            } else break;
-          }
-
-          if (data.mlxParsedResponse.opcode == Opcode.Error_frame) {
-            console.log(
-              'Error frame. Error:',
-              data.mlxParsedResponse.error,
-              step
-            );
-            await delay(5);
-            continue;
-            throw 'Received Error Frame';
-          }
-
-          if (data.mlxParsedResponse.opcode == Opcode.NothingToTransmit) {
-            console.log('NTT', step);
-            await delay(5);
-            continue;
-            throw 'Nothing to transmit';
-          }
-
-          const { alpha } = data.mlxParsedResponse;
-
-          (dir > 0 ? forward : reverse)[step] = alpha;
-
-          await xyzDelay;
-
-          await sendCommand(MLXNOP);
-          await delay(5);
-
-          // Double read to force reading of newest data
-          await usb.read();
-
-          // while (true) {
-          data = await usb.read();
-          if (!data) throw 'Data missing?';
-          if (!data.mlxParsedResponse) {
-            await delay(5);
-            continue;
-          }
-          // }
-
-          const { x, y, z } = data.mlxParsedResponse;
-
           logger.write(`${step},${alpha},${dir}${EOL}`);
           loggerXYZ.write(`${step},${dir},${x},${y},${z},${alpha}${EOL}`);
         }
