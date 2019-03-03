@@ -11,7 +11,7 @@ import USB, {
 import chalk from 'chalk';
 import { makeMLXPacket, Opcode, Marker } from './MLX90363';
 
-const serial = 'None';
+const serial = '59f3b710-2ff8-11e9-9c08-9d8f08c3ea0';
 const usb = USB(serial);
 
 function delay(ms: number) {
