@@ -233,6 +233,8 @@ async function loadDataFromUSB(
 
       console.log('Starting');
 
+      let lastPrint;
+
       while (true) {
         await sendCommand(GetAlpha);
         // Give sensor time to make reading
@@ -341,6 +343,12 @@ async function loadDataFromUSB(
         if (amplitude < maxAmplitude) amplitude++;
 
         const angle = PositiveModulus(step, cycle);
+
+        const temp = Math.round(Math.log(999 + step || 1) / Math.log(1.1));
+        if (temp !== lastPrint) {
+          console.log('At step:', step, percent(step / End), 'mag:', alpha);
+          lastPrint = temp;
+        }
 
         await sendCommand({ mode, amplitude, angle });
       }
@@ -489,4 +497,8 @@ async function writeLookupTableToPNG(
   });
 
   await chartNode.writeImageToFile('image/png', filename);
+}
+
+function percent(x: number) {
+  return Math.round(x * 100) + '%';
 }
