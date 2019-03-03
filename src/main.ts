@@ -7,7 +7,6 @@ import USB, {
   Command,
   ReadData,
 } from './USBInterface';
-
 import PositiveModulus from './PositiveModulus';
 import processData, { ProcessedData } from './Calibration';
 import readline from 'readline';
