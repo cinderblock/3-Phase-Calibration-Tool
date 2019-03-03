@@ -51,8 +51,10 @@ export default function processData(
 
     const angle = i % countsPerMechanicalRevolution;
 
-    let t;
-    if ((t = inverses[mlxValue])) t.push(angle);
+    // if the list exists, append to it
+    let t = inverses[mlxValue];
+    if (t) t.push(angle);
+    // Otherwise make a new list with a single item
     else inverses[mlxValue] = [angle];
   }
 
