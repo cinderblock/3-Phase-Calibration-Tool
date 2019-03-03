@@ -489,5 +489,5 @@ async function writeLookupTableToPNG(
     },
   });
 
-  chartNode.writeImageToFile('image/png', filename);
+  await chartNode.writeImageToFile('image/png', filename);
 }
