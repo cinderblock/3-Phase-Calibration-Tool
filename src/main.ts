@@ -5,7 +5,6 @@ import USB, {
   CommandMode,
   MLXCommand,
   Command,
-  ReadData,
 } from './USBInterface';
 import PositiveModulus from './PositiveModulus';
 import processData, { ProcessedData } from './Calibration';
