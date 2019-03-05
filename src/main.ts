@@ -161,7 +161,7 @@ async function loadDataFromUSB(
     const logger = createWriteStream(rawDataFilename);
     const loggerXYZ = createWriteStream('XYZ' + rawDataFilename);
 
-    logger.write('step,alpha,dir' + EOL);
+    logger.write('step,alpha,dir,current,cpuTemp,AS,BS,CS,ain0' + EOL);
     loggerXYZ.write('step,dir,x,y,z,alpha' + EOL);
 
     // Non-inclusive last step of calibration routine
@@ -310,7 +310,11 @@ async function loadDataFromUSB(
 
         // Only record data in range of good motion
         if (step >= 0 && step < End) {
-          logger.write(`${step},${alpha},${dir}${EOL}`);
+          logger.write(
+            `${step},${alpha},${dir},${data.current},${data.cpuTemp},${
+              data.AS
+            },${data.BS},${data.CS},${data.ain0}${EOL}`
+          );
           loggerXYZ.write(`${step},${dir},${x},${y},${z},${alpha}${EOL}`);
         }
 
