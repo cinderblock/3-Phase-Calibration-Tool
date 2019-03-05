@@ -350,7 +350,17 @@ async function loadDataFromUSB(
 
         const temp = Math.round(Math.log(999 + step || 1) / Math.log(1.1));
         if (temp !== lastPrint) {
-          console.log('At step:', step, percent(step / End), 'mag:', alpha);
+          console.log(
+            'At step:',
+            step,
+            percent(step / End),
+            'mag:',
+            alpha,
+            'Temp:',
+            data.cpuTemp,
+            'Current:',
+            data.current
+          );
           lastPrint = temp;
         }
 
