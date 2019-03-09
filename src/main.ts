@@ -202,10 +202,8 @@ async function loadDataFromUSB(
     const usb = USB(serial);
 
     const logger = createWriteStream(rawDataFilename);
-    const loggerXYZ = createWriteStream('XYZ' + rawDataFilename);
 
-    logger.write('step,alpha,dir,current,cpuTemp,AS,BS,CS,ain0' + EOL);
-    loggerXYZ.write('step,dir,x,y,z,alpha' + EOL);
+    logger.write('step,alpha,dir,x,y,z,current,cpuTemp,AS,BS,CS,ain0' + EOL);
 
     // Non-inclusive last step of calibration routine
     const End = cycle * cyclePerRev * revolutions;
@@ -354,11 +352,10 @@ async function loadDataFromUSB(
         // Only record data in range of good motion
         if (step >= 0 && step < End) {
           logger.write(
-            `${step},${alpha},${dir},${data.current},${data.cpuTemp},${
-              data.AS
-            },${data.BS},${data.CS},${data.ain0}${EOL}`
+            `${step},${alpha},${dir},${x},${y},${z},${data.current},${
+              data.cpuTemp
+            },${data.AS},${data.BS},${data.CS},${data.ain0}${EOL}`
           );
-          loggerXYZ.write(`${step},${dir},${x},${y},${z},${alpha}${EOL}`);
         }
 
         // Keep going one cycle past the End before turning around
@@ -373,7 +370,6 @@ async function loadDataFromUSB(
 
           // Write to file as ms since Unix epoch
           logger.end(time.valueOf() + EOL);
-          loggerXYZ.end();
 
           usb.write({ mode, amplitude: 0, angle: 0 }, () => {
             usb.close();
