@@ -130,6 +130,11 @@ async function main() {
   ]);
 
   console.log('done');
+
+  setTimeout(() => {
+    console.log('Force killing');
+    process.kill(0);
+  }, 500);
 }
 
 main();
