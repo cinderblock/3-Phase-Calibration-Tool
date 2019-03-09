@@ -376,6 +376,7 @@ async function loadDataFromUSB(
           });
 
           resolve({ forward, reverse, time });
+          usb.close();
           break;
         }
 
