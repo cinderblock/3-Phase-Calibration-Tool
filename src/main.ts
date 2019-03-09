@@ -171,12 +171,12 @@ async function loadDataFromCSV(
         return;
       }
 
-      const [step, val, dir] = split;
+      const [step, alpha, dir] = split;
 
       // Header
       if (Number.isNaN(step)) return;
 
-      (dir > 0 ? forward : reverse)[step] = val;
+      (dir > 0 ? forward : reverse)[step] = alpha;
     });
 
     rl.on('close', function() {
