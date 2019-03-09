@@ -6,6 +6,7 @@ import USB, {
   MLXCommand,
   Command,
 } from './USBInterface';
+import { v1 as uuid } from 'uuid';
 import PositiveModulus from './PositiveModulus';
 import processData, { ProcessedData } from './Calibration';
 import readline from 'readline';
@@ -46,23 +47,60 @@ function prompt(prompt: string) {
 
 async function main() {
   let def = 'None';
+  let rePrompt = false;
 
-  const stopListening = await addAttachListener(id => {
-    console.log('\r', chalk.grey(new Date().toLocaleTimeString()), id);
-    def = id;
-  });
+  const fresh =
+    (await prompt('Capture fresh? [No]: ')).trim().toLowerCase()[0] == 'y';
 
-  const serial = (await prompt(`Serial Number [${def}]: `)).trim() || def;
+  let data: Promise<{
+    forward: number[];
+    reverse: number[];
+    time: Date;
+  }>;
 
-  stopListening();
+  let resultSerial: string;
 
-  const data =
-    (await prompt('Capture fresh? [No]: ')).trim().toLowerCase()[0] == 'y'
-      ? loadDataFromUSB(serial, cyclePerRev, Revs)
-      : loadDataFromCSV(rawDataFilename);
+  if (!fresh) {
+    rl.close();
 
-  rl.close();
+    resultSerial = uuid();
 
+    resultSerial =
+      (await prompt(`New serial number [${resultSerial}]: `)).trim() ||
+      resultSerial;
+
+    data = loadDataFromCSV(rawDataFilename);
+  } else {
+    const stopListening = await addAttachListener(id => {
+      console.log('\r', chalk.grey(new Date().toLocaleTimeString()), id);
+      def = id;
+      if (rePrompt) console.log(`Serial Number [${def}]: `);
+    });
+
+    rePrompt = true;
+
+    const selectedSerial =
+      (await prompt(`Serial Number [${def}]: `)).trim() || def;
+
+    resultSerial = selectedSerial;
+    if (resultSerial == 'None') {
+      resultSerial = uuid();
+
+      resultSerial =
+        (await prompt(`New serial number [${resultSerial}]: `)).trim() ||
+        resultSerial;
+    } else {
+      console.log('Storing calibration data as:', resultSerial);
+    }
+
+    stopListening();
+
+    rl.close();
+
+    data = loadDataFromUSB(selectedSerial, cyclePerRev, Revs);
+  }
+
+  // Await the actual loading of data from file or USB
   const { forward, reverse, time } = await data;
 
   // Take raw forward/reverse calibration data and calculate smoothed, averaged, and inverted
@@ -71,7 +109,7 @@ async function main() {
   const block = DataIDBlock({
     lookupTable: processed.inverseTable,
     calibrationTime: time,
-    serial: serial,
+    serial: resultSerial,
   });
 
   console.log('Done recording. Generating outputs.');
@@ -86,7 +124,7 @@ async function main() {
     writeLookupTableToPNG('Lookup Table.png', processed).then(() =>
       console.log('Lookup Table PNG Written')
     ),
-    writeCalibrationBlock(serial + '.hex', block).then(() =>
+    writeCalibrationBlock(resultSerial + '.hex', block).then(() =>
       console.log('HEX Block Written')
     ),
   ]);
