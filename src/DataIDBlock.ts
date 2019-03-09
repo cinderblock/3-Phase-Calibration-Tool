@@ -1,5 +1,4 @@
 import { crc16 } from 'crc';
-import { v1 as uuid } from 'uuid';
 
 type Options = {
   /**
@@ -7,7 +6,7 @@ type Options = {
    */
   lookupTable: number[];
   calibrationTime: Date;
-  serial?: string;
+  serial: string;
 };
 
 const TableSize = 8 * 1024;
@@ -47,8 +46,6 @@ export default function DataIDBlock({
       missing--;
     }
   }
-
-  if (!serial || serial == 'None') serial = uuid();
 
   write(2, crc16(table, 0xffff));
 
