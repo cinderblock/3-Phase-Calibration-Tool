@@ -1,4 +1,10 @@
-import USBInterface, { CommandMode, addAttachListener } from 'smooth-control';
+import USBInterface, {
+  CommandMode,
+  addAttachListener,
+  ReadData,
+  ControllerState,
+  ControllerFault,
+} from 'smooth-control';
 import readline from 'readline';
 import chalk from 'chalk';
 
@@ -19,6 +25,9 @@ const amplitude = 40;
 
 let calibrated = false;
 
+let lastState: ControllerState;
+let lastFault: ControllerFault;
+
 async function main() {
   let def = 'None';
 
@@ -31,22 +40,36 @@ async function main() {
 
   const usb = USBInterface(serial);
 
-  usb.events.on(
-    'data',
-    (data: {
-      status: string;
-      fault: string;
-      rawAngle: number;
-      calibrated: boolean;
-    }) => {
-      if (!calibrated && data.calibrated) {
-        calibrated = true;
-        console.log('Calibrated!');
-      }
-
-      // console.log({ calibrated, ...data });
+  usb.events.on('data', (data: ReadData) => {
+    if (!calibrated && data.calibrated) {
+      calibrated = true;
+      console.log('Calibrated!');
     }
-  );
+
+    if (data.state !== lastState) {
+      lastState = data.state;
+
+      if (data.state === ControllerState.Fault) {
+        lastFault = data.fault;
+        console.log(
+          'New State:',
+          ControllerState[data.state],
+          ' - ',
+          ControllerFault[data.fault],
+          data.fault
+        );
+      } else {
+        console.log('New State:', ControllerState[data.state]);
+      }
+    } else if (
+      data.state == ControllerState.Fault &&
+      data.fault !== lastFault
+    ) {
+      console.log('New Fault:', ControllerFault[data.fault]);
+    }
+
+    // console.log({ calibrated, ...data });
+  });
 
   const Frequency = 0.5;
 
