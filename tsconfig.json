@@ -3,7 +3,7 @@
     "target": "esnext",
     "alwaysStrict": true,
     "esModuleInterop": true,
-    "lib": ["es2018"],
+    "lib": ["es2018", "dom"],
     "noImplicitAny": true,
     "strict": true,
     "baseUrl": "src/types"
