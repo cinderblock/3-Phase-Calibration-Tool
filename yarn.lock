@@ -771,6 +771,10 @@ mkdirp@^0.5.0, mkdirp@^0.5.1:
   dependencies:
     minimist "0.0.8"
 
+"mlx90363@https://github.com/cinderblock/node-MLX90363.git":
+  version "0.0.0"
+  resolved "https://github.com/cinderblock/node-MLX90363.git#0f60685461fee918d5a295f12e16099532b3756b"
+
 moment@^2.10.2:
   version "2.24.0"
   resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
@@ -1046,6 +1050,13 @@ signal-exit@^3.0.0:
   version "3.0.2"
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-3.0.2.tgz#b5fdc08f1287ea1178628e415e25132b73646c6d"
   integrity sha1-tf3AjxKH6hF4Yo5BXiUTK3NkbG0=
+
+"smooth-control@https://github.com/cinderblock/smooth-control.git":
+  version "0.0.0"
+  resolved "https://github.com/cinderblock/smooth-control.git#e59b1656e50a480bdd3e41893c27a9c30ee51fa1"
+  dependencies:
+    mlx90363 "https://github.com/cinderblock/node-MLX90363.git"
+    usb "^1.5.0"
 
 source-map-support@^0.5.6:
   version "0.5.10"

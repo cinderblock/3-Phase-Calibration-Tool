@@ -1,4 +1,4 @@
-import USBInterface, { CommandMode, addAttachListener } from './USBInterface';
+import USBInterface, { CommandMode, addAttachListener } from 'smooth-control';
 import readline from 'readline';
 import chalk from 'chalk';
 

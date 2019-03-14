@@ -4,10 +4,10 @@ import USBInterface, {
   addAttachListener,
   CommandMode,
   MlxResponseState,
-} from './USBInterface';
+} from 'smooth-control';
 import readline from 'readline';
 import chalk from 'chalk';
-import { Opcode, parseMLXData, makeMLXPacket, EEchallenge } from './MLX90363';
+import { Opcode, parseData, makePacket, EEchallenge } from 'mlx90363';
 
 function delay(ms: number) {
   return new Promise(res => setTimeout(res, ms));
@@ -81,7 +81,7 @@ async function main() {
 
       if (data && data.mlxResponseState && data.mlxResponse) {
         if (data.mlxResponseState > MlxResponseState.failedCRC) {
-          result = parseMLXData(data.mlxResponse);
+          result = parseData(data.mlxResponse);
           if (result.data0 !== undefined) break;
           else console.log('Received unexpected response:', result);
         } else console.log('CRC Invalid on device?');
@@ -112,7 +112,7 @@ async function main() {
 
     rl.close();
 
-    command.data = makeMLXPacket({
+    command.data = makePacket({
       opcode: Opcode.EEPROMWrite,
       data8: [0, addr],
       data16: [, eeKey, eeValue],
@@ -127,7 +127,7 @@ async function main() {
     // Make sure MLX has some time
     await delay(10);
 
-    command.data = makeMLXPacket({
+    command.data = makePacket({
       opcode: Opcode.EEReadChallenge,
     });
 
@@ -139,7 +139,7 @@ async function main() {
 
     if (!data || !data.mlxResponse) throw 'wtf!';
 
-    result = parseMLXData(data.mlxResponse);
+    result = parseData(data.mlxResponse);
 
     if (result.opcode == Opcode.EEPROMWrite_Status) {
       console.log('Wrong key. Used:', eeKey);
@@ -153,7 +153,7 @@ async function main() {
     // Magic "hashing" algorithm
     const keyEcho = result.challengeKey ^ 0x1234;
 
-    command.data = makeMLXPacket({
+    command.data = makePacket({
       opcode: Opcode.EEChallengeAns,
       data16: [, keyEcho, ~keyEcho & 0xffff],
     });
@@ -166,7 +166,7 @@ async function main() {
 
     if (!data || !data.mlxResponse) throw '...';
 
-    result = parseMLXData(data.mlxResponse);
+    result = parseData(data.mlxResponse);
 
     if (result.opcode != Opcode.EEReadAnswer) {
       console.log('Received unexpected response to EEReadChallenge from MLX');
@@ -178,7 +178,7 @@ async function main() {
     // Only need tEEWrite, which is 1ms, but whatever
     await delay(100);
 
-    command.data = makeMLXPacket({ opcode: Opcode.NOP__Challenge });
+    command.data = makePacket({ opcode: Opcode.NOP__Challenge });
 
     console.log('Sending NOP to retrieve EEWrite status');
     await sendCommand(command);
@@ -188,14 +188,14 @@ async function main() {
 
     if (!data || !data.mlxResponse) throw 'wtf';
 
-    result = parseMLXData(data.mlxResponse);
+    result = parseData(data.mlxResponse);
     console.log('EE Write result:', result);
 
     if (result.opcode != Opcode.EEPROMWrite_Status) throw 'Ugh';
 
     if (result.code === 1) console.log('EEPROM Write successful!');
 
-    command.data = makeMLXPacket({ opcode: Opcode.Reboot });
+    command.data = makePacket({ opcode: Opcode.Reboot });
 
     console.log('Rebooting MLX');
     await sendCommand(command);

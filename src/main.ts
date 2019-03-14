@@ -5,7 +5,7 @@ import USB, {
   CommandMode,
   MLXCommand,
   Command,
-} from './USBInterface';
+} from 'smooth-control';
 import { v1 as uuid } from 'uuid';
 import PositiveModulus from './utils/PositiveModulus';
 import processData, { ProcessedData } from './Calibration';
@@ -15,7 +15,7 @@ import { EOL } from 'os';
 import DataIDBlock from './DataIDBlock';
 import chalk from 'chalk';
 import MemoryMap from 'nrf-intel-hex';
-import { makeMLXPacket, Opcode, Marker, ErrorCode } from './MLX90363';
+import { makePacket, Opcode, Marker, ErrorCode } from 'mlx90363';
 import ChartjsNode from 'chartjs-node';
 
 const chartWidth = 600;
@@ -224,7 +224,7 @@ async function loadDataFromUSB(
 
     const GetAlpha: MLXCommand = {
       mode: CommandMode.MLXDebug,
-      data: makeMLXPacket({
+      data: makePacket({
         opcode: Opcode.GET1,
         marker: Marker.Alpha,
         data16: [, 0xffff],
@@ -232,7 +232,7 @@ async function loadDataFromUSB(
     };
     const GetXYZ: MLXCommand = {
       mode: CommandMode.MLXDebug,
-      data: makeMLXPacket({
+      data: makePacket({
         opcode: Opcode.GET1,
         marker: Marker.XYZ,
         data16: [, 0xffff],
@@ -240,7 +240,7 @@ async function loadDataFromUSB(
     };
     const MLXNOP: MLXCommand = {
       mode: CommandMode.MLXDebug,
-      data: makeMLXPacket({ opcode: Opcode.NOP__Challenge }),
+      data: makePacket({ opcode: Opcode.NOP__Challenge }),
     };
 
     function sendCommand(command: Command) {

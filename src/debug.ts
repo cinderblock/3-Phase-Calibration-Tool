@@ -1,15 +1,14 @@
 'use strict';
 
 import USB, {
-  addAttachListener,
   CommandMode,
   MLXCommand,
   Command,
   ReadData,
-} from './USBInterface';
+} from 'smooth-control';
 
 import chalk from 'chalk';
-import { makeMLXPacket, Opcode, Marker } from './MLX90363';
+import { makePacket, Opcode, Marker } from 'mlx90363';
 
 const serial = 'None';
 const usb = USB(serial);
@@ -20,7 +19,7 @@ function delay(ms: number) {
 
 const GetAlpha: MLXCommand = {
   mode: CommandMode.MLXDebug,
-  data: makeMLXPacket({
+  data: makePacket({
     opcode: Opcode.GET1,
     marker: Marker.Alpha,
     data16: [, 0xffff],
@@ -28,7 +27,7 @@ const GetAlpha: MLXCommand = {
 };
 const GetXYZ: MLXCommand = {
   mode: CommandMode.MLXDebug,
-  data: makeMLXPacket({
+  data: makePacket({
     opcode: Opcode.GET1,
     marker: Marker.XYZ,
     data16: [, 0xffff],
@@ -36,7 +35,7 @@ const GetXYZ: MLXCommand = {
 };
 const MLXNOP: MLXCommand = {
   mode: CommandMode.MLXDebug,
-  data: makeMLXPacket({ opcode: Opcode.NOP__Challenge }),
+  data: makePacket({ opcode: Opcode.NOP__Challenge }),
 };
 
 function sendCommand(command: Command) {
