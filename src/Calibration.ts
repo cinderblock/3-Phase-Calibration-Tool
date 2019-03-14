@@ -1,5 +1,5 @@
-import angleAverage from './AngleAverage';
-import PositiveModulus from './PositiveModulus';
+import angleAverage from './utils/AngleAverage';
+import PositiveModulus from './utils/PositiveModulus';
 
 export type ProcessedData = {
   forward: number[];

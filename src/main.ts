@@ -7,7 +7,7 @@ import USB, {
   Command,
 } from './USBInterface';
 import { v1 as uuid } from 'uuid';
-import PositiveModulus from './PositiveModulus';
+import PositiveModulus from './utils/PositiveModulus';
 import processData, { ProcessedData } from './Calibration';
 import readline from 'readline';
 import { createReadStream, createWriteStream, writeFileSync } from 'fs';
