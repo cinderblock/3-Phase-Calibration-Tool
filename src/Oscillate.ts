@@ -23,6 +23,8 @@ const mode = CommandMode.Push;
 
 const amplitude: number = +process.argv[2] || 40;
 
+console.log('Amplitude:', amplitude);
+
 let calibrated = false;
 
 let lastState: ControllerState;
