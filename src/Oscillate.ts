@@ -21,7 +21,7 @@ function prompt(prompt: string) {
 
 const mode = CommandMode.Push;
 
-const amplitude = 40;
+const amplitude: number = +process.argv[2] || 40;
 
 let calibrated = false;
 
