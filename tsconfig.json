@@ -4,7 +4,7 @@
     "alwaysStrict": true,
     "esModuleInterop": true,
     "pretty": true,
-    "lib": ["es2018", "dom"],
+    "lib": ["es2018"],
     "noImplicitAny": true,
     "strict": true,
     "moduleResolution": "node",
