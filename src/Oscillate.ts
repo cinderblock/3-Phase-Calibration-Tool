@@ -33,12 +33,14 @@ let lastFault: ControllerFault;
 async function main() {
   let def = 'None';
 
-  await addAttachListener(id => {
+  const stopAttachListening = await addAttachListener(id => {
     console.log('\r', chalk.grey(new Date().toLocaleTimeString()), id);
     def = id;
   });
 
   const serial = (await prompt(`Serial Number [${def}]: `)).trim() || def;
+
+  stopAttachListening();
 
   const usb = USBInterface(serial);
 
