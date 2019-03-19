@@ -109,7 +109,7 @@ async function main() {
       }
       console.log('Calibrated!');
 
-      usb.events.on('data', (data: ReadData) => {
+      const dataHandler = (data: ReadData) => {
         if (data.state !== lastState) {
           lastState = data.state;
 
@@ -133,7 +133,9 @@ async function main() {
         }
 
         // console.log({ calibrated, ...data });
-      });
+      };
+
+      usb.events.on('data', dataHandler);
 
       // Motor connected
 
@@ -158,18 +160,24 @@ async function main() {
       }, 1000 / 300);
 
       function die() {
+        console.log('Dying');
         // Shutdown running write loop
+        clearInterval(WPS);
         clearInterval(i);
+        usb.events.removeListener('data', dataHandler);
         // Stop the motor
         usb.write({ mode, command: 0 }, usb.close);
-        // Close USB connection
-        usb.close();
 
         // Just in case, really exit after a short delay.
-        setTimeout(process.exit, 400).unref();
+        setTimeout(() => {
+          console.log('Forcing quit');
+          process.exit();
+        }, 400).unref();
       }
 
-      process.on('SIGINT', die);
+      console.log('on sigint');
+
+      rl.on('SIGINT', die);
     });
   };
 
