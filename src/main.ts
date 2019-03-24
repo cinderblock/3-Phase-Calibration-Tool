@@ -21,8 +21,8 @@ import ChartjsNode from 'chartjs-node';
 const chartWidth = 600;
 const chartHeight = chartWidth;
 
-const cyclePerRev = 15;
-const Revs = 4;
+const cyclesPerRev = 15;
+const revolutions = 4;
 
 const cycle = 3 * 256;
 
@@ -53,8 +53,8 @@ async function main() {
     (await prompt('Capture fresh? [No]: ')).trim().toLowerCase()[0] == 'y';
 
   let data: Promise<{
-    forward: number[];
-    reverse: number[];
+    forward: DataPoint[];
+    reverse: DataPoint[];
     time: Date;
   }>;
 
@@ -71,6 +71,10 @@ async function main() {
 
     data = loadDataFromCSV(rawDataFilename);
   } else {
+    console.log('Cycles per Rev:', cyclesPerRev);
+    console.log('Revolutions:', revolutions);
+    console.log('Amplitude:', maxAmplitude);
+
     const stopListening = await addAttachListener(id => {
       console.log('\r', chalk.grey(new Date().toLocaleTimeString()), id);
       def = id;
@@ -97,14 +101,18 @@ async function main() {
 
     rl.close();
 
-    data = loadDataFromUSB(selectedSerial, cyclePerRev, Revs);
+    data = loadDataFromUSB(selectedSerial, cyclesPerRev, revolutions);
   }
 
   // Await the actual loading of data from file or USB
   const { forward, reverse, time } = await data;
 
   // Take raw forward/reverse calibration data and calculate smoothed, averaged, and inverted
-  const processed = processData(forward, reverse, cyclePerRev * cycle);
+  const processed = processData(
+    forward.map(d => d.alpha),
+    reverse.map(d => d.alpha),
+    cyclesPerRev * cycle
+  );
 
   const block = DataIDBlock({
     lookupTable: processed.inverseTable,
@@ -139,16 +147,28 @@ async function main() {
 
 main();
 
+type DataPoint = {
+  alpha: number;
+  x: number;
+  y: number;
+  z: number;
+  current: number;
+  temperature: number;
+  AS: number;
+  BS: number;
+  CS: number;
+};
+
 async function loadDataFromCSV(
   file: string
 ): Promise<{
-  forward: number[];
-  reverse: number[];
+  forward: DataPoint[];
+  reverse: DataPoint[];
   time: Date;
 }> {
   return new Promise((resolve, reject) => {
-    const forward: number[] = [];
-    const reverse: number[] = [];
+    const forward: DataPoint[] = [];
+    const reverse: DataPoint[] = [];
 
     const fileStream = createReadStream(file);
 
@@ -171,12 +191,34 @@ async function loadDataFromCSV(
         return;
       }
 
-      const [step, alpha, dir] = split;
+      const [
+        step,
+        alpha,
+        dir,
+        x,
+        y,
+        z,
+        current,
+        temperature,
+        AS,
+        BS,
+        CS,
+      ] = split;
 
       // Header
       if (Number.isNaN(step)) return;
 
-      (dir > 0 ? forward : reverse)[step] = alpha;
+      (dir > 0 ? forward : reverse)[step] = {
+        alpha,
+        x,
+        y,
+        z,
+        current,
+        temperature,
+        AS,
+        BS,
+        CS,
+      };
     });
 
     rl.on('close', function() {
@@ -192,13 +234,13 @@ async function loadDataFromUSB(
   cyclePerRev: number,
   revolutions: number
 ): Promise<{
-  forward: number[];
-  reverse: number[];
+  forward: DataPoint[];
+  reverse: DataPoint[];
   time: Date;
 }> {
   return new Promise((resolve, reject) => {
-    const forward: number[] = [];
-    const reverse: number[] = [];
+    const forward: DataPoint[] = [];
+    const reverse: DataPoint[] = [];
     const usb = USB(serial);
 
     const logger = createWriteStream(rawDataFilename);
@@ -311,9 +353,9 @@ async function loadDataFromUSB(
         if (data.mlxParsedResponse.alpha === undefined)
           throw 'Parsing failure? - Alpha';
 
-        const { alpha } = data.mlxParsedResponse;
+        const { current, cpuTemp: temperature, AS, BS, CS } = data;
 
-        (dir > 0 ? forward : reverse)[step] = alpha;
+        const { alpha } = data.mlxParsedResponse;
 
         await xyzDelay;
 
@@ -351,10 +393,22 @@ async function loadDataFromUSB(
 
         // Only record data in range of good motion
         if (step >= 0 && step < End) {
+          (dir > 0 ? forward : reverse)[step] = {
+            alpha,
+            x,
+            y,
+            z,
+            current,
+            temperature,
+            AS,
+            BS,
+            CS,
+          };
+
           logger.write(
-            `${step},${alpha},${dir},${x},${y},${z},${data.current},${
-              data.cpuTemp
-            },${data.AS},${data.BS},${data.CS},${data.ain0}${EOL}`
+            `${step},${alpha},${dir},${x},${y},${z},${current},${temperature},${AS},${BS},${CS},${
+              data.ain0
+            }${EOL}`
           );
         }
 
