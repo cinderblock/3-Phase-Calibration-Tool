@@ -142,7 +142,7 @@ async function main() {
   setTimeout(() => {
     console.log('Force killing');
     process.kill(0);
-  }, 500);
+  }, 500).unref();
 }
 
 main();
