@@ -126,6 +126,9 @@ async function main() {
     writeRawDataToPNG('data.png', processed).then(() =>
       console.log('Raw PNG Written')
     ),
+    writeRawXYZToPNG('xyzData.png', forward).then(() =>
+      console.log('Forward XYZ PNG written')
+    ),
     // writeSortedDataToFile('Reordered Original Data.csv', processed).then(() => console.log('Sorted Data Written')),
     // writeSmoothedDataToFile('Smoothed.csv', processed).then(() => console.log('Smoothed Data Written')),
     // writeSmoothedDataToPNG('Smoothed.png', processed).then(() => console.log('Smoothed PNG Written')),
@@ -494,6 +497,42 @@ async function writeRawDataToPNG(filename: string, processed: ProcessedData) {
         {
           label: 'Reverse',
           data: processed.reverseData.map((y, x) => ({ x, y })),
+        },
+      ],
+    },
+    options: {
+      scales: {
+        yAxes: [
+          {
+            ticks: {
+              beginAtZero: true,
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  chartNode.writeImageToFile('image/png', './data.png');
+}
+
+async function writeRawXYZToPNG(filename: string, dataPoints: DataPoint[]) {
+  const chartNode = new ChartjsNode(chartWidth, chartHeight);
+  await chartNode.drawChart({
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: 'X',
+          data: dataPoints.map(({ x: y }, x) => ({ x, y })),
+        },
+        {
+          label: 'Y',
+          data: dataPoints.map(({ y: y }, x) => ({ x, y })),
+        },
+        {
+          label: 'Z',
+          data: dataPoints.map(({ z: y }, x) => ({ x, y })),
         },
       ],
     },
