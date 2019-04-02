@@ -63,13 +63,13 @@ async function main() {
   let resultSerial: string;
 
   if (!fresh) {
-    rl.close();
-
     resultSerial = uuid();
 
     resultSerial =
       (await prompt(`New serial number [${resultSerial}]: `)).trim() ||
       resultSerial;
+
+    rl.close();
 
     console.log('serial:', resultSerial);
 
