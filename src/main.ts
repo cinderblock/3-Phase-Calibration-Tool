@@ -52,6 +52,8 @@ async function main() {
   const fresh =
     (await prompt('Capture fresh? [No]: ')).trim().toLowerCase()[0] == 'y';
 
+  console.log('Fresh:', fresh);
+
   let data: Promise<{
     forward: DataPoint[];
     reverse: DataPoint[];
@@ -68,6 +70,8 @@ async function main() {
     resultSerial =
       (await prompt(`New serial number [${resultSerial}]: `)).trim() ||
       resultSerial;
+
+    console.log('serial:', resultSerial);
 
     data = loadDataFromCSV(rawDataFilename);
   } else {
@@ -104,8 +108,12 @@ async function main() {
     data = loadDataFromUSB(selectedSerial, cyclesPerRev, revolutions);
   }
 
+  console.log('Loading data');
+
   // Await the actual loading of data from file or USB
   const { forward, reverse, time } = await data;
+
+  console.log('Data loaded');
 
   // Take raw forward/reverse calibration data and calculate smoothed, averaged, and inverted
   const processed = processData(
@@ -169,16 +177,23 @@ async function loadDataFromCSV(
   reverse: DataPoint[];
   time: Date;
 }> {
+  console.log('Loading file:', file);
   return new Promise((resolve, reject) => {
     const forward: DataPoint[] = [];
     const reverse: DataPoint[] = [];
 
+    console.log('Making read stream');
+
     const fileStream = createReadStream(file);
+
+    console.log('Created read stream');
 
     const rl = readline.createInterface({
       input: fileStream,
       crlfDelay: Infinity,
     });
+
+    console.log('Created readline interface');
 
     // Default to now if data file is missing timestamp
     let time = new Date();
@@ -225,6 +240,7 @@ async function loadDataFromCSV(
     });
 
     rl.on('close', function() {
+      console.log('close');
       resolve({ forward, reverse, time });
     });
 
