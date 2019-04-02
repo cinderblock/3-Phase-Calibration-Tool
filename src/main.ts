@@ -243,7 +243,7 @@ async function loadDataFromCSV(
       };
     });
 
-    rl.on('close', function() {
+    rl.on('close', () => {
       console.log('close');
       resolve({ forward, reverse, time });
     });
