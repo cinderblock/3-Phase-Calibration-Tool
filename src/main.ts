@@ -560,17 +560,17 @@ async function writeRawXYZToPNG(filename: string, dataPoints: DataPoint[]) {
       datasets: [
         {
           label: 'X',
-          data: dataPoints.map(({ x: y }, x) => ({ x, y })),
+          data: dataPoints.map(({ x, VG }, s) => ({ x: s, y: x / VG })),
           backgroundColor: '#ff0000',
         },
         {
           label: 'Y',
-          data: dataPoints.map(({ y: y }, x) => ({ x, y })),
+          data: dataPoints.map(({ y, VG }, s) => ({ x: s, y: y / VG })),
           backgroundColor: '#00ff00',
         },
         {
           label: 'Z',
-          data: dataPoints.map(({ z: y }, x) => ({ x, y })),
+          data: dataPoints.map(({ z, VG }, s) => ({ x: s, y: z / VG })),
           backgroundColor: '#0000ff',
         },
       ],
