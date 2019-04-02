@@ -526,10 +526,13 @@ async function writeRawDataToPNG(filename: string, processed: ProcessedData) {
         {
           label: 'Forward',
           data: processed.forwardData.map((y, x) => ({ x, y })),
+          // backgroundColor: '#00ff00',
+          backgroundColor: '#00ff00',
         },
         {
           label: 'Reverse',
           data: processed.reverseData.map((y, x) => ({ x, y })),
+          backgroundColor: '#ff0000',
         },
       ],
     },
@@ -558,14 +561,17 @@ async function writeRawXYZToPNG(filename: string, dataPoints: DataPoint[]) {
         {
           label: 'X',
           data: dataPoints.map(({ x: y }, x) => ({ x, y })),
+          backgroundColor: '#ff0000',
         },
         {
           label: 'Y',
           data: dataPoints.map(({ y: y }, x) => ({ x, y })),
+          backgroundColor: '#00ff00',
         },
         {
           label: 'Z',
           data: dataPoints.map(({ z: y }, x) => ({ x, y })),
+          backgroundColor: '#0000ff',
         },
       ],
     },
@@ -660,6 +666,7 @@ async function writeLookupTableToPNG(
         {
           label: 'Lookup',
           data: processed.inverseTable.map((y, x) => ({ x, y })),
+          backgroundColor: '#000000',
         },
       ],
     },
