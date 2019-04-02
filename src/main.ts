@@ -140,10 +140,7 @@ async function main() {
       writeRawXYZToPNG('xyzData.png', forward, 3 * chartWidth, 3 * chartHeight),
       'XYZ PNG'
     ),
-    finishedMessage(
-      writeVGToPNG('vgData.png', forward, 3 * chartWidth, 200),
-      'VG PNG'
-    ),
+    // finishedMessage(writeVGToPNG('vgData.png', forward, 3 * chartWidth, 200), 'VG PNG'),
     // finishedMessage(writeSortedDataToFile('Reordered Original Data.csv', processed),'Sorted Data'),
     // finishedMessage(writeSmoothedDataToFile('Smoothed.csv', processed),'Smoothed Data'),
     // finishedMessage(writeSmoothedDataToPNG('Smoothed.png', processed),'Smoothed PNG'),
