@@ -575,18 +575,27 @@ async function writeRawXYZToPNG(
       datasets: [
         {
           label: 'X',
+          yAxisID: 'XYZ',
           data: dataPoints.map(({ x, VG }, s) => ({ x: s, y: x / VG })),
           backgroundColor: '#ff0000',
         },
         {
           label: 'Y',
+          yAxisID: 'XYZ',
           data: dataPoints.map(({ y, VG }, s) => ({ x: s, y: y / VG })),
           backgroundColor: '#00ff00',
         },
         {
           label: 'Z',
+          yAxisID: 'XYZ',
           data: dataPoints.map(({ z, VG }, s) => ({ x: s, y: z / VG })),
           backgroundColor: '#0000ff',
+        },
+        {
+          label: 'VG',
+          yAxisID: 'VG',
+          data: dataPoints.map(({ VG }, s) => ({ x: s, y: VG })),
+          backgroundColor: '#000000',
         },
       ],
     },
@@ -594,6 +603,17 @@ async function writeRawXYZToPNG(
       scales: {
         yAxes: [
           {
+            id: 'XYZ',
+            type: 'linear',
+            position: 'left',
+            ticks: {
+              beginAtZero: true,
+            },
+          },
+          {
+            id: 'VG',
+            type: 'linear',
+            position: 'right',
             ticks: {
               beginAtZero: true,
             },
