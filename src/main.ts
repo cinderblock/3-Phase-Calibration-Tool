@@ -325,7 +325,7 @@ async function loadDataFromUSB(
     }, 100);
     function maybeThrow(message: String) {
       errors++;
-      if (errors < 5) {
+      if (errors < 50) {
         console.error('Error suppressed:', message);
         return;
       }
