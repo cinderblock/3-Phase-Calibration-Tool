@@ -357,6 +357,11 @@ async function loadDataFromUSB(
           if (!data) throw 'Data missing';
         } while (!data.mlxParsedResponse);
 
+        if (!data.mlxParsedResponse.crc) {
+          maybeThrow('data crc fail');
+          continue;
+        }
+
         if (data.mlxParsedResponse.opcode == Opcode.Error_frame) {
           console.log(
             'Error frame. Error:',
@@ -391,6 +396,11 @@ async function loadDataFromUSB(
           dataXYZ = await usb.read();
           if (!dataXYZ) throw 'XYZ data missing';
         } while (!dataXYZ.mlxParsedResponse);
+
+        if (!dataXYZ.mlxParsedResponse.crc) {
+          maybeThrow('dataxyz crc fail');
+          continue;
+        }
 
         if (dataXYZ.mlxParsedResponse.opcode == Opcode.Error_frame) {
           console.log(
