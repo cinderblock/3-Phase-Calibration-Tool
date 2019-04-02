@@ -596,6 +596,40 @@ async function writeRawXYZToPNG(
   chartNode.writeImageToFile('image/png', './' + filename);
 }
 
+async function writeVGToPNG(
+  filename: string,
+  dataPoints: DataPoint[],
+  width = 600,
+  height = 100
+) {
+  const chartNode = new ChartjsNode(width, height);
+  await chartNode.drawChart({
+    type: 'scatter',
+    data: {
+      datasets: [
+        {
+          label: 'VG',
+          data: dataPoints.map(({ VG }, s) => ({ x: s, y: VG })),
+          backgroundColor: '#000000',
+        },
+      ],
+    },
+    options: {
+      scales: {
+        yAxes: [
+          {
+            ticks: {
+              beginAtZero: true,
+            },
+          },
+        ],
+      },
+    },
+  });
+
+  chartNode.writeImageToFile('image/png', './' + filename);
+}
+
 async function writeSmoothedDataToFile(
   filename: string,
   processed: ProcessedData
