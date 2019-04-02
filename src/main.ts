@@ -552,8 +552,13 @@ async function writeRawDataToPNG(filename: string, processed: ProcessedData) {
   chartNode.writeImageToFile('image/png', './' + filename);
 }
 
-async function writeRawXYZToPNG(filename: string, dataPoints: DataPoint[]) {
-  const chartNode = new ChartjsNode(chartWidth, chartHeight);
+async function writeRawXYZToPNG(
+  filename: string,
+  dataPoints: DataPoint[],
+  width = 600,
+  height = 100
+) {
+  const chartNode = new ChartjsNode(width, height);
   await chartNode.drawChart({
     type: 'scatter',
     data: {
