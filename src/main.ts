@@ -130,21 +130,30 @@ async function main() {
 
   console.log('Done recording. Generating outputs.');
 
+  async function finishedMessage(p: Promise<void>, note: string) {
+    return p.then(() => console.log('Wrote', note));
+  }
+
   await Promise.all([
-    writeRawDataToPNG('data.png', processed).then(() =>
-      console.log('Raw PNG Written')
+    finishedMessage(writeRawDataToPNG('data.png', processed), 'Raw PNG'),
+    finishedMessage(
+      writeRawXYZToPNG('xyzData.png', forward, 3 * chartWidth, 3 * chartHeight),
+      'XYZ PNG'
     ),
-    writeRawXYZToPNG('xyzData.png', forward).then(() =>
-      console.log('Forward XYZ PNG written')
+    finishedMessage(
+      writeVGToPNG('vgData.png', forward, 3 * chartWidth, 200),
+      'VG PNG'
     ),
-    // writeSortedDataToFile('Reordered Original Data.csv', processed).then(() => console.log('Sorted Data Written')),
-    // writeSmoothedDataToFile('Smoothed.csv', processed).then(() => console.log('Smoothed Data Written')),
-    // writeSmoothedDataToPNG('Smoothed.png', processed).then(() => console.log('Smoothed PNG Written')),
-    writeLookupTableToPNG('Lookup Table.png', processed).then(() =>
-      console.log('Lookup Table PNG Written')
+    // finishedMessage(writeSortedDataToFile('Reordered Original Data.csv', processed),'Sorted Data'),
+    // finishedMessage(writeSmoothedDataToFile('Smoothed.csv', processed),'Smoothed Data'),
+    // finishedMessage(writeSmoothedDataToPNG('Smoothed.png', processed),'Smoothed PNG'),
+    finishedMessage(
+      writeLookupTableToPNG('Lookup Table.png', processed),
+      'Lookup Table PNG'
     ),
-    writeCalibrationBlock(resultSerial + '.hex', block).then(() =>
-      console.log('HEX Block Written')
+    finishedMessage(
+      writeCalibrationBlock(resultSerial + '.hex', block),
+      'HEX Block'
     ),
   ]);
 
