@@ -168,6 +168,7 @@ type DataPoint = {
   AS: number;
   BS: number;
   CS: number;
+  VG: number;
 };
 
 async function loadDataFromCSV(
@@ -221,6 +222,8 @@ async function loadDataFromCSV(
         AS,
         BS,
         CS,
+        AIN0,
+        VG,
       ] = split;
 
       // Header
@@ -236,6 +239,7 @@ async function loadDataFromCSV(
         AS,
         BS,
         CS,
+        VG,
       };
     });
 
@@ -264,7 +268,7 @@ async function loadDataFromUSB(
 
     const logger = createWriteStream(rawDataFilename);
 
-    logger.write('step,alpha,dir,x,y,z,current,cpuTemp,AS,BS,CS,ain0' + EOL);
+    logger.write('step,alpha,dir,x,y,z,current,cpuTemp,AS,BS,CS,ain0,VG' + EOL);
 
     // Non-inclusive last step of calibration routine
     const End = cycle * cyclePerRev * revolutions;
@@ -374,7 +378,7 @@ async function loadDataFromUSB(
 
         const { current, cpuTemp: temperature, AS, BS, CS } = data;
 
-        const { alpha } = data.mlxParsedResponse;
+        const { alpha, vg: VG } = data.mlxParsedResponse;
 
         await xyzDelay;
 
@@ -422,12 +426,13 @@ async function loadDataFromUSB(
             AS,
             BS,
             CS,
+            VG,
           };
 
           logger.write(
             `${step},${alpha},${dir},${x},${y},${z},${current},${temperature},${AS},${BS},${CS},${
               data.ain0
-            }${EOL}`
+            },${VG}${EOL}`
           );
         }
 
@@ -472,7 +477,9 @@ async function loadDataFromUSB(
             'Temp:',
             data.cpuTemp,
             'Current:',
-            data.current
+            data.current,
+            'VG:',
+            VG
           );
           lastPrint = temp;
         }
