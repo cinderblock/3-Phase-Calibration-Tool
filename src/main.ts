@@ -1,11 +1,6 @@
 'use strict';
 
-import USB, {
-  addAttachListener,
-  CommandMode,
-  MLXCommand,
-  Command,
-} from 'smooth-control';
+import USB, { addAttachListener, CommandMode, MLXCommand, Command } from 'smooth-control';
 import { v1 as uuid } from 'uuid';
 import PositiveModulus from './utils/PositiveModulus';
 import processData, { ProcessedData } from './Calibration';
@@ -49,8 +44,7 @@ async function main() {
   let def = 'None';
   let rePrompt = false;
 
-  const fresh =
-    (await prompt('Capture fresh? [No]: ')).trim().toLowerCase()[0] == 'y';
+  const fresh = (await prompt('Capture fresh? [No]: ')).trim().toLowerCase()[0] == 'y';
 
   console.log('Fresh:', fresh);
 
@@ -65,9 +59,7 @@ async function main() {
   if (!fresh) {
     resultSerial = uuid();
 
-    resultSerial =
-      (await prompt(`New serial number [${resultSerial}]: `)).trim() ||
-      resultSerial;
+    resultSerial = (await prompt(`New serial number [${resultSerial}]: `)).trim() || resultSerial;
 
     rl.close();
 
@@ -87,16 +79,13 @@ async function main() {
 
     rePrompt = true;
 
-    const selectedSerial =
-      (await prompt(`Serial Number [${def}]: `)).trim() || def;
+    const selectedSerial = (await prompt(`Serial Number [${def}]: `)).trim() || def;
 
     resultSerial = selectedSerial;
     if (resultSerial == 'None') {
       resultSerial = uuid();
 
-      resultSerial =
-        (await prompt(`New serial number [${resultSerial}]: `)).trim() ||
-        resultSerial;
+      resultSerial = (await prompt(`New serial number [${resultSerial}]: `)).trim() || resultSerial;
     } else {
       console.log('Storing calibration data as:', resultSerial);
     }
@@ -116,11 +105,7 @@ async function main() {
   console.log('Data loaded');
 
   // Take raw forward/reverse calibration data and calculate smoothed, averaged, and inverted
-  const processed = processData(
-    forward.map(d => d.alpha),
-    reverse.map(d => d.alpha),
-    cyclesPerRev * cycle
-  );
+  const processed = processData(forward.map(d => d.alpha), reverse.map(d => d.alpha), cyclesPerRev * cycle);
 
   const block = DataIDBlock({
     lookupTable: processed.inverseTable,
@@ -216,21 +201,7 @@ async function loadDataFromCSV(
         return;
       }
 
-      const [
-        step,
-        alpha,
-        dir,
-        x,
-        y,
-        z,
-        current,
-        temperature,
-        AS,
-        BS,
-        CS,
-        AIN0,
-        VG,
-      ] = split;
+      const [step, alpha, dir, x, y, z, current, temperature, AS, BS, CS, AIN0, VG] = split;
 
       // Header
       if (Number.isNaN(step)) return;
@@ -371,9 +342,7 @@ async function loadDataFromUSB(
         if (data.mlxParsedResponse.opcode == Opcode.Error_frame) {
           console.log(
             'Error frame. Error:',
-            data.mlxParsedResponse.error === undefined
-              ? 'undefined??'
-              : ErrorCode[data.mlxParsedResponse.error]
+            data.mlxParsedResponse.error === undefined ? 'undefined??' : ErrorCode[data.mlxParsedResponse.error]
           );
           maybeThrow('Received Error Frame');
           continue;
@@ -384,8 +353,7 @@ async function loadDataFromUSB(
           continue;
         }
 
-        if (data.mlxParsedResponse.alpha === undefined)
-          throw 'Parsing failure? - Alpha';
+        if (data.mlxParsedResponse.alpha === undefined) throw 'Parsing failure? - Alpha';
 
         const { current, cpuTemp: temperature, AS, BS, CS } = data;
 
@@ -411,9 +379,7 @@ async function loadDataFromUSB(
         if (dataXYZ.mlxParsedResponse.opcode == Opcode.Error_frame) {
           console.log(
             'Error frame. Error:',
-            dataXYZ.mlxParsedResponse.error === undefined
-              ? 'undefined??'
-              : ErrorCode[dataXYZ.mlxParsedResponse.error]
+            dataXYZ.mlxParsedResponse.error === undefined ? 'undefined??' : ErrorCode[dataXYZ.mlxParsedResponse.error]
           );
           maybeThrow('Received Error Frame XYZ');
           continue;
@@ -510,16 +476,11 @@ async function loadDataFromUSB(
   });
 }
 
-async function writeSortedDataToFile(
-  filename: string,
-  processed: ProcessedData
-) {
+async function writeSortedDataToFile(filename: string, processed: ProcessedData) {
   const out = createWriteStream(filename);
   out.write('step,forward,reverse' + EOL);
   for (let i = 0; i < processed.forwardData.length; i++) {
-    out.write(
-      `${i},${processed.forwardData[i]},${processed.reverseData[i]}${EOL}`
-    );
+    out.write(`${i},${processed.forwardData[i]},${processed.reverseData[i]}${EOL}`);
   }
   out.close();
 }
@@ -559,12 +520,7 @@ async function writeRawDataToPNG(filename: string, processed: ProcessedData) {
   chartNode.writeImageToFile('image/png', './' + filename);
 }
 
-async function writeRawXYZToPNG(
-  filename: string,
-  dataPoints: DataPoint[],
-  width = 600,
-  height = 100
-) {
+async function writeScaledXYZToPNG(filename: string, dataPoints: DataPoint[], width = 600, height = width) {
   const chartNode = new ChartjsNode(width, height);
   await chartNode.drawChart({
     type: 'scatter',
@@ -623,12 +579,7 @@ async function writeRawXYZToPNG(
   chartNode.writeImageToFile('image/png', './' + filename);
 }
 
-async function writeVGToPNG(
-  filename: string,
-  dataPoints: DataPoint[],
-  width = 600,
-  height = 100
-) {
+async function writeVGToPNG(filename: string, dataPoints: DataPoint[], width = 600, height = 100) {
   const chartNode = new ChartjsNode(width, height);
   await chartNode.drawChart({
     type: 'scatter',
@@ -657,18 +608,11 @@ async function writeVGToPNG(
   chartNode.writeImageToFile('image/png', './' + filename);
 }
 
-async function writeSmoothedDataToFile(
-  filename: string,
-  processed: ProcessedData
-) {
+async function writeSmoothedDataToFile(filename: string, processed: ProcessedData) {
   const out = createWriteStream(filename);
   out.write('step,forward,reverse,middle' + EOL);
   for (let i = 0; i < processed.forward.length; i++) {
-    out.write(
-      `${i},${processed.forward[i]},${processed.reverse[i]},${
-        processed.middle[i]
-      }${EOL}`
-    );
+    out.write(`${i},${processed.forward[i]},${processed.reverse[i]},${processed.middle[i]}${EOL}`);
   }
   out.close();
 }
