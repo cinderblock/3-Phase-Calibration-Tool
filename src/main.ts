@@ -506,7 +506,24 @@ async function writeRawDataToPNG(filename: string, processed: ProcessedData, wid
       ],
     },
     options: {
+      legend: { labels: { fontSize: 24 } },
       scales: {
+        xAxes: [
+          {
+            scaleLabel: {
+              fontSize: 24,
+              display: true,
+              labelString: 'Drive Angle',
+            },
+            type: 'linear',
+            ticks: {
+              stepSize: cycle,
+              major: {
+                stepSize: cyclesPerRev,
+              },
+            },
+          },
+        ],
         yAxes: [
           {
             ticks: {
@@ -551,13 +568,50 @@ async function writeScaledXYZToPNG(filename: string, dataPoints: DataPoint[], wi
           data: dataPoints.map(({ VG }, s) => ({ x: s, y: VG })),
           backgroundColor: '#000000',
         },
+        {
+          label: 'Alpha',
+          yAxisID: 'Alpha',
+          data: dataPoints.map(({ alpha }, s) => ({ x: s, y: alpha })),
+          backgroundColor: '#e541f4',
+        },
+        {
+          label: 'Angle',
+          yAxisID: 'Alpha',
+          data: dataPoints.map(({ x, y }, s) => ({
+            x: s,
+            y: (Math.atan2(-y, -x) / (Math.PI * 2) + 0.5) * 2 ** 14,
+          })),
+          backgroundColor: '#fff45b',
+        },
       ],
     },
     options: {
+      legend: { labels: { fontSize: 24 } },
       scales: {
+        xAxes: [
+          {
+            scaleLabel: {
+              fontSize: 24,
+              display: true,
+              labelString: 'Drive Angle',
+            },
+            type: 'linear',
+            ticks: {
+              stepSize: cycle,
+              major: {
+                stepSize: cyclesPerRev,
+              },
+            },
+          },
+        ],
         yAxes: [
           {
             id: 'XYZ',
+            scaleLabel: {
+              fontSize: 24,
+              display: true,
+              labelString: 'Scaled XYZ',
+            },
             type: 'linear',
             position: 'left',
             ticks: {
@@ -566,11 +620,18 @@ async function writeScaledXYZToPNG(filename: string, dataPoints: DataPoint[], wi
           },
           {
             id: 'VG',
+            scaleLabel: { fontSize: 24, display: true, labelString: 'Gain' },
             type: 'linear',
             position: 'right',
             ticks: {
               beginAtZero: true,
             },
+          },
+          {
+            id: 'Alpha',
+            type: 'linear',
+            position: 'right',
+            display: false,
           },
         ],
       },
@@ -594,7 +655,24 @@ async function writeVGToPNG(filename: string, dataPoints: DataPoint[], width = 6
       ],
     },
     options: {
+      legend: { labels: { fontSize: 24 } },
       scales: {
+        xAxes: [
+          {
+            scaleLabel: {
+              fontSize: 24,
+              display: true,
+              labelString: 'Drive Angle',
+            },
+            type: 'linear',
+            ticks: {
+              stepSize: cycle,
+              major: {
+                stepSize: cyclesPerRev,
+              },
+            },
+          },
+        ],
         yAxes: [
           {
             ticks: {
@@ -639,7 +717,24 @@ async function writeSmoothedDataToPNG(filename: string, processed: ProcessedData
       ],
     },
     options: {
+      legend: { labels: { fontSize: 24 } },
       scales: {
+        xAxes: [
+          {
+            scaleLabel: {
+              fontSize: 24,
+              display: true,
+              labelString: 'Drive Angle',
+            },
+            type: 'linear',
+            ticks: {
+              stepSize: cycle,
+              major: {
+                stepSize: cyclesPerRev,
+              },
+            },
+          },
+        ],
         yAxes: [
           {
             ticks: {
@@ -676,10 +771,33 @@ async function writeLookupTableToPNG(filename: string, processed: ProcessedData,
       ],
     },
     options: {
+      legend: { labels: { fontSize: 24 } },
       scales: {
+        xAxes: [
+          {
+            scaleLabel: {
+              fontSize: 24,
+              display: true,
+              labelString: 'Alpha / 4',
+            },
+            type: 'linear',
+            ticks: {
+              stepSize: 2 ** 9,
+            },
+          },
+        ],
         yAxes: [
           {
+            scaleLabel: {
+              fontSize: 24,
+              display: true,
+              labelString: 'Drive Angle',
+            },
             ticks: {
+              stepSize: cycle,
+              major: {
+                stepSize: cyclesPerRev,
+              },
               beginAtZero: true,
             },
           },
