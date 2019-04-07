@@ -7,6 +7,7 @@ import USBInterface, {
 } from 'smooth-control';
 import readline from 'readline';
 import chalk from 'chalk';
+import ExponentialFilter from './utils/ExponentialFilter';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -113,6 +114,40 @@ async function main() {
       console.log('Calibrated!');
 
       let writes = 0;
+      let CRCfails = 0;
+      let controlLoops = 0;
+
+      const currentFilter = ExponentialFilter(0.1);
+      let current: number;
+      const tempFilter = ExponentialFilter(0.1);
+      let temperature: number;
+      let pos: number;
+      let alpha: number;
+
+      const WPS = setInterval(() => {
+        console.log(
+          'WPS:',
+          writes,
+          'CRCfails:',
+          CRCfails,
+          'controlLoops:',
+          controlLoops,
+          'Current:',
+          current,
+          'Temperature:',
+          temperature,
+          'Position:',
+          pos,
+          'Alpha:',
+          alpha
+        );
+        writes = 0;
+        CRCfails = 0;
+        controlLoops = 0;
+        current = 0;
+        temperature = 0;
+      }, 1000);
+
       const dataHandler = (data: ReadData) => {
         if (data.state !== lastState) {
           lastState = data.state;
@@ -135,6 +170,19 @@ async function main() {
         ) {
           console.log('New Fault:', ControllerFault[data.fault]);
         }
+
+        CRCfails += data.mlxCRCFailures;
+        controlLoops += data.controlLoops;
+        current = currentFilter(data.current);
+        temperature = currentFilter(data.cpuTemp);
+        pos = data.position;
+        if (
+          data.mlxParsedResponse &&
+          data.mlxParsedResponse.alpha !== undefined
+        )
+          alpha = Math.round(
+            ((data.mlxParsedResponse && data.mlxParsedResponse.alpha) || 0) / 4
+          );
 
         // console.log({ calibrated, ...data });
       };
