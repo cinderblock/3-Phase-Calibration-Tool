@@ -21,7 +21,7 @@ function prompt(prompt: string) {
 
 const mode = CommandMode.Push;
 
-const amplitude: number = +process.argv[2] || 40;
+let amplitude: number = +process.argv[2] || 40;
 
 console.log('Amplitude:', amplitude);
 
@@ -30,7 +30,10 @@ let calibrated = false;
 let lastState: ControllerState;
 let lastFault: ControllerFault;
 
+type RunMode = 'oscillate' | 'constant';
+
 async function main() {
+  let runMode: RunMode = 'oscillate';
   let def = 'None';
 
   const stopAttachListening = await addAttachListener(id => {
@@ -109,6 +112,7 @@ async function main() {
       }
       console.log('Calibrated!');
 
+      let writes = 0;
       const dataHandler = (data: ReadData) => {
         if (data.state !== lastState) {
           lastState = data.state;
@@ -141,19 +145,34 @@ async function main() {
 
       console.log('Starting');
 
-      let writes = 0;
+      let zero = Date.now();
 
-      const WPS = setInterval(() => {
-        console.log('WPS:', writes);
-        writes = 0;
-      }, 1000);
+      rl.on('line', input => {
+        input = input.trim();
+        if (!input) amplitude = 0;
 
-      const zero = Date.now();
+        if (input[0] == 'o') {
+          if (runMode != 'oscillate' || !amplitude) {
+            zero = Date.now();
+          }
+          runMode = 'oscillate';
+          input = input.substring(1);
+        }
+
+        if (input[0] == 'c') {
+          runMode = 'constant';
+          input = input.substring(1);
+        }
+
+        amplitude = +input;
+      });
 
       const i = setInterval(async () => {
         const command =
-          amplitude *
-          Math.sin(((Date.now() - zero) / 1000) * 2 * Math.PI * Frequency);
+          runMode == 'oscillate'
+            ? amplitude *
+              Math.sin(((Date.now() - zero) / 1000) * 2 * Math.PI * Frequency)
+            : amplitude;
 
         usb.write({ mode, command });
         writes++;
