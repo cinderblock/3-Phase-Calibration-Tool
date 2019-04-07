@@ -116,7 +116,8 @@ async function main() {
   console.log('Done recording. Generating outputs.');
 
   async function finishedMessage(p: Promise<void>, note: string) {
-    return p.then(() => console.log('Wrote', note));
+    await p;
+    console.log('Wrote', note);
   }
 
   await Promise.all([
