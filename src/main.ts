@@ -486,8 +486,8 @@ async function writeSortedDataToFile(filename: string, processed: ProcessedData)
   out.close();
 }
 
-async function writeRawDataToPNG(filename: string, processed: ProcessedData) {
-  const chartNode = new ChartjsNode(chartWidth, chartHeight);
+async function writeRawDataToPNG(filename: string, processed: ProcessedData, width = 600, height = width) {
+  const chartNode = new ChartjsNode(width, height);
   await chartNode.drawChart({
     type: 'scatter',
     data: {
@@ -618,11 +618,8 @@ async function writeSmoothedDataToFile(filename: string, processed: ProcessedDat
   out.close();
 }
 
-async function writeSmoothedDataToPNG(
-  filename: string,
-  processed: ProcessedData
-) {
-  const chartNode = new ChartjsNode(chartWidth, chartHeight);
+async function writeSmoothedDataToPNG(filename: string, processed: ProcessedData, width = 400, height = width) {
+  const chartNode = new ChartjsNode(width, height);
   await chartNode.drawChart({
     type: 'scatter',
     data: {
@@ -665,11 +662,8 @@ async function writeCalibrationBlock(filename: string, block: Buffer) {
   writeFileSync(filename, mem.asHexString().replace(/\n/g, EOL) + EOL);
 }
 
-async function writeLookupTableToPNG(
-  filename: string,
-  processed: ProcessedData
-) {
-  const chartNode = new ChartjsNode(chartWidth, chartHeight);
+async function writeLookupTableToPNG(filename: string, processed: ProcessedData, width = 400, height = width) {
+  const chartNode = new ChartjsNode(width, height);
   await chartNode.drawChart({
     type: 'scatter',
     data: {
