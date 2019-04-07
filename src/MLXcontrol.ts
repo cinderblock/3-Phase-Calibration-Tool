@@ -57,12 +57,12 @@ async function main() {
 
     const MAPXYZ = 0x102a;
 
-    const addr = MAPXYZ;
+    const eeAddr = 0x102e;
 
     // Prepare a memory read
     // Read same location twice for now...
-    buff.writeUInt16LE(addr, 0);
-    buff.writeUInt16LE(addr, 2);
+    buff.writeUInt16LE(eeAddr, 0);
+    buff.writeUInt16LE(eeAddr, 2);
     buff[6] = 0b11000000 | Opcode.MemoryRead;
 
     let result;
@@ -96,8 +96,19 @@ async function main() {
 
     console.log(result);
 
-    const eeKey = EEchallenge[(MAPXYZ / 2) & 0b11111];
-    const eeValue = (result.data0 & ~0b111) | 0;
+    const eeKey = EEchallenge[(eeAddr / 2) & 0b11111];
+    // const eeValue = (result.data0 & ~0b111) | +(await prompt('Mode?: ')).trim();
+    let lowGain = +(await prompt('LowGain: ')).trim();
+
+    if (lowGain > 41) lowGain = 41;
+    if (lowGain < 1) lowGain = 1;
+
+    let highGain = +(await prompt('HighGain: ')).trim();
+
+    if (highGain > 41) highGain = 41;
+    if (highGain < 1) highGain = 1;
+
+    const eeValue = lowGain | (highGain << 8);
 
     if (eeValue === result.data0) {
       console.log('EEPROM already has expected value!');
@@ -107,14 +118,14 @@ async function main() {
     }
 
     await prompt(
-      `EEWrite value: 0x${eeValue.toString(16)} to: 0x${addr.toString(16)}?`
+      `EEWrite value: 0x${eeValue.toString(16)} to: 0x${eeAddr.toString(16)}?`
     );
 
     rl.close();
 
     command.data = makePacket({
       opcode: Opcode.EEPROMWrite,
-      data8: [0, addr],
+      data8: [0, eeAddr],
       data16: [, eeKey, eeValue],
     });
 
