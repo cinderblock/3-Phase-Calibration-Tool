@@ -518,7 +518,7 @@ async function writeRawDataToPNG(filename: string, processed: ProcessedData, wid
     },
   });
 
-  chartNode.writeImageToFile('image/png', './' + filename);
+  chartNode.writeImageToFile('image/png', filename);
 }
 
 async function writeScaledXYZToPNG(filename: string, dataPoints: DataPoint[], width = 600, height = width) {
@@ -577,7 +577,7 @@ async function writeScaledXYZToPNG(filename: string, dataPoints: DataPoint[], wi
     },
   });
 
-  chartNode.writeImageToFile('image/png', './' + filename);
+  chartNode.writeImageToFile('image/png', filename);
 }
 
 async function writeVGToPNG(filename: string, dataPoints: DataPoint[], width = 600, height = 100) {
@@ -606,7 +606,7 @@ async function writeVGToPNG(filename: string, dataPoints: DataPoint[], width = 6
     },
   });
 
-  chartNode.writeImageToFile('image/png', './' + filename);
+  chartNode.writeImageToFile('image/png', filename);
 }
 
 async function writeSmoothedDataToFile(filename: string, processed: ProcessedData) {
