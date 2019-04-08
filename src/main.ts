@@ -121,14 +121,14 @@ async function main() {
   }
 
   await Promise.all([
-    finishedMessage(writeRawDataToPNG('data.png', processed), 'Raw PNG'),
-    finishedMessage(writeRawXYZToPNG('xyzData.png', forward, chartWidth, chartHeight), 'XYZ Raw'),
-    finishedMessage(writeScaledXYZToPNG('xyzScaled.png', forward, chartWidth, chartHeight), 'XYZ Scaled'),
-    // finishedMessage(writeVGToPNG('vgData.png', forward, 3 * chartWidth, 200), 'VG PNG'),
+    // finishedMessage(writeRawDataToPNG('data.png', processed, 800), 'Raw PNG'),
+    finishedMessage(writeRawXYZToPNG('xyzData.png', forward, 2000, 1400), 'XYZ Raw'),
+    finishedMessage(writeScaledXYZToPNG('xyzScaled.png', forward, 2000, 1400), 'XYZ Scaled'),
+    // finishedMessage(writeVGToPNG('vgData.png', forward, 2000, 200), 'VG PNG'),
     // finishedMessage(writeSortedDataToFile('Reordered Original Data.csv', processed),'Sorted Data'),
     // finishedMessage(writeSmoothedDataToFile('Smoothed.csv', processed),'Smoothed Data'),
-    // finishedMessage(writeSmoothedDataToPNG('Smoothed.png', processed),'Smoothed PNG'),
-    finishedMessage(writeLookupTableToPNG('Lookup Table.png', processed), 'Lookup Table PNG'),
+    // finishedMessage(writeSmoothedDataToPNG('Smoothed.png', processed, 1000),'Smoothed PNG'),
+    finishedMessage(writeLookupTableToPNG('Lookup Table.png', processed, 1000), 'Lookup Table PNG'),
     finishedMessage(writeCalibrationBlock(resultSerial + '.hex', block), 'HEX Block'),
   ]);
 
