@@ -7,24 +7,15 @@
     <script>
       var toggle = false;
       function cycle() {
-        document
-          .getElementById('main')
-          .setAttribute('src', toggle ? 'xyzDataScaled.png' : 'xyzData.png');
+        document.getElementById('main').setAttribute('src', toggle ? 'xyzScaled.png' : 'xyzData.png');
 
-        document.getElementById('mainLabel').innerText = toggle
-          ? 'Scaled'
-          : 'Raw';
+        document.getElementById('mainLabel').innerText = toggle ? 'Scaled' : 'Raw';
 
         toggle = !toggle;
       }
     </script>
     <p id="mainLabel">Scaled</p>
-    <img
-      id="main"
-      onClick="cycle()"
-      style="float:left;"
-      src="xyzDataScaled.png"
-    />
+    <img id="main" onClick="cycle()" style="float:left;" src="xyzScaled.png" />
     <img src="Lookup Table.png" />
   </body>
 </html>
