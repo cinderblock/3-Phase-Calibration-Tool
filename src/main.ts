@@ -688,7 +688,7 @@ async function writeScaledXYZToPNG(filename: string, dataPoints: DataPoint[], wi
           backgroundColor: '#0000ff',
         },
         {
-          label: 'VG',
+          label: 'Gain',
           yAxisID: 'VG',
           data: dataPoints.map(({ VG }, s) => ({ x: s, y: VG })),
           backgroundColor: '#000000',
@@ -783,7 +783,7 @@ async function writeVGToPNG(filename: string, dataPoints: DataPoint[], width = 6
     data: {
       datasets: [
         {
-          label: 'VG',
+          label: 'Gain',
           data: dataPoints.map(({ VG }, s) => ({ x: s, y: VG })),
           backgroundColor: '#000000',
         },
