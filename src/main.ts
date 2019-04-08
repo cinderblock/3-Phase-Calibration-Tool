@@ -19,6 +19,8 @@ const chartHeight = chartWidth;
 const cyclesPerRev = 15;
 const revolutions = 4;
 
+const stepSize = 1;
+
 const cycle = 3 * 256;
 
 const maxAmplitude = 50;
@@ -267,7 +269,7 @@ async function loadDataFromUSB(
     let alpha: number;
 
     // Current calibration direction
-    let dir = 1;
+    let dir = stepSize;
 
     // Ramp amplitude up slowly
     let amplitude = 0;
