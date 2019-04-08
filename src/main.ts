@@ -44,6 +44,13 @@ async function main() {
   let def = 'None';
   let rePrompt = false;
 
+  rl.on('SIGINT', () => {
+    setTimeout(() => {
+      console.log('Forcing quit');
+      process.exit(0);
+    }, 400).unref();
+  });
+
   const fresh = (await prompt('Capture fresh? [No]: ')).trim().toLowerCase()[0] == 'y';
 
   console.log('Fresh:', fresh);
