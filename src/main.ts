@@ -25,8 +25,6 @@ const cycle = 3 * 256;
 
 const maxAmplitude = 50;
 
-const rawDataFilename = 'data.csv';
-
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
@@ -52,6 +50,8 @@ async function main() {
       process.exit(0);
     }, 400).unref();
   });
+
+  const rawDataFilename = (await prompt('Data file? [data.csv]: ')).trim() || 'data.csv';
 
   const fresh = (await prompt('Capture fresh? [No]: ')).trim().toLowerCase()[0] == 'y';
 
