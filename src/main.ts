@@ -99,15 +99,29 @@ async function main() {
 
     stopListening();
 
-    rl.close();
+    const logger = createWriteStream(rawDataFilename);
 
-    data = loadDataFromUSB(selectedSerial, cyclesPerRev, revolutions);
+    logger.write('step,alpha,dir,x,y,z,current,cpuTemp,AS,BS,CS,ain0,VG' + EOL);
+
+    data = loadDataFromUSB(selectedSerial, cyclesPerRev, revolutions, (step, dir, data) => {
+      logger.write(
+        `${step},${data.alpha},${dir},${data.x},${data.y},${data.z},${data.current},${data.temperature},${data.AS},${
+          data.BS
+        },${data.CS},,${data.VG}${EOL}`
+      );
+    });
+
+    data.then(({ time }) => {
+      logger.end(`${time.valueOf()}${EOL}`);
+    });
   }
 
   console.log('Loading data');
 
   // Await the actual loading of data from file or USB
   const { forward, reverse, time } = await data;
+
+  rl.close();
 
   console.log('Data loaded');
 
@@ -232,7 +246,8 @@ async function loadDataFromCSV(
 async function loadDataFromUSB(
   serial: string,
   cyclePerRev: number,
-  revolutions: number
+  revolutions: number,
+  logger: (step: number, dir: number, data: DataPoint) => void
 ): Promise<{
   forward: DataPoint[];
   reverse: DataPoint[];
@@ -242,10 +257,6 @@ async function loadDataFromUSB(
     const forward: DataPoint[] = [];
     const reverse: DataPoint[] = [];
     const usb = USB(serial);
-
-    const logger = createWriteStream(rawDataFilename);
-
-    logger.write('step,alpha,dir,x,y,z,current,cpuTemp,AS,BS,CS,ain0,VG' + EOL);
 
     // Non-inclusive last step of calibration routine
     const End = cycle * cyclePerRev * revolutions;
@@ -411,11 +422,18 @@ async function loadDataFromUSB(
             VG,
           };
 
-          logger.write(
-            `${step},${alpha},${dir},${x},${y},${z},${current},${temperature},${AS},${BS},${CS},${
-              data.ain0
-            },${VG}${EOL}`
-          );
+          logger(step, dir, {
+            alpha,
+            x,
+            y,
+            z,
+            current,
+            temperature,
+            AS,
+            BS,
+            CS,
+            VG,
+          });
         }
 
         // Keep going one cycle past the End before turning around
@@ -427,9 +445,6 @@ async function loadDataFromUSB(
         // All done
         if (dir < 0 && step <= 0) {
           const time = new Date();
-
-          // Write to file as ms since Unix epoch
-          logger.end(time.valueOf() + EOL);
 
           usb.write({ mode, amplitude: 0, angle: 0 }, () => {
             usb.close();
