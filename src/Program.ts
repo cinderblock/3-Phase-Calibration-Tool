@@ -45,14 +45,23 @@ async function main() {
 
   const usb = USB(serial);
 
-  await new Promise<void>(resolve => usb.write(({ mode: CommandMode.Bootloader } as unknown) as Command, resolve));
+  usb.start();
 
-  usb.close();
+  usb.events.on('status', async status => {
+    if (status != 'ok') {
+      console.log('Not ok');
+      return;
+    }
 
-  setTimeout(() => {
-    console.log('Force killing');
-    process.kill(0);
-  }, 500).unref();
+    await new Promise<void>(resolve => usb.write(({ mode: CommandMode.Bootloader } as unknown) as Command, resolve));
+
+    usb.close();
+
+    setTimeout(() => {
+      console.log('Force killing');
+      process.kill(0);
+    }, 500).unref();
+  });
 }
 
 main();
