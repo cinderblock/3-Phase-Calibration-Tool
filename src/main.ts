@@ -90,6 +90,8 @@ async function main() {
 
     const selectedSerial = (await prompt(`Serial Number [${def}]: `)).trim() || def;
 
+    stopListening();
+
     resultSerial = selectedSerial;
     if (resultSerial == 'None') {
       resultSerial = uuid();
@@ -98,8 +100,6 @@ async function main() {
     } else {
       console.log('Storing calibration data as:', resultSerial);
     }
-
-    stopListening();
 
     const logger = createWriteStream(rawDataFilename);
 
