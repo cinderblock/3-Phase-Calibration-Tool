@@ -4,9 +4,27 @@
     <title>Calibration data</title>
   </head>
   <body>
-    <img src="xyzData.png" />
-    <br />
-    <img src="vgData.png" /><br />
-    <img src="data.png" /> <img src="Lookup Table.png" />
+    <script>
+      var toggle = false;
+      function cycle() {
+        document
+          .getElementById('main')
+          .setAttribute('src', toggle ? 'xyzDataScaled.png' : 'xyzData.png');
+
+        document.getElementById('mainLabel').innerText = toggle
+          ? 'Scaled'
+          : 'Raw';
+
+        toggle = !toggle;
+      }
+    </script>
+    <p id="mainLabel">Scaled</p>
+    <img
+      id="main"
+      onClick="cycle()"
+      style="float:left;"
+      src="xyzDataScaled.png"
+    />
+    <img src="Lookup Table.png" />
   </body>
 </html>
