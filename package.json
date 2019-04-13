@@ -11,6 +11,7 @@
     "debug": "ts-node ./src/debug",
     "mlx": "ts-node ./src/MLXcontrol",
     "prog": "ts-node ./src/Program",
+    "process": "ts-node ./src/Reprocess",
     "test": "ts-node ./src/Oscillate"
   },
   "dependencies": {
