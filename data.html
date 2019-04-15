@@ -5,13 +5,19 @@
   </head>
   <body>
     <script>
-      var toggle = false;
+      var index = 0;
+      var list = [
+        { filename: 'xyzData.png', title: 'Raw' },
+        { filename: 'xyzScaled.png', title: 'Scaled' },
+        { filename: 'xyzFixed.png', title: 'Scaled Fixed' },
+      ];
       function cycle() {
-        document.getElementById('main').setAttribute('src', toggle ? 'xyzScaled.png' : 'xyzData.png');
+        index++;
+        if (index >= list.length || index < 0) index = 0;
 
-        document.getElementById('mainLabel').innerText = toggle ? 'Scaled' : 'Raw';
+        document.getElementById('main').setAttribute('src', list[index].filename);
 
-        toggle = !toggle;
+        document.getElementById('mainLabel').innerText = list[index].title;
       }
     </script>
     <p id="mainLabel">Scaled</p>
