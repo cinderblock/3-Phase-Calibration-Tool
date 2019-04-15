@@ -1,13 +1,7 @@
 'use strict';
 
-import USB, {
-  CommandMode,
-  MLXCommand,
-  Command,
-  ReadData,
-} from 'smooth-control';
+import USB, { CommandMode, MLXCommand, Command, ReadData } from 'smooth-control';
 
-import chalk from 'chalk';
 import { makePacket, Opcode, Marker } from 'mlx90363';
 
 const serial = 'None';

@@ -1,5 +1,5 @@
-import angleAverage from './utils/AngleAverage';
-import PositiveModulus from './utils/PositiveModulus';
+import angleAverage from '../utils/AngleAverage';
+import PositiveModulus from '../utils/PositiveModulus';
 
 export type ProcessedData = {
   forward: number[];
@@ -76,8 +76,7 @@ export default function processData(
     }
 
     inverseTable[i] =
-      Math.round(angleAverage(neighborhood, countsPerMechanicalRevolution)) %
-      countsPerMechanicalRevolution;
+      Math.round(angleAverage(neighborhood, countsPerMechanicalRevolution)) % countsPerMechanicalRevolution;
   }
 
   return { forward, reverse, middle, forwardData, reverseData, inverseTable };

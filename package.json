@@ -7,12 +7,12 @@
   "author": "Cameron Tacklind <cameron@tacklind.com>",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node ./src/main",
-    "debug": "ts-node ./src/debug",
-    "mlx": "ts-node ./src/MLXcontrol",
-    "prog": "ts-node ./src/Program",
-    "process": "ts-node ./src/Reprocess",
-    "test": "ts-node ./src/Oscillate"
+    "start": "ts-node ./src/runtimes/Calibrate",
+    "debug": "ts-node ./src/runtimes/Debug",
+    "mlx": "ts-node ./src/runtimes/MLXcontrol",
+    "prog": "ts-node ./src/runtimes/Program",
+    "process": "ts-node ./src/runtimes/Reprocess",
+    "test": "ts-node ./src/runtimes/Test"
   },
   "dependencies": {
     "@types/chart.js": "^2.7.48",

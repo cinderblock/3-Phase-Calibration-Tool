@@ -7,7 +7,7 @@ import USBInterface, {
 } from 'smooth-control';
 import readline from 'readline';
 import chalk from 'chalk';
-import ExponentialFilter from './utils/ExponentialFilter';
+import ExponentialFilter from '../utils/ExponentialFilter';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -79,11 +79,7 @@ async function main() {
           console.log(data.current);
           lastState = data.state;
           lastFault = data.fault;
-          if (
-            data.state === ControllerState.Fault &&
-            data.fault === ControllerFault.Init
-          )
-            resolve();
+          if (data.state === ControllerState.Fault && data.fault === ControllerFault.Init) resolve();
         };
 
         usb.events.on('data', l);
@@ -154,20 +150,11 @@ async function main() {
 
           if (data.state === ControllerState.Fault) {
             lastFault = data.fault;
-            console.log(
-              'New State:',
-              ControllerState[data.state],
-              ' - ',
-              ControllerFault[data.fault],
-              data.fault
-            );
+            console.log('New State:', ControllerState[data.state], ' - ', ControllerFault[data.fault], data.fault);
           } else {
             console.log('New State:', ControllerState[data.state]);
           }
-        } else if (
-          data.state == ControllerState.Fault &&
-          data.fault !== lastFault
-        ) {
+        } else if (data.state == ControllerState.Fault && data.fault !== lastFault) {
           console.log('New Fault:', ControllerFault[data.fault]);
         }
 
@@ -176,13 +163,8 @@ async function main() {
         current = currentFilter(data.current);
         temperature = currentFilter(data.cpuTemp);
         pos = data.position;
-        if (
-          data.mlxParsedResponse &&
-          data.mlxParsedResponse.alpha !== undefined
-        )
-          alpha = Math.round(
-            ((data.mlxParsedResponse && data.mlxParsedResponse.alpha) || 0) / 4
-          );
+        if (data.mlxParsedResponse && data.mlxParsedResponse.alpha !== undefined)
+          alpha = Math.round(((data.mlxParsedResponse && data.mlxParsedResponse.alpha) || 0) / 4);
 
         // console.log({ calibrated, ...data });
       };
@@ -218,8 +200,7 @@ async function main() {
       const i = setInterval(async () => {
         const command =
           runMode == 'oscillate'
-            ? amplitude *
-              Math.sin(((Date.now() - zero) / 1000) * 2 * Math.PI * Frequency)
+            ? amplitude * Math.sin(((Date.now() - zero) / 1000) * 2 * Math.PI * Frequency)
             : amplitude;
 
         usb.write({ mode, command });

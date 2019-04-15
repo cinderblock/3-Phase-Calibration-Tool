@@ -8,9 +8,10 @@
     "noImplicitAny": true,
     "strict": true,
     "moduleResolution": "node",
-    "baseUrl": "src",
+    "baseUrl": ".",
+    "outDir": "dist",
     "paths": {
-      "*": ["types/*", "*"]
+      "*": ["src/types/*", "node_modules/*", "node_modules/@types/*"]
     }
   }
 }
