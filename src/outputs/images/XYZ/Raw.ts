@@ -117,7 +117,7 @@ export default async function writeRawXYZToPNG(
     },
   });
 
-  chartNode.writeImageToFile('image/png', filename);
+  await chartNode.writeImageToFile('image/png', filename);
 
   chartNode.destroy();
 }
