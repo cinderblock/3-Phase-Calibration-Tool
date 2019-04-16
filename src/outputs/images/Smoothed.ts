@@ -61,7 +61,7 @@ export default async function writeSmoothedDataToPNG(
     },
   });
 
-  await chartNode.writeImageToFile('image/png', './Smoothed.png');
+  await chartNode.writeImageToFile('image/png', filename);
 
   chartNode.destroy();
 }
