@@ -61,4 +61,6 @@ export default async function writeRawDataToPNG(
   });
 
   chartNode.writeImageToFile('image/png', filename);
+
+  chartNode.destroy();
 }

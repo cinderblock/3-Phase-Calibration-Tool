@@ -118,4 +118,6 @@ export default async function writeRawXYZToPNG(
   });
 
   chartNode.writeImageToFile('image/png', filename);
+
+  chartNode.destroy();
 }
