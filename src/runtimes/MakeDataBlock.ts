@@ -63,7 +63,7 @@ async function readTable(): Promise<number[]> {
     }
 
     if (result.length != 2 ** 12) {
-      reject('Incorrect number of elements read...');
+      reject('Incorrect number of elements read');
     } else {
       resolve(result);
     }
