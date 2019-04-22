@@ -29,7 +29,7 @@ const chartWidth = 600;
 const chartHeight = chartWidth;
 
 const cyclesPerRev = 15;
-const revolutions = 3;
+const revolutions = 1;
 
 // TODO: Load from smooth-control
 const cycle = 3 * 256;
@@ -126,6 +126,7 @@ async function main() {
   console.log('Done recording. Generating outputs.');
 
   async function finishedMessage(p: Promise<void>, note: string) {
+    console.log('Generating', note);
     await p;
     console.log('Wrote', note);
   }
