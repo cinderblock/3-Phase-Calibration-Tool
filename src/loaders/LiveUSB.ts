@@ -211,12 +211,12 @@ export default async function loadDataFromUSB(
         if (dir < 0 && step <= 0) {
           const time = new Date();
 
-          usb.write({ mode, amplitude: 0, angle: 0 }, () => {
-            usb.close();
-          });
+          await sendCommand({ mode, amplitude: 0, angle: 0 });
+
+          usb.close();
+          console.log('USB closed');
 
           resolve({ forward, reverse, time });
-          usb.close();
           break;
         }
 
