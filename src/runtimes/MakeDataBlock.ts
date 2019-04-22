@@ -48,8 +48,6 @@ export default async function main(file: string) {
     ),
     writeCalibrationBlock(serial + '.hex', DataIDBlock({ lookupTable, calibrationTime, serial })),
   ]);
-
-  console.log('Done');
 }
 
 async function readTable(file: string): Promise<number[]> {
@@ -71,7 +69,6 @@ async function readTable(file: string): Promise<number[]> {
       if (result.length != expectedLength) {
         reject('Incorrect number of elements read');
       } else {
-        console.log('done!');
         resolve(result);
       }
     });
