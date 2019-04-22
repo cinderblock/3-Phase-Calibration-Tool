@@ -161,7 +161,7 @@ async function main() {
         CRCfails += data.mlxCRCFailures;
         controlLoops += data.controlLoops;
         current = currentFilter(data.current);
-        temperature = currentFilter(data.cpuTemp);
+        temperature = tempFilter(data.cpuTemp);
         pos = data.position;
         if (data.mlxParsedResponse && data.mlxParsedResponse.alpha !== undefined)
           alpha = Math.round(((data.mlxParsedResponse && data.mlxParsedResponse.alpha) || 0) / 4);
