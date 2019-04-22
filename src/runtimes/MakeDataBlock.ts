@@ -6,7 +6,8 @@ import * as CLI from '../utils/CLI';
 import writeLookupTableToPNG from '../outputs/images/Lookup';
 import writeCalibrationBlock from '../outputs/CalibrationBlock';
 
-const defaultRevolutions = 7;
+// TODO: Load from smooth-control
+const cycle = 3 * 256;
 
 export default async function main() {
   let serial = uuid();
@@ -16,14 +17,15 @@ export default async function main() {
 
   const inputDate = (await CLI.prompt('Calibration Date [now]:')).trim();
 
-  const revolutions =
-    Number((await CLI.prompt('Revolutions [' + defaultRevolutions + ']:')).trim()) || defaultRevolutions;
-
   CLI.close();
 
   const calibrationTime = inputDate ? new Date(inputDate) : new Date();
 
   const lookupTable = await readTable();
+
+  const revolutions = lookupTable.reduce((revs, pos) => Math.max(revs, Math.floor(pos / cycle)), 0) + 1;
+
+  console.log('Detected revolutions:', revolutions);
 
   const dummy: number[] = [];
 
