@@ -10,8 +10,8 @@ import writeCalibrationBlock from '../outputs/CalibrationBlock';
 const cycle = 3 * 256;
 
 export default async function main() {
-  let serial = uuid();
-  serial = (await CLI.prompt('New Serial [' + serial + ']:')).trim() || serial;
+  const id = uuid();
+  const serial = (await CLI.prompt('New Serial [' + id + ']:')).trim() || id;
 
   console.log('Using serial:', serial);
 
