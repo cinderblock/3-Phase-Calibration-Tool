@@ -11,14 +11,12 @@ export function prompt(prompt: string) {
 
 export function onSIGINT(cb: () => void) {
   rl.on('SIGINT', cb);
+  return () => rl.removeListener('SIGINT', cb);
 }
 
 export function onceSIGINT(cb: () => void) {
   rl.on('SIGINT', cb);
-}
-
-export function removeSIGINT(cb: () => void) {
-  rl.removeListener('SIGINT', cb);
+  return () => rl.removeListener('SIGINT', cb);
 }
 
 export function close() {
