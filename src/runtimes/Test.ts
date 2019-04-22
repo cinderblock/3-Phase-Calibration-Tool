@@ -134,7 +134,7 @@ async function main() {
           temperature,
           'Position:',
           pos,
-          'Alpha:',
+          'Alpha/4:',
           alpha
         );
         writes = 0;
