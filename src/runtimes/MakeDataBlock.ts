@@ -74,9 +74,6 @@ async function readTable(file: string): Promise<number[]> {
         console.log('done!');
         resolve(result);
       }
-
-      // Is this necessary?
-      readStream.close();
     });
   });
 }
