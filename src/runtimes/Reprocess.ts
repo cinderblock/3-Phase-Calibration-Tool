@@ -30,7 +30,7 @@ const cyclesPerRev = 15;
 const cycle = 3 * 256;
 
 async function main() {
-  CLI.onSIGINT(() => ForceQuit(400));
+  const sigIntCleanup = CLI.onSIGINT(() => ForceQuit(400));
 
   const rawDataFilename = (await CLI.prompt('Data file? [data.csv]: ')).trim() || 'data.csv';
 
@@ -38,6 +38,7 @@ async function main() {
 
   let serial = 'Mill Test';
 
+  sigIntCleanup();
   CLI.close();
 
   const folders = (await promisify(readdir)('mill-table'))
