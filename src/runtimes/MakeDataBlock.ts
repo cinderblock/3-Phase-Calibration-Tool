@@ -56,7 +56,7 @@ async function readTable(): Promise<number[]> {
     while (result.length < expectedLength) {
       (await CLI.prompt('Data:'))
         .trim()
-        .split(/[^0-9oxb]/)
+        .split(/[^0-9oxb]+/)
         .filter(s => s)
         // This even handles base prefixed number strings
         .map(Number)
