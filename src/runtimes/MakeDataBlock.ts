@@ -27,7 +27,7 @@ export default async function main(file: string) {
 
   const lookupTable = await readTable(file);
 
-  const revolutions = lookupTable.reduce((revs, pos) => Math.max(revs, Math.floor(pos / cycle)), 0) + 1;
+  const revolutions = lookupTable.reduce((revs, pos) => Math.max(revs, Math.ceil(pos / cycle)), 0);
 
   console.log('Detected revolutions:', revolutions);
 
