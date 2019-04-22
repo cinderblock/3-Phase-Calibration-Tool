@@ -59,8 +59,7 @@ async function readTable(): Promise<number[]> {
         .split(/[^0-9oxb]+/)
         .filter(s => s)
         // This even handles base prefixed number strings
-        .map(Number)
-        .forEach(n => result.push(n));
+        .forEach(n => result.push(Number(n)));
     }
 
     if (result.length != expectedLength) {
