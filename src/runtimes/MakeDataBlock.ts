@@ -51,8 +51,9 @@ export default async function main() {
 async function readTable(): Promise<number[]> {
   return new Promise(async (resolve, reject) => {
     const result: number[] = [];
+    const expectedLength = 2 ** 12;
 
-    while (result.length < 2 ** 12) {
+    while (result.length < expectedLength) {
       (await CLI.prompt('Data:'))
         .trim()
         .split(/[^0-9oxb]/)
@@ -62,7 +63,7 @@ async function readTable(): Promise<number[]> {
         .forEach(n => result.push(n));
     }
 
-    if (result.length != 2 ** 12) {
+    if (result.length != expectedLength) {
       reject('Incorrect number of elements read');
     } else {
       resolve(result);
