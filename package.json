@@ -12,6 +12,7 @@
     "mlx": "ts-node ./src/runtimes/MLXcontrol",
     "prog": "ts-node ./src/runtimes/Program",
     "process": "ts-node ./src/runtimes/Reprocess",
+    "raw-import": "ts-node ./src/runtimes/MakeDataBlock",
     "test": "ts-node ./src/runtimes/Test"
   },
   "dependencies": {
