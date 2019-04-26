@@ -87,7 +87,7 @@ export default function DataIDBlock({
   );
 
   // Record serial length at expected location
-  ID[USBStringSizePos] = SerialSize;
+  ID[USBStringSizePos] = SerialSize + 2;
 
   // Read back the written serial to confirm no encoding issues
   const writtenSerial = USBStringBuffer.toString('utf16le', 0, SerialSize);
