@@ -75,7 +75,7 @@ async function readTable(file: string): Promise<number[]> {
   });
 }
 
-if (require.main === module) {
+if (!module.parent) {
   const file = process.argv[2];
   if (file) main(file);
   else {
