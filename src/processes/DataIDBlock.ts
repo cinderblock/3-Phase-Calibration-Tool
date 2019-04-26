@@ -15,11 +15,7 @@ const IDSize = 128;
 /**
  * Generates a block of memory that matches Calibration and ID Page described in Boot Map.svg
  */
-export default function DataIDBlock({
-  lookupTable,
-  calibrationTime,
-  serial,
-}: Options) {
+export default function DataIDBlock({ lookupTable, calibrationTime, serial }: Options) {
   // The block of data that we return.
   const data = Buffer.allocUnsafe(TableSize + IDSize);
 
@@ -79,12 +75,7 @@ export default function DataIDBlock({
   USBStringBuffer.fill(0);
 
   // Write our serial number to the data block and record actual length written
-  const SerialSize = USBStringBuffer.write(
-    serial,
-    0,
-    USBStringBuffer.length,
-    'utf16le'
-  );
+  const SerialSize = USBStringBuffer.write(serial, 0, USBStringBuffer.length, 'utf16le');
 
   // Record serial length at expected location
   ID[USBStringSizePos] = SerialSize + 2;
