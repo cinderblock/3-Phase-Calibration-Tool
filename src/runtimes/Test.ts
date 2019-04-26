@@ -163,8 +163,10 @@ async function main() {
         current = currentFilter(data.current);
         temperature = tempFilter(data.cpuTemp);
         pos = data.position;
-        if (data.mlxParsedResponse && data.mlxParsedResponse.alpha !== undefined)
-          alpha = Math.round(((data.mlxParsedResponse && data.mlxParsedResponse.alpha) || 0) / 4);
+        if (data.mlxParsedResponse && typeof data.mlxParsedResponse != 'string') {
+          if (data.mlxParsedResponse.alpha !== undefined)
+            alpha = Math.round(((data.mlxParsedResponse && data.mlxParsedResponse.alpha) || 0) / 4);
+        }
 
         // console.log({ calibrated, ...data });
       };
