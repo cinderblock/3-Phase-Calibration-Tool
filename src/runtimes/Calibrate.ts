@@ -96,7 +96,7 @@ async function main() {
 
   console.log('Data loaded. Generating outputs.');
 
-  DataOutputs(resultSerial, data, cyclesPerRev);
+  await DataOutputs(resultSerial, data, cyclesPerRev);
 
   console.log('done');
 
