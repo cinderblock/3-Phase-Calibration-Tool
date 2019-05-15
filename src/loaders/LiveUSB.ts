@@ -260,8 +260,5 @@ export default async function loadDataFromUSB(
         await sendCommand({ mode, amplitude, angle });
       }
     });
-
-    // Actually start looking for the usb device
-    usb.start();
   });
 }
