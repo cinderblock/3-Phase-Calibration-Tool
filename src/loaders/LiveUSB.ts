@@ -110,6 +110,11 @@ export default async function loadDataFromUSB(
           if (!data) throw 'Data missing';
         } while (!data.mlxParsedResponse);
 
+        if (typeof data.mlxParsedResponse == 'string') {
+          maybeThrow('MLX data parsing error: ' + data.mlxParsedResponse);
+          continue;
+        }
+
         if (!data.mlxParsedResponse.crc) {
           maybeThrow('data crc fail');
           continue;
@@ -146,6 +151,11 @@ export default async function loadDataFromUSB(
           dataXYZ = await usb.read();
           if (!dataXYZ) throw 'XYZ data missing';
         } while (!dataXYZ.mlxParsedResponse);
+
+        if (typeof dataXYZ.mlxParsedResponse == 'string') {
+          maybeThrow('MLX data parsing error: ' + dataXYZ.mlxParsedResponse);
+          continue;
+        }
 
         if (!dataXYZ.mlxParsedResponse.crc) {
           maybeThrow('dataxyz crc fail');
@@ -252,6 +262,6 @@ export default async function loadDataFromUSB(
     });
 
     // Actually start looking for the usb device
-    usb.start(false);
+    usb.start();
   });
 }

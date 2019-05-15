@@ -1053,9 +1053,10 @@ signal-exit@^3.0.0:
 
 "smooth-control@https://github.com/cinderblock/smooth-control.git":
   version "0.0.0"
-  resolved "https://github.com/cinderblock/smooth-control.git#dc303001537f561a65a2bdb616ed37d7e3e9cfbf"
+  resolved "https://github.com/cinderblock/smooth-control.git#b4ab1ad2bc583a1a9617aa2cf2e1bc0859083c54"
   dependencies:
     mlx90363 "https://github.com/cinderblock/node-MLX90363.git"
+    typed-emitter "^0.1.0"
     usb "^1.5.0"
 
 source-map-support@^0.5.6:
@@ -1250,6 +1251,11 @@ type-check@~0.3.2:
   integrity sha1-WITKtRLPHTVeP7eE8wgEsrUg23I=
   dependencies:
     prelude-ls "~1.1.2"
+
+typed-emitter@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/typed-emitter/-/typed-emitter-0.1.0.tgz#ca532f100ccbf850e3a73b8ebf43d43e4f1f3849"
+  integrity sha512-Tfay0l6gJMP5rkil8CzGbLthukn+9BN/VXWcABVFPjOoelJ+koW8BuPZYk+h/L+lEeIp1fSzVRiWRPIjKVjPdg==
 
 typescript@^3.3.3333:
   version "3.4.2"
