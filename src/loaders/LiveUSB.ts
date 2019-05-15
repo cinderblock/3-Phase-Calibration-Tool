@@ -85,8 +85,8 @@ export default async function loadDataFromUSB(
       throw message;
     }
 
-    usb.events.once('status', async (s: string) => {
-      if (s != 'ok') return;
+    usb.events.once('status', async (s: 'missing' | 'connected') => {
+      if (s != 'connected') return;
 
       // Motor connected
 
