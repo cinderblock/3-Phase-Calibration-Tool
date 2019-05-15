@@ -1,6 +1,6 @@
 'use strict';
 
-import { addAttachListener } from 'smooth-control';
+import { addAttachListener, start } from 'smooth-control';
 import { v1 as uuid } from 'uuid';
 import { createWriteStream } from 'fs';
 import { EOL } from 'os';
@@ -56,6 +56,8 @@ async function main() {
       def = id;
       if (rePrompt) console.log(`Serial Number [${def}]: `);
     });
+
+    start();
 
     rePrompt = true;
 
