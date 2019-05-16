@@ -76,6 +76,7 @@ export default async function loadDataFromUSB(
     setInterval(() => {
       errors -= 0.1;
     }, 100);
+
     function maybeThrow(message: String) {
       errors++;
       if (errors < 50) {
@@ -85,8 +86,10 @@ export default async function loadDataFromUSB(
       throw message;
     }
 
-    usb.events.once('status', async (s: 'missing' | 'connected') => {
+    const stop = usb.onStatus(async s => {
       if (s != 'connected') return;
+
+      stop();
 
       // Motor connected
 
