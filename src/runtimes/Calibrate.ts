@@ -52,7 +52,7 @@ async function main() {
     console.log('Amplitude:', maxAmplitude);
 
     const stopListening = await addAttachListener(serial => {
-      console.log('\r', chalk.grey(new Date().toLocaleTimeString()), serial);
+      console.log('\r', 'Device attached:', chalk.grey(new Date().toLocaleTimeString()), serial);
       def = serial;
       if (rePrompt) console.log(`Serial Number [${def}]: `);
     });
