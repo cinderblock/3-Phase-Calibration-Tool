@@ -74,7 +74,7 @@ export default async function loadDataFromUSB(
 
     let errors = 0;
     setInterval(() => {
-      errors -= 0.1;
+      if (errors > 0) errors -= 0.1;
     }, 100);
 
     function maybeThrow(message: String) {
