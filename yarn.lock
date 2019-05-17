@@ -1053,7 +1053,7 @@ signal-exit@^3.0.0:
 
 "smooth-control@https://github.com/cinderblock/smooth-control.git":
   version "0.0.0"
-  resolved "https://github.com/cinderblock/smooth-control.git#707d6587bbb5f3b3cfbac16b70174bd3fb56ad76"
+  resolved "https://github.com/cinderblock/smooth-control.git#2dc5158170ee1046f08b864a11bd7694c0eefd79"
   dependencies:
     mlx90363 "https://github.com/cinderblock/node-MLX90363.git"
     typed-emitter "^0.1.0"
