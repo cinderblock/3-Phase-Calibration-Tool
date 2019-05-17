@@ -95,6 +95,8 @@ export default async function loadDataFromUSB(
 
       console.log('Starting');
 
+      await usb.write({ mode: CommandMode.ClearFault });
+
       let lastPrint;
 
       while (true) {
