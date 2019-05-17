@@ -4,14 +4,9 @@ import { DataPoint } from '../../DataPoint';
 // TODO: import from smooth-control
 const cycle = 3 * 256;
 
-export default async function writeVGToPNG(
-  filename: string,
-  dataPoints: DataPoint[],
-  revolutions = dataPoints.length / cycle,
-  width = 600,
-  height = 100
-) {
+export default async function writeVGToPNG(filename: string, dataPoints: DataPoint[], width = 600, height = 100) {
   const chartNode = new ChartjsNode(width, height);
+  const revolutions = dataPoints.length / cycle;
   const cyclesPerRev = cycle * revolutions;
   await chartNode.drawChart({
     type: 'scatter',

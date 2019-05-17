@@ -7,11 +7,11 @@ const cycle = 3 * 256;
 export default async function writeSmoothedDataToPNG(
   filename: string,
   processed: ProcessedData,
-  revolutions = processed.forward.length / cycle,
   width = 400,
   height = width
 ) {
   const chartNode = new ChartjsNode(width, height);
+  const revolutions = processed.forward.length / cycle;
   const cyclesPerRev = cycle * revolutions;
   await chartNode.drawChart({
     type: 'scatter',

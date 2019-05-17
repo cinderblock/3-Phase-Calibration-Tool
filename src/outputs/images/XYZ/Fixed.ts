@@ -7,11 +7,11 @@ const cycle = 3 * 256;
 export default async function writeFixedXYZToPNG(
   filename: string,
   dataPoints: DataPoint[],
-  revolutions = dataPoints.length / cycle,
   width = 600,
   height = width
 ) {
   const chartNode = new ChartjsNode(width, height);
+  const revolutions = dataPoints.length / cycle;
   const cyclesPerRev = cycle * revolutions;
   await chartNode.drawChart({
     type: 'scatter',
