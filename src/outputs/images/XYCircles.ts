@@ -27,8 +27,8 @@ export default async function writeXYPlotToPNG(filename: string, dataPoints: Dat
             },
             type: 'linear',
             ticks: {
-              min: -150,
-              max: 150,
+              min: -500,
+              max: 500,
             },
           },
         ],
@@ -42,8 +42,8 @@ export default async function writeXYPlotToPNG(filename: string, dataPoints: Dat
             },
             type: 'linear',
             ticks: {
-              min: -150,
-              max: 150,
+              min: -500,
+              max: 500,
             },
           },
         ],
