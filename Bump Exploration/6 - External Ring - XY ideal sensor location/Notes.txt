@@ -1,0 +1,3 @@
+Sensor was mounted in XY plane relative to magnetic field, on axis of megnetic symmetry.
+
+Feels good.
