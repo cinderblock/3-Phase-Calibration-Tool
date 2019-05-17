@@ -74,7 +74,7 @@ export default async function loadDataFromUSB(
 
     function maybeThrow(message: String) {
       errors++;
-      if (errors < 50) {
+      if (errors < 5) {
         console.error('Error suppressed:', message);
         return;
       }
