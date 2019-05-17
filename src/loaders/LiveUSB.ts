@@ -62,8 +62,13 @@ export default async function loadDataFromUSB(
     };
 
     function sendCommand(command: Command) {
-      return usb.write(command).catch(e => {
-        console.log('not Sent because:', e);
+      return new Promise(res => {
+        try {
+          usb.write(command, res);
+        } catch (e) {
+          console.log('not Sent because:', e);
+          res();
+        }
       });
     }
 
