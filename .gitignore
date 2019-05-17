@@ -1,12 +1,5 @@
 node_modules
 yarn-error.log
-data.*
-*.hex
-fit.csv
-record.csv
-
-*.xlsx
-
-*.csv
-
-*.png
+/data/
+/dist/
+/Internal*

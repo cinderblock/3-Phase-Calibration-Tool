@@ -1,0 +1,3 @@
+Sensor in plane with magnet. XY orientation.
+
+Feels pretty good. Tom thinks there is a phase relationship betweem bumpyness/crunchiness and motor. Maybe it's an issue with the non-linear range?

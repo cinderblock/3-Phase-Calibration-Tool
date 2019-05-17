@@ -82,6 +82,7 @@ export default async function loadDataFromUSB(
     }
 
     const stop = usb.onStatus(async s => {
+      console.log('Status event', s);
       if (s != 'connected') return;
 
       stop();
@@ -117,6 +118,7 @@ export default async function loadDataFromUSB(
 
         if (!data.mlxParsedResponse.crc) {
           maybeThrow('data crc fail');
+          console.log(data);
           continue;
         }
 

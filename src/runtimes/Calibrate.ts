@@ -15,10 +15,10 @@ import DataOutputs from '../processes/DataOutputs';
 const chartWidth = 600;
 const chartHeight = chartWidth;
 
-const cyclesPerRev = 15;
+const cyclesPerRev = 7;
 const revolutions = 3;
 
-const maxAmplitude = 65;
+const maxAmplitude = 55;
 
 async function main() {
   let def = 'None';
