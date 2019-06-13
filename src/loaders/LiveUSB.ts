@@ -1,6 +1,6 @@
 import { DataPoint } from '../DataPoint';
 import { DataFormat } from './DataFormat';
-import USBInterface, { CommandMode, MLXCommand, Command } from 'smooth-control';
+import USBInterface, { CommandMode, MLXCommand, Command, ReadData } from 'smooth-control';
 import { makePacket, Opcode, Marker, ErrorCode } from 'mlx90363';
 import { delay } from '../utils/delay';
 import PositiveModulus from '../utils/PositiveModulus';
@@ -86,6 +86,15 @@ export default async function loadDataFromUSB(
       throw message;
     }
 
+    function getData() {
+      return new Promise<ReadData>(resolve => {
+        const once = usb.onData(data => {
+          once();
+          resolve(data);
+        });
+      });
+    }
+
     const stop = usb.onStatus(async s => {
       if (s != 'connected') return;
 
@@ -108,10 +117,10 @@ export default async function loadDataFromUSB(
         const xyzDelay = delay(1);
 
         // Force AVR USB to update USB buffer data once
-        let data = await usb.read();
+        let data = await getData();
 
         do {
-          data = await usb.read();
+          data = await getData();
           if (!data) throw 'Data missing';
         } while (!data.mlxParsedResponse);
 
@@ -150,10 +159,10 @@ export default async function loadDataFromUSB(
         await sendCommand(MLXNOP);
 
         // Force AVR USB to update USB buffer data once
-        let dataXYZ = await usb.read();
+        let dataXYZ = await getData();
 
         do {
-          dataXYZ = await usb.read();
+          dataXYZ = await getData();
           if (!dataXYZ) throw 'XYZ data missing';
         } while (!dataXYZ.mlxParsedResponse);
 
