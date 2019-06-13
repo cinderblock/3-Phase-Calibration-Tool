@@ -95,10 +95,10 @@ export default async function loadDataFromUSB(
       });
     }
 
-    const stop = usb.onStatus(async s => {
+    const statusOnce = usb.onStatus(async s => {
       if (s != 'connected') return;
 
-      stop();
+      statusOnce();
 
       // Motor connected
 
