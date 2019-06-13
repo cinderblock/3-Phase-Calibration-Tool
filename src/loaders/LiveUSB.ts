@@ -237,8 +237,8 @@ export default async function loadDataFromUSB(
 
           await sendCommand({ mode, amplitude: 0, angle: 0 });
 
-          usb.close();
-          console.log('USB closed');
+          // usb.close();
+          // console.log('USB closed');
 
           resolve({ forward, reverse, time });
           break;
