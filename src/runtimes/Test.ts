@@ -4,6 +4,7 @@ import USBInterface, {
   ReadData,
   ControllerState,
   ControllerFault,
+  start,
 } from 'smooth-control';
 import readline from 'readline';
 import chalk from 'chalk';
@@ -42,6 +43,8 @@ async function main() {
     def = id;
   });
 
+  start();
+
   const serial = (await prompt(`Serial Number [${def}]: `)).trim() || def;
 
   stopAttachListening();
@@ -49,15 +52,17 @@ async function main() {
   const usb = USBInterface(serial);
   const Frequency = 0.5;
 
-  const dataListener = async (s: string) => {
-    if (s != 'ok') return;
+  const stopOnStatusListener = usb.onStatus(async (s: string) => {
+    if (s != 'connected') return;
 
-    usb.events.removeListener('status', dataListener);
+    stopOnStatusListener();
 
+    // Read data once and get current motor state/fault
     await new Promise<void>((resolve, reject) => {
-      usb.events.once('data', (data: ReadData) => {
+      const once = usb.onData(data => {
         lastState = data.state;
         lastFault = data.fault;
+        once();
         resolve();
       });
     });
@@ -69,20 +74,16 @@ async function main() {
     } else if (lastFault !== ControllerFault.Init) {
       console.log('Unexpected initial fault:', ControllerFault[lastFault]);
 
-      await new Promise<void>((resolvePromise, reject) => {
-        const resolve = () => {
-          usb.events.removeListener('data', l);
-          resolvePromise();
-        };
-
-        const l = (data: ReadData) => {
+      await new Promise<void>((resolve, reject) => {
+        const once = usb.onData(data => {
           console.log(data.current);
           lastState = data.state;
           lastFault = data.fault;
-          if (data.state === ControllerState.Fault && data.fault === ControllerFault.Init) resolve();
-        };
-
-        usb.events.on('data', l);
+          if (data.state === ControllerState.Fault && data.fault === ControllerFault.Init) {
+            once();
+            resolve();
+          }
+        });
 
         usb.write({ mode: CommandMode.ClearFault });
 
@@ -94,14 +95,16 @@ async function main() {
     }
 
     // await new Promise<void>((resolve, reject) => {
-    //   usb.events.on('data', (data: ReadData) => {
+    //   usb.on('data', (data: ReadData) => {
     //     lastState = data.state;
     //     lastFault = data.fault;
     //     resolve();
     //   });
     // });
 
-    usb.events.once('data', (data: ReadData) => {
+    const once = usb.onData(data => {
+      once();
+
       if (!data.calibrated) {
         console.log('Uncalibrated!');
         usb.close();
@@ -144,7 +147,7 @@ async function main() {
         temperature = 0;
       }, 1000);
 
-      const dataHandler = (data: ReadData) => {
+      const dataHandlerStop = usb.onData(data => {
         if (data.state !== lastState) {
           lastState = data.state;
 
@@ -169,9 +172,7 @@ async function main() {
         }
 
         // console.log({ calibrated, ...data });
-      };
-
-      usb.events.on('data', dataHandler);
+      });
 
       // Motor connected
 
@@ -214,7 +215,7 @@ async function main() {
         // Shutdown running write loop
         clearInterval(WPS);
         clearInterval(i);
-        usb.events.removeListener('data', dataHandler);
+        dataHandlerStop();
         // Stop the motor
         usb.write({ mode, command: 0 }, usb.close);
 
@@ -229,12 +230,7 @@ async function main() {
 
       rl.on('SIGINT', die);
     });
-  };
-
-  usb.events.on('status', dataListener);
-
-  // Actually start looking for the usb device
-  usb.start();
+  });
 }
 
 main();

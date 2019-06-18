@@ -1,6 +1,6 @@
 'use strict';
 
-import USB, { addAttachListener, CommandMode, Command } from 'smooth-control';
+import USB, { addAttachListener, CommandMode, start } from 'smooth-control';
 import readline from 'readline';
 import chalk from 'chalk';
 
@@ -29,6 +29,8 @@ async function main() {
 
   let def = 'N/A';
 
+  start();
+
   const stopListening = await addAttachListener(id => {
     console.log('\r', chalk.grey(new Date().toLocaleTimeString()), id);
     def = id;
@@ -45,17 +47,15 @@ async function main() {
 
   const usb = USB(serial);
 
-  usb.start();
-
-  usb.events.on('status', async status => {
-    if (status != 'ok') {
+  usb.onStatus(async status => {
+    if (status != 'connected') {
       console.log('Not ok');
       return;
     }
 
-    await new Promise<void>(resolve => usb.write(({ mode: CommandMode.Bootloader } as unknown) as Command, resolve));
+    await new Promise<void>(resolve => usb.write({ mode: CommandMode.Bootloader }, resolve));
 
-    usb.close();
+    // usb.close();
 
     setTimeout(() => {
       console.log('Force killing');

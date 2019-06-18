@@ -4,6 +4,7 @@ import USBInterface, {
   addAttachListener,
   CommandMode,
   MlxResponseState,
+  start,
 } from 'smooth-control';
 import readline from 'readline';
 import chalk from 'chalk';
@@ -27,6 +28,8 @@ function prompt(prompt: string) {
 async function main() {
   let def = 'None';
 
+  start();
+
   const stopListening = await addAttachListener(id => {
     console.log('\r', chalk.grey(new Date().toLocaleTimeString()), id);
     def = id;
@@ -34,12 +37,13 @@ async function main() {
 
   const serial = (await prompt(`Serial Number [${def}]: `)).trim() || def;
 
-  const usb = USBInterface(serial);
+  const usb = USBInterface(serial, { polling: false });
 
   stopListening();
 
-  usb.events.on('status', async (s: string) => {
-    if (s != 'ok') return;
+  const once = usb.onStatus(async s => {
+    if (s != 'connected') return;
+    once();
 
     // Motor connected
 
@@ -213,9 +217,6 @@ async function main() {
 
     usb.close();
   });
-
-  // Actually start looking for the usb device without automatic polling
-  usb.start(false);
 }
 
 main();
