@@ -121,9 +121,7 @@ async function main() {
       return;
     }
 
-    await prompt(
-      `EEWrite value: 0x${eeValue.toString(16)} to: 0x${eeAddr.toString(16)}?`
-    );
+    await prompt(`EEWrite value: 0x${eeValue.toString(16)} to: 0x${eeAddr.toString(16)}?`);
 
     rl.close();
 
