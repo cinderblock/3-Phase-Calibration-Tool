@@ -103,9 +103,12 @@ async function main() {
   console.log('done');
 
   sigintCleanup();
-  CLI.close();
+
+  console.log('Force quitting?');
 
   ForceQuit(500);
+
+  // CLI.close();
 }
 
 main();
