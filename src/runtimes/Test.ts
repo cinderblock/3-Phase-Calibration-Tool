@@ -50,7 +50,7 @@ async function main() {
   stopAttachListening();
 
   const usb = USBInterface(serial);
-  const Frequency = 0.5;
+  let Frequency = 0.5;
 
   const stopOnStatusListener = usb.onStatus(async (s: string) => {
     if (s != 'connected') return;
@@ -189,15 +189,18 @@ async function main() {
             zero = Date.now();
           }
           runMode = 'oscillate';
-          input = input.substring(1);
+          amplitude = +input.substring(1);
         }
 
         if (input[0] == 'c') {
           runMode = 'constant';
-          input = input.substring(1);
+          amplitude = +input.substring(1);
         }
 
-        amplitude = +input;
+        if (input[0] == 'f') {
+          amplitude = 0;
+          Frequency = +input.substring(1);
+        }
       });
 
       const i = setInterval(async () => {
