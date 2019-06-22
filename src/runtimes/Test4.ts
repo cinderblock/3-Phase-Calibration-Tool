@@ -199,7 +199,7 @@ async function main() {
   });
 
   const i = setInterval(async () => {
-    const command = Math.sin(((Date.now() - zero) / 1000) * 2 * Math.PI * frequency);
+    const command = amplitude * Math.sin(((Date.now() - zero) / 1000) * 2 * Math.PI * frequency);
 
     motors.left.head.write({ mode, command });
     // motors.left.feet.write({ mode, command });
