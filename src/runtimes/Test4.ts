@@ -226,8 +226,6 @@ async function main() {
     }, 400).unref();
   }
 
-  console.log('on sigint');
-
   rl.on('SIGINT', die);
 }
 
