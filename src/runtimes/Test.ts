@@ -24,6 +24,7 @@ function prompt(prompt: string) {
 const mode = CommandMode.Push;
 
 let amplitude: number = +process.argv[2] || 40;
+let loopFrequency = 300;
 
 console.log('Amplitude:', amplitude);
 
@@ -180,9 +181,26 @@ async function main() {
 
       let zero = Date.now();
 
+      async function loop() {
+        const command =
+          runMode == 'oscillate'
+            ? amplitude * Math.sin(((Date.now() - zero) / 1000) * 2 * Math.PI * Frequency)
+            : amplitude;
+
+        usb.write({ mode, command });
+        writes++;
+      }
+
+      let interval = setInterval(loop, 1000 / loopFrequency);
+
       rl.on('line', input => {
         input = input.trim();
         if (!input) amplitude = 0;
+
+        if (input[0] == 'i') {
+          clearInterval(interval);
+          interval = setInterval(loop, 1000 / loopFrequency);
+        }
 
         if (input[0] == 'o') {
           if (runMode != 'oscillate' || !amplitude) {
@@ -203,21 +221,11 @@ async function main() {
         }
       });
 
-      const i = setInterval(async () => {
-        const command =
-          runMode == 'oscillate'
-            ? amplitude * Math.sin(((Date.now() - zero) / 1000) * 2 * Math.PI * Frequency)
-            : amplitude;
-
-        usb.write({ mode, command });
-        writes++;
-      }, 1000 / 300);
-
       function die() {
         console.log('Dying');
         // Shutdown running write loop
         clearInterval(WPS);
-        clearInterval(i);
+        clearInterval(interval);
         dataHandlerStop();
         // Stop the motor
         usb.write({ mode, command: 0 }, usb.close);
