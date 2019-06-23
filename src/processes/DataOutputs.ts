@@ -37,7 +37,6 @@ export default async function DataOutputs(
 
   async function doneMsg(p: Promise<void>, note: string) {
     await p;
-    console.log('Wrote', note);
   }
 
   function dir(f: string) {
