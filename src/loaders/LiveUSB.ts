@@ -253,7 +253,8 @@ export default async function loadDataFromUSB(
         const angle = PositiveModulus(step, cycle);
 
         // Print status updates at logarithmic periods
-        const temp = Math.round(Math.log(999 + step || 1) / Math.log(1.1));
+        const temp = Math.round(Math.log(cycle + 50 + step || 1) / Math.log(1.25));
+
         if (temp !== lastPrint) {
           console.log(
             'At step:',
