@@ -257,9 +257,9 @@ export default async function loadDataFromUSB(
 
         if (temp !== lastPrint) {
           console.log(
+            percent(dir > 0 ? step / End / 2 : 1 - step / End / 2),
             'At step:',
             step,
-            percent(step / End),
             'mag:',
             alpha,
             'Temp:',
