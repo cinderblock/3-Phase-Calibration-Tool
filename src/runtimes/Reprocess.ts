@@ -1,86 +1,55 @@
 'use strict';
 
-import { promisify } from 'util';
 import { join } from 'path';
-import { readdir, lstatSync } from 'fs';
+import { promises as fs } from 'fs';
 
-import processData, { ProcessedData } from '../processes/Calibration';
-import DataIDBlock from '../processes/DataIDBlock';
-import { DataFormat } from '../loaders/DataFormat';
+import DataOutputs from '../processes/DataOutputs';
 import * as CLI from '../utils/CLI';
 import loadDataFromCSV from '../loaders/DataFile';
 import ForceQuit from '../utils/ForceQuit';
 
-import writeRawXYZToPNG from '../outputs/images/XYZ/Raw';
-import writeScaledXYZToPNG from '../outputs/images/XYZ/Scaled';
-import writeVGToPNG from '../outputs/images/VG';
-import writeFixedXYZToPNG from '../outputs/images/XYZ/Fixed';
-import writeXYPlotToPNG from '../outputs/images/XYCircles';
-import writeSortedDataToFile from '../outputs/csv/Sorted';
-import writeSmoothedDataToFile from '../outputs/csv/Smoothed';
-import writeSmoothedDataToPNG from '../outputs/images/Smoothed';
-import writeLookupTableToPNG from '../outputs/images/Lookup';
-import writeCalibrationBlock from '../outputs/CalibrationBlock';
-import writeRawDataToPNG from '../outputs/images/Raw';
-
-const chartWidth = 600;
-
 const cyclesPerRev = 15;
 
-const cycle = 3 * 256;
+async function getFolderName() {
+  while (true) {
+    const rawDataFilename = (await CLI.prompt('Data folder? ')).trim();
+
+    if (rawDataFilename) return rawDataFilename;
+  }
+}
 
 async function main() {
   const sigIntCleanup = CLI.onSIGINT(() => ForceQuit(400));
 
-  const rawDataFilename = (await CLI.prompt('Data file? [data.csv]: ')).trim() || 'data.csv';
+  const workDir = await getFolderName();
 
-  let data: Promise<DataFormat>;
+  const generatedFilesDir = join(workDir, 'generated');
 
-  let serial = 'Mill Test';
+  // Make directory and don't error if it exists
+  await fs.mkdir(generatedFilesDir).catch(e => {});
+
+  const serial = 'Test';
 
   sigIntCleanup();
-  CLI.close();
 
-  const folders = (await promisify(readdir)('mill-table'))
-    .map(f => join('mill-table', f))
-    .filter(f => lstatSync(f).isDirectory());
+  const regex = /(?<name>H(?<H>\d+)R(?<R>[0-9.]{5})(?<N>-\d)?)\.csv/;
 
-  for (const folder of folders) {
-    data = loadDataFromCSV(join(folder, rawDataFilename));
+  for (const filename of await fs.readdir(workDir)) {
+    const match = regex.exec(filename);
 
-    // Await the actual loading of data from file or USB
-    const { forward, reverse, time } = await data;
+    if (!match) continue;
 
-    // Take raw forward/reverse calibration data and calculate smoothed, averaged, and inverted
-    const processed = processData(forward.map(d => d.alpha), reverse.map(d => d.alpha), cyclesPerRev * cycle);
+    const { name, H, R, N } = match.groups as { name: string; H: string; R: string; N: string };
 
-    const block = DataIDBlock({
-      lookupTable: processed.inverseTable,
-      calibrationTime: time,
-      serial: serial,
-    });
+    // Make directory and don't error if it exists
+    await fs.mkdir(join(generatedFilesDir, name)).catch(e => {});
 
-    async function finishedMessage(p: Promise<void>, note: string) {
-      await p;
-      console.log('Wrote', note);
-    }
-
-    await Promise.all([
-      // finishedMessage(writeRawDataToPNG(join(folder,'data.png'), processed, 800), 'Raw PNG'),
-      // finishedMessage(writeRawXYZToPNG(join(folder,'xyzData.png'), forward, 2000, 1400), 'XYZ Raw'),
-      // finishedMessage(writeScaledXYZToPNG(join(folder,'xyzScaled.png'), forward, 2000, 1400), 'XYZ Scaled'),
-      finishedMessage(writeFixedXYZToPNG(join(folder, 'xyzFixed.png'), forward, 2000, 1400), 'XYZ Fixed'),
-      finishedMessage(writeXYPlotToPNG(join(folder, 'xyPlot.png'), forward, 2000, 1400), 'XY Circle'),
-      // finishedMessage(writeVGToPNG(join(folder,'vgData.png'), forward, 2000, 200), 'VG PNG'),
-      // finishedMessage(writeSortedDataToFile(join(folder,'Reordered Original Data.csv'), processed),'Sorted Data'),
-      // finishedMessage(writeSmoothedDataToFile(join(folder,'Smoothed.csv'), processed),'Smoothed Data'),
-      // finishedMessage(writeSmoothedDataToPNG(join(folder,'Smoothed.png'), processed, 1000),'Smoothed PNG'),
-      // finishedMessage(writeLookupTableToPNG(join(folder,'Lookup Table.png'), processed, 1000), 'Lookup Table PNG'),
-      // finishedMessage(writeCalibrationBlock(join(folder, serial + '.hex'), block), 'HEX Block'),
-    ]);
+    // Do not try to run many of these in parallel. You will run out of memory.
+    await DataOutputs(serial, loadDataFromCSV(join(workDir, filename)), cyclesPerRev, [generatedFilesDir, name]);
   }
 
   console.log('done');
+  // CLI.close();
 
   ForceQuit(500);
 }
