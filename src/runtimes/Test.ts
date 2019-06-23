@@ -23,8 +23,7 @@ function prompt(prompt: string) {
 
 const mode = CommandMode.Push;
 
-let amplitude: number = +process.argv[2] || 40;
-let loopFrequency = 300;
+let amplitude: number = process.argv[2] ? +process.argv[2] : 30;
 
 console.log('Amplitude:', amplitude);
 
@@ -191,7 +190,7 @@ async function main() {
         writes++;
       }
 
-      let interval = setInterval(loop, 1000 / loopFrequency);
+      let interval = setInterval(loop, 1000 / 300);
 
       rl.on('line', input => {
         input = input.trim();
