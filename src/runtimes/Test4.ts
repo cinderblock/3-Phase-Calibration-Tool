@@ -25,6 +25,8 @@ const mode = CommandMode.Push;
 
 let amplitude: number = +process.argv[2] || 10;
 
+let intervalDivider = 300;
+
 console.log('Amplitude:', amplitude);
 
 type RunMode = 'oscillate';
@@ -196,9 +198,13 @@ async function main() {
       amplitude = 0;
       frequency = +input.substring(1);
     }
-  });
 
-  const i = setInterval(async () => {
+    if (input[0] == 'i') {
+      intervalDivider = +input.substring(1);
+      restartInterval();
+    }
+  });
+  async function loop() {
     const command = amplitude * Math.sin(((Date.now() - zero) / 1000) * 2 * Math.PI * frequency);
 
     motors.left.head.write({ mode, command });
@@ -207,13 +213,20 @@ async function main() {
     motors.right.feet.write({ mode, command: -command });
 
     writes++;
-  }, 1000 / 300);
+  }
+
+  let interval = setInterval(loop, 1000 / intervalDivider);
+
+  function restartInterval() {
+    clearInterval(interval);
+    interval = setInterval(loop, 1000 / intervalDivider);
+  }
 
   function die() {
     console.log('Dying');
     // Shutdown running write loop
     // clearInterval(WPS);
-    clearInterval(i);
+    clearInterval(interval);
     // dataHandlerStop();
     // Stop the motor
     motors.left.head.write({ mode, command: 0 }, motors.left.head.close);
