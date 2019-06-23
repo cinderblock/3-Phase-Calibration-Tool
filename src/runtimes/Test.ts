@@ -199,7 +199,7 @@ async function main() {
 
         if (input[0] == 'i') {
           clearInterval(interval);
-          interval = setInterval(loop, 1000 / loopFrequency);
+          interval = setInterval(loop, 1000 / +input.substring(1));
         }
 
         if (input[0] == 'o') {
