@@ -23,7 +23,7 @@ function prompt(prompt: string) {
 
 const mode = CommandMode.Push;
 
-let amplitude: number = +process.argv[2] || 10;
+let amplitude: number = process.argv[2] ? +process.argv[2] : 10;
 
 let intervalDivider = 300;
 
