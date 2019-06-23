@@ -112,9 +112,9 @@ async function main() {
     promiseReady(motors.right.feet),
   ]);
 
-  // let writes = 0;
-  // let CRCfails = 0;
-  // let controlLoops = 0;
+  let writes = 0;
+  let CRCfails = 0;
+  let controlLoops = 0;
 
   // const currentFilter = ExponentialFilter(0.1);
   // let current: number;
@@ -123,29 +123,29 @@ async function main() {
   // let pos: number;
   // let alpha: number;
 
-  // const WPS = setInterval(() => {
-  //   console.log(
-  //     'WPS:',
-  //     writes,
-  //     'CRCfails:',
-  //     CRCfails,
-  //     'controlLoops:',
-  //     controlLoops,
-  //     'Current:',
-  //     current.toFixed(2),
-  //     'Temperature:',
-  //     temperature.toFixed(1),
-  //     'Position:',
-  //     pos,
-  //     'Alpha/4:',
-  //     alpha
-  //   );
-  //   writes = 0;
-  //   CRCfails = 0;
-  //   controlLoops = 0;
-  //   current = 0;
-  //   temperature = 0;
-  // }, 1000);
+  const WPS = setInterval(() => {
+    console.log(
+      'WPS:',
+      writes,
+      'CRCfails:',
+      CRCfails,
+      'controlLoops:',
+      controlLoops
+      // 'Current:',
+      // current.toFixed(2),
+      // 'Temperature:',
+      // temperature.toFixed(1),
+      // 'Position:',
+      // pos,
+      // 'Alpha/4:',
+      // alpha
+    );
+    writes = 0;
+    CRCfails = 0;
+    controlLoops = 0;
+    // current = 0;
+    // temperature = 0;
+  }, 1000);
 
   // const dataHandlerStop = usb.onData(data => {
   //   if (data.state !== lastState) {
@@ -205,6 +205,8 @@ async function main() {
     // motors.left.feet.write({ mode, command });
     motors.right.head.write({ mode, command: -command });
     motors.right.feet.write({ mode, command: -command });
+
+    writes++;
   }, 1000 / 300);
 
   function die() {
