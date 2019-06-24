@@ -227,7 +227,7 @@ async function main() {
 
   function restartInterval() {
     clearInterval(interval);
-    interval = setInterval(loop, 1000 / intervalDivider);
+    if (intervalDivider) interval = setInterval(loop, 1000 / intervalDivider);
   }
 
   function die() {
