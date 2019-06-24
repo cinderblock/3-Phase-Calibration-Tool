@@ -197,7 +197,8 @@ async function main() {
 
         if (input[0] == 'i') {
           clearInterval(interval);
-          interval = setInterval(loop, 1000 / +input.substring(1));
+          const div = +input.substring(1);
+          if (div) interval = setInterval(loop, 1000 / div);
         }
 
         if (input[0] == 'o') {
