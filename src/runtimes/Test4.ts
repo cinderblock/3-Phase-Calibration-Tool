@@ -29,7 +29,7 @@ let intervalDivider = 300;
 
 console.log('Amplitude:', amplitude);
 
-type RunMode = 'oscillate';
+type RunMode = 'oscillate' | 'constant';
 
 const motors = {
   left: {
@@ -187,10 +187,16 @@ async function main() {
     if (!input) amplitude = 0;
 
     if (input[0] == 'o') {
-      if (!amplitude) {
+      if (runMode != 'oscillate' || !amplitude) {
         zero = Date.now();
       }
+      runMode = 'oscillate';
 
+      amplitude = +input.substring(1);
+    }
+
+    if (input[0] == 'c') {
+      runMode = 'constant';
       amplitude = +input.substring(1);
     }
 
@@ -205,7 +211,9 @@ async function main() {
     }
   });
   async function loop() {
-    const command = amplitude * Math.sin(((Date.now() - zero) / 1000) * 2 * Math.PI * frequency);
+    let command = amplitude;
+
+    if (runMode == 'oscillate') command *= Math.sin(((Date.now() - zero) / 1000) * 2 * Math.PI * frequency);
 
     motors.left.head.write({ mode, command });
     // motors.left.feet.write({ mode, command });
