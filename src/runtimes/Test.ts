@@ -181,10 +181,9 @@ async function main() {
       let zero = Date.now();
 
       async function loop() {
-        const command =
-          runMode == 'oscillate'
-            ? amplitude * Math.sin(((Date.now() - zero) / 1000) * 2 * Math.PI * Frequency)
-            : amplitude;
+        let command = amplitude;
+
+        if (runMode == 'oscillate') command *= Math.sin(((Date.now() - zero) / 1000) * 2 * Math.PI * Frequency);
 
         usb.write({ mode, command });
         writes++;
