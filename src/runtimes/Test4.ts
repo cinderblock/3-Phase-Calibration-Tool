@@ -42,7 +42,7 @@ const motors = {
   },
 };
 
-function promiseReady(usb: typeof motors.left.head) {
+function promiseReady(usb: ReturnType<typeof USBInterface>) {
   return new Promise<void>((resolve, reject) => {
     const stopOnStatusListener = usb.onStatus(async (s: string) => {
       if (s != 'connected') return;
