@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Calibration data</title>
+  </head>
+  <body>
+    <script>
+      var index = 0;
+      var list = [
+        { filename: 'xyzData.png', title: 'Raw' },
+        { filename: 'xyzScaled.png', title: 'Scaled' },
+        { filename: 'xyzFixed.png', title: 'Scaled Fixed' },
+      ];
+      function cycle() {
+        index++;
+        if (index >= list.length || index < 0) index = 0;
+
+        document.getElementById('main').setAttribute('src', list[index].filename);
+
+        document.getElementById('mainLabel').innerText = list[index].title;
+      }
+    </script>
+    <!-- <p id="mainLabel">Loading</p> -->
+    <!-- <img id="main" onClick="" style="float:left;" src="" /> -->
+    <!-- <img src="Lookup Table.png" /> -->
+    <br />
+    <img src="fields.png" />
+  </body>
+  <script>
+    cycle();
+  </script>
+</html>

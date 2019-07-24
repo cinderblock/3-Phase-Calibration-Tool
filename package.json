@@ -14,6 +14,7 @@
     "process": "ts-node ./src/runtimes/Reprocess",
     "raw-import": "ts-node ./src/runtimes/MakeDataBlock",
     "test4": "ts-node ./src/runtimes/Test4",
+    "fieldtest": "ts-node ./src/runtimes/FieldTest",
     "test": "ts-node ./src/runtimes/Test"
   },
   "dependencies": {
