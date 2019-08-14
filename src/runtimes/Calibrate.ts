@@ -16,9 +16,9 @@ const chartWidth = 600;
 const chartHeight = chartWidth;
 
 const cyclesPerRev = 15;
-const revolutions = 3;
+const revolutions = 2;
 
-const maxAmplitude = 65;
+const maxAmplitude = 55;
 
 async function main() {
   let def = 'None';
