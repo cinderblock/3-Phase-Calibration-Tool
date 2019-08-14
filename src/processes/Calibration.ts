@@ -79,5 +79,9 @@ export default function processData(
       Math.round(angleAverage(neighborhood, countsPerMechanicalRevolution)) % countsPerMechanicalRevolution;
   }
 
+  for (let i = 0; i < 2**12;) {
+    console.log(' ' + inverseTable.slice(i, i+=2**6).join(', ') + ',')
+  }
+
   return { forward, reverse, middle, forwardData, reverseData, inverseTable };
 }
