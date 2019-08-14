@@ -201,7 +201,7 @@ builtin-modules@^1.1.1:
   resolved "https://registry.yarnpkg.com/builtin-modules/-/builtin-modules-1.1.1.tgz#270f076c5a72c02f5b65a47df94c5fe3a278892f"
   integrity sha1-Jw8HbFpywC9bZaR9+Uxf46J4iS8=
 
-canvas@1.6.*:
+canvas@1.6.*, canvas@1.6.13:
   version "1.6.13"
   resolved "https://registry.yarnpkg.com/canvas/-/canvas-1.6.13.tgz#8cb4e9abbea9e615a377890ffac50277a1167c73"
   integrity sha512-XAfzfEOHZ3JIPjEV+WSI6PpISgUta3dgmndWbsajotz+0TQOX/jDpp2kawjRERatOGv9sMMzk5auB3GKEKA6hg==
@@ -1202,7 +1202,7 @@ ts-node@^8.0.3:
     source-map-support "^0.5.6"
     yn "^3.0.0"
 
-tslib@^1.8.0, tslib@^1.8.1:
+tslib@^1.8.0:
   version "1.9.3"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-1.9.3.tgz#d7e4dd79245d85428c4d7e4822a79917954ca286"
   integrity sha512-4krF8scpejhaOgqzBEcGM7yDIEfi0/8+8zDRZhNZZ2kjmHJ4hv3zCbQWxoJGz1iw5U0Jl0nma13xzHXcncMavQ==
@@ -1230,8 +1230,6 @@ tsutils@^2.29.0:
   version "2.29.0"
   resolved "https://registry.yarnpkg.com/tsutils/-/tsutils-2.29.0.tgz#32b488501467acbedd4b85498673a0812aca0b99"
   integrity sha512-g5JVHCIJwzfISaXpXE1qvNalca5Jwob6FjI4AoPlqMusJ6ftFE7IkkFoMhVLRgK+4Kx3gkzb8UZK5t5yTTvEmA==
-  dependencies:
-    tslib "^1.8.1"
 
 tunnel-agent@^0.6.0:
   version "0.6.0"
