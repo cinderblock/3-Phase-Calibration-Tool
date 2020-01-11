@@ -179,13 +179,13 @@ The deploy script will pick a config file from [`daemon/configs/`](daemon/config
 
 Use Visual Studio Code.
 
-## Cheat sheet
+### Cheat sheet
 
 All of these are run from the top level directory.
 
 | Command                        | Description                                                                           |
 | ------------------------------ | ------------------------------------------------------------------------------------- |
-| `yarn setup`                   | Setup your local machine for development                                              |
+| `yarn setup`                   | Setup your local machine for development. Do this again to fix problems in dev env    |
 | `yarn ui dev`                  | Run the web **ui** on your local machine (_dev mode_)                                 |
 | `yarn daemon dev`              | Run **daemon** locally in watch mode with most recent local code                      |
 | `yarn deploy daemon-dev`       | Run local compiler in watch mode and **daemon** on remote with most recent local code |
@@ -197,3 +197,17 @@ All of these are run from the top level directory.
 | `yarn remote kill`             | Kill the daemon on remote                                                             |
 | `yarn remote shutdown`         | Shutdown the remote system                                                            |
 | `yarn remote reboot`           | Reboot the remote system                                                              |
+
+### Raspberry Pi Setup
+
+Some commands need to be run on the target Raspberry Pi manually once.
+
+```bash
+# Install needed dependencies
+sudo apt install -y build-essential libudev-dev libcurl4-gnutls-dev nodejs yarn
+
+# Make our USB devices owned by pi/dialout
+(
+echo 'SUBSYSTEM=="usb", ATTR{idVendor}=="dead", ATTR{idProduct}=="beef", GROUP="dialout", OWNER="pi", MODE="0660"'
+) | sudo tee /etc/udev/rules.d/usb-motor.rules > /dev/null
+```

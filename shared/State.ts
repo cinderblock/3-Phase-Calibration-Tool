@@ -5,15 +5,6 @@ import { UserControlsFull } from './UserControls';
  * State
  */
 export type State = {
-  debug: {
-    heapUsed: number;
-    gc: {
-      count: number;
-      duration?: number;
-      type?: 'Scavenge' | 'MarkSweepCompact';
-    };
-  };
-
   /**
    * System time, milliseconds.
    *

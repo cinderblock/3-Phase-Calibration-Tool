@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "checkSources": "tsc --noemit",
-    "daemon-dev": "ts-node-dev daemon-dev.ts",
+    "daemon-dev": "nodemon -w daemon-dev.ts -w tsconfig.json -w config.ts -w utils -w src --exec ts-node daemon-dev.ts",
     "remote": "ts-node remote-yarn.ts"
   },
   "dependencies": {
@@ -13,14 +13,16 @@
     "md5-file": "^4.0.0",
     "node-ssh": "^6.0.0",
     "rxjs": "^6.5.3",
-    "ssh2-promise": "^0.1.6",
-    "typescript": "^3.7.3"
+    "ssh2-promise": "^0.1.5"
   },
   "devDependencies": {
+    "@types/http-proxy": "^1.17.2",
     "@types/md5-file": "^4.0.0",
     "@types/node": "^12.12.7",
     "@types/ssh2": "^0.5.39",
     "@types/ssh2-streams": "^0.1.6",
-    "qrcode-terminal": "^0.12.0"
+    "http-proxy": "^1.18.0",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.7.2"
   }
 }

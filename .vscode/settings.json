@@ -25,22 +25,5 @@
     "**/yarn.lock": true
   },
 
-  "typescript.tsdk": "node_modules/typescript/lib",
-
-  "cSpell.words": [
-    "Interop",
-    "camelcase",
-    "cinderblock",
-    "favicons",
-    "journalctl",
-    "noemit",
-    "promisify",
-    "qrcode",
-    "raspberrypi",
-    "shallowequal",
-    "systemctl",
-    "tacklind",
-    "timeago",
-    "webui"
-  ]
+  "typescript.tsdk": "node_modules/typescript/lib"
 }

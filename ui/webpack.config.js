@@ -1,7 +1,10 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
+
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const ErrorOverlayPlugin = require('error-overlay-webpack-plugin');
+const WatchExternalFilesPlugin = require('webpack-watch-files-plugin').default;
 
 module.exports = {
   entry: {
@@ -31,6 +34,7 @@ module.exports = {
         ws: true,
         // changeOrigin: true,
         xfwd: true,
+        logLevel: 'silent',
       },
     },
     before(_, server) {
@@ -62,6 +66,9 @@ module.exports = {
     }),
     new FaviconsWebpackPlugin('./assets/icons8-confetti-96.png'),
     new ErrorOverlayPlugin(),
+    new WatchExternalFilesPlugin({
+      files: ['../shared/**/*.ts'],
+    }),
     // new webpack.HotModuleReplacementPlugin(),
   ],
   module: {

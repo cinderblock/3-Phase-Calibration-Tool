@@ -1,7 +1,5 @@
 {
   "hooks": {
-    "post-checkout": "npm run synchronize-workspace",
-    "post-merge": "npm run synchronize-workspace",
-    "post-rewrite": "npm run synchronize-workspace"
+    "post-pull": "npm run synchronize-workspace"
   }
 }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Allow printing with color!
 import chalk from 'chalk';
 

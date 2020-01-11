@@ -15,12 +15,16 @@
   },
   "dependencies": {
     "chalk": "^3.0.0",
-    "node": "^13.3.0",
     "server-starter": "^1.6.2",
-    "socket.io": "^2.3.0"
+    "smooth-control": "https://github.com/cinderblock/smooth-control.git#manual-transfers",
+    "socket.io": "^2.3.0",
+    "source-map-support": "^0.5.16",
+    "usb": "^1.6.1",
+    "watchdog": "^0.8.17"
   },
   "devDependencies": {
-    "@types/node": "^12.12.17",
-    "@types/socket.io": "^2.1.4"
+    "@types/node": "^12.12.7",
+    "@types/socket.io": "^2.1.4",
+    "@types/usb": "^1.5.1"
   }
 }

@@ -12,15 +12,15 @@ const args = ['daemon', '--non-interactive', ...process.argv.slice(2)];
 
 const files = ['daemon/package.json', 'daemon/yarn.lock'];
 
-function localFile(name) {
+function localFile(name: string): string {
   return resolve(__dirname, '..', name);
 }
 
-function remoteFile(name) {
+function remoteFile(name: string): string {
   return remote.directory + '/' + name;
 }
 
-async function remoteYarn() {
+async function remoteYarn(): Promise<void> {
   try {
     const ssh = new SSH();
 
@@ -35,8 +35,8 @@ async function remoteYarn() {
       // Run remote yarn
       const { code: exitCode, signal, stdout: result, stderr: err } = await sshConnection.exec('yarn', args, {
         cwd: remote.directory,
-        onStdout: chunk => process.stdout.write(chunk.toString('utf8')),
-        onStderr: chunk => process.stderr.write(chunk.toString('utf8')),
+        onStdout: (chunk: Buffer) => process.stdout.write(chunk.toString('utf8')),
+        onStderr: (chunk: Buffer) => process.stderr.write(chunk.toString('utf8')),
         stream: 'both',
       });
 
