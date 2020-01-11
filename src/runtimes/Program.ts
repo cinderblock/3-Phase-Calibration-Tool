@@ -1,5 +1,7 @@
 'use strict';
 
+// WIP
+
 import USB, { addAttachListener, CommandMode, start } from 'smooth-control';
 import readline from 'readline';
 import chalk from 'chalk';

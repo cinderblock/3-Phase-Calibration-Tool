@@ -16,6 +16,8 @@ import { delay } from '../utils/delay';
 import ChartjsNode from 'chartjs-node';
 import percent from '../utils/percent';
 
+// Test various magnetic fields' strengths
+
 const maxAmplitude = 100;
 
 async function prepareMotor(motor: ReturnType<typeof USBInterface>) {

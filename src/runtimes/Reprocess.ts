@@ -1,5 +1,7 @@
 'use strict';
 
+// Reprocess a bunch of data files all at once
+
 import { join } from 'path';
 import { promises as fs } from 'fs';
 
