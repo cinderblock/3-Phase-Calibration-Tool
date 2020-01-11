@@ -33,7 +33,7 @@ const MLXNOP: MLXCommand = {
 };
 
 function sendCommand(command: Command) {
-  console.log(command);
+  console.log('Command sent:', command);
   return new Promise(res => {
     try {
       usb.write(command, res);
@@ -73,7 +73,7 @@ usb.events.on('status', async (s: string) => {
     data = await usb.read();
     if (!data) throw 'Data missing?';
     if (!data.mlxParsedResponse) {
-      console.log('No parsed response');
+      console.log(`No parsed response: [${data.mlxParsedResponse}]`);
       await delay(100);
       return;
       continue;
