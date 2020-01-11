@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import SocketConnection from '.';
 import ExponentialFilter from '../utils/ExponentialFilter';
-import { State as SharedState } from '../../shared/State';
+import { State as SharedState } from '../../../remote/shared/State';
 
 let delta: number;
 

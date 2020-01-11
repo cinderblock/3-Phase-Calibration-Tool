@@ -1,5 +1,5 @@
 import React from 'react';
-import { State } from '../../shared/State';
+import { State } from '../../../remote/shared/State';
 import fastEqual from 'fast-deep-equal';
 import { noFail } from '../utils/noFail';
 import { useState, useEffect } from 'react';

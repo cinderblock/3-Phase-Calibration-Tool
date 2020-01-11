@@ -9,11 +9,12 @@ record.csv
 
 *.png
 
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Main build
+/main/dist
 
-main/src/electron.js
-renderer/build
-renderer/dist
+# Renderer build
+/renderer/build
+/renderer/dist
 
 # dependencies
 node_modules/
@@ -67,9 +68,6 @@ bower_components
 # node-waf configuration
 .lock-wscript
 
-# Compiled binary addons (https://nodejs.org/api/addons.html)
-build/Release
-
 # Dependency directories
 node_modules/
 jspm_packages/
@@ -97,4 +95,3 @@ typings/
 
 # next.js build output
 .next
-renderer/public/electron.js

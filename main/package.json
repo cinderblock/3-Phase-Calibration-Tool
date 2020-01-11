@@ -1,19 +1,18 @@
 {
   "name": "electron-react-ts-starter",
   "version": "1.0.0",
-  "main": "./src/electron.js",
+  "main": "./dist/electron.js",
   "scripts": {
-    "start": "concurrently \"tsc ./src/electron.ts -w\"  \"cross-env NODE_ENV=dev nodemon --exec \"\"wait-on http://localhost:3000 && electron src/electron.js\"\""
+    "start": "concurrently \"tsc --watch\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=dev nodemon --watch dist --exec \\\"electron dist/electron.js\\\""
   },
-  "author": "nateshmbhat",
   "dependencies": {
-    "electron": "^5.0.6"
+    "electron": "^7.1.8"
   },
   "devDependencies": {
-    "concurrently": "^4.1.1",
-    "cross-env": "^5.2.0",
+    "concurrently": "^5.0.2",
+    "cross-env": "^6.0.3",
     "electron-is-dev": "^1.1.0",
-    "nodemon": "^1.19.1",
+    "nodemon": "^2.0.2",
     "typescript": "^3.5.2",
     "wait-on": "^3.2.0"
   }

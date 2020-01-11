@@ -7,7 +7,7 @@ import { DaemonStateReducer } from './DaemonState';
 
 import { noFail } from '../utils/noFail';
 
-import { State } from '../../shared/State';
+import { State } from '../../../remote/shared/State';
 
 function makeTimeSeriesUpdate(
   reducer: DaemonStateReducer<number | undefined>,

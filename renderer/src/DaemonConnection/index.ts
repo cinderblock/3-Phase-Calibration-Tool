@@ -1,5 +1,5 @@
-import io = require('socket.io-client');
-import { State } from '../../shared/State';
+import io from 'socket.io-client';
+import { State } from '../../../remote/shared/State';
 
 // config
 const socketURL = '';
