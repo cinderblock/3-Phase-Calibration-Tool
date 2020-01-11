@@ -3,12 +3,12 @@
   "description": "This is a boilerplate starter for an electron project that uses react with typescript and has some fixes applied for common bugs.",
   "version": "0.1.0",
   "private": true,
-  "author": "nateshmbhat",
+  "author": "Cameron Tacklind <cameron@tacklind.com>",
   "homepage": "./",
   "build": {
-    "appId": "com.example.myApplication",
-    "productName": "My Application",
-    "copyright": "Copyright © 2019 Natesh M Bhat",
+    "appId": "com.tomsawyerlabs.3phase.calibration",
+    "productName": "3 Phase Calibration Tool",
+    "copyright": "Copyright © 2020 Cameron Tacklind",
     "files": [
       "build/**/*",
       "node_modules/**/*"
@@ -22,11 +22,16 @@
     }
   },
   "dependencies": {
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
+    "electron-is-dev": "^1.1.0",
+    "react": "^16.12.0",
+    "react-animations": "^1.0.0",
+    "react-device-detect": "^1.11.14",
+    "react-dom": "^16.12.0",
+    "react-hot-loader": "^4.12.18",
     "react-scripts": "3.0.1",
-    "typescript": "3.5.2",
-    "electron-is-dev": "^1.1.0"
+    "react-timeago": "^4.4.0",
+    "shallowequal": "^1.1.0",
+    "socket.io-client": "^2.3.0"
   },
   "scripts": {
     "react-start": "react-scripts start",
@@ -55,17 +60,19 @@
     ]
   },
   "devDependencies": {
+    "@types/electron": "^1.6.10",
+    "@types/jest": "24.0.15",
+    "@types/node": "12.0.10",
+    "@types/react": "^16.9.16",
+    "@types/react-dom": "^16.9.4",
+    "@types/socket.io-client": "^1.4.32",
+    "chalk": "^3.0.0",
     "electron": "^5.0.6",
     "electron-reload": "^1.4.0",
     "electron-builder": "^20.44.4",
     "wait-on": "^3.2.0",
-    "@types/jest": "24.0.15",
-    "@types/node": "12.0.10",
-    "@types/react": "16.8.22",
-    "@types/react-dom": "16.8.4",
     "concurrently": "^4.1.1",
     "cross-env": "^5.2.0",
-    "@types/electron": "^1.6.10",
     "watch": "^1.0.2"
   }
 }
