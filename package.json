@@ -7,6 +7,13 @@
   "author": "Cameron Tacklind <cameron@tacklind.com>",
   "license": "MIT",
   "scripts": {
+    "setup": "yarn install && yarn daemon install && yarn deploy install && yarn ui install && install-vscode-extensions",
+    "synchronize-workspace": "yarn --non-interactive --no-progress && yarn daemon --non-interactive --no-progress && yarn deploy --non-interactive --no-progress && yarn ui --non-interactive --no-progress && install-vscode-extensions",
+    "upgrade-all": "yarn upgrade --latest && yarn daemon upgrade --latest && yarn deploy upgrade --latest && yarn ui upgrade --latest",
+    "lint": "eslint . --ext .ts,.tsx",
+    "ui": "yarn --cwd ui",
+    "daemon": "yarn --cwd daemon",
+    "deploy": "yarn --cwd deploy",
     "start": "ts-node ./src/runtimes/Calibrate",
     "debug": "ts-node ./src/runtimes/Debug",
     "mlx": "ts-node ./src/runtimes/MLXcontrol",
@@ -31,11 +38,23 @@
     "smooth-control": "https://github.com/cinderblock/smooth-control.git",
     "typescript": "^3.7.4",
     "usb": "^1.6.2",
-    "uuid": "^3.3.3"
+    "uuid": "^3.3.3",
+    "yarn": "^1.21.1"
   },
   "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^2.11.0",
+    "@typescript-eslint/parser": "^2.11.0",
+    "eslint": "^6.7.2",
+    "eslint-config-prettier": "^6.7.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "eslint-plugin-react": "^7.17.0",
+    "eslint-plugin-react-hooks": "^2.3.0",
+    "husky": "^3.1.0",
+    "install-vscode-extensions": "^1.0.0",
+    "prettier": "^1.19.1",
     "ts-node": "^8.6.1",
-    "tslint": "^5.20.1"
+    "ts-node-dev": "^1.0.0-pre.44",
+    "typescript": "^3.7.3"
   },
   "optionalDependencies": {
     "chartjs-node": "^1.7.1"

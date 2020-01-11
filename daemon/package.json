@@ -1,0 +1,26 @@
+{
+  "name": "daemon",
+  "version": "0.0.0",
+  "license": "MIT",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc --noEmit",
+    "shutdown": "sudo shutdown -h now",
+    "reboot": "sudo reboot",
+    "kill": "kill $(cat /tmp/daemon.pid 2> /dev/null) 2> /dev/null || :",
+    "dev": "ts-node-dev main.ts",
+    "start": "ts-node main.ts"
+  },
+  "dependencies": {
+    "chalk": "^3.0.0",
+    "node": "^13.3.0",
+    "server-starter": "^1.6.2",
+    "socket.io": "^2.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^12.12.17",
+    "@types/socket.io": "^2.1.4"
+  }
+}
