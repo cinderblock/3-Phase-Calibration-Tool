@@ -1,6 +1,10 @@
 node_modules
 yarn-error.log
-daemon.pid
-daemon.sock
-daemon/build
-ui/build
+remote/daemon/build
+
+# Main build
+/main/dist
+
+# Renderer build
+/renderer/build
+/renderer/dist
