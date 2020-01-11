@@ -71,7 +71,7 @@ usb.events.on('status', async (s: string) => {
 
   while (true) {
     data = await usb.read();
-    if (!data) throw 'Data missing?';
+    if (!data) throw new Error('Data missing?');
     if (!data.mlxParsedResponse) {
       console.log(`No parsed response: [${data.mlxParsedResponse}]`);
       await delay(100);
@@ -83,13 +83,13 @@ usb.events.on('status', async (s: string) => {
   if (data.mlxParsedResponse.opcode == Opcode.Error_frame) {
     console.log('Error frame. Error:', data.mlxParsedResponse.error);
     await delay(10);
-    throw 'Received Error Frame';
+    throw new Error('Received Error Frame');
   }
 
   if (data.mlxParsedResponse.opcode == Opcode.NothingToTransmit) {
     console.log('NTT');
     await delay(10);
-    throw 'Nothing to transmit';
+    throw new Error('Nothing to transmit');
   }
 
   const { alpha } = data.mlxParsedResponse;
