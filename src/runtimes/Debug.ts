@@ -1,11 +1,11 @@
 'use strict';
 
-import USB, { CommandMode, MLXCommand, Command, ReadData } from 'smooth-control';
+import Motor, { CommandMode, MLXCommand, Command, ReadData } from 'smooth-control';
 
 import { makePacket, Opcode, Marker } from 'mlx90363';
 
 const serial = 'None';
-const usb = USB(serial);
+const motor = Motor(serial);
 
 function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -36,7 +36,7 @@ function sendCommand(command: Command) {
   console.log('Command sent:', command);
   return new Promise(res => {
     try {
-      usb.write(command, res);
+      motor.write(command, res);
     } catch (e) {
       console.log('not Sent because:', e);
       res();
@@ -49,8 +49,8 @@ const mode = CommandMode.Calibration;
 // Ramp amplitude up slowly
 let amplitude = 0;
 
-usb.events.on('status', async (s: string) => {
-  if (s != 'ok') return;
+motor.onStatus(async s => {
+  if (s != 'connected') return;
 
   // Motor connected
 
@@ -64,13 +64,16 @@ usb.events.on('status', async (s: string) => {
   const xyzDelay = delay(10);
 
   // Double read to force reading of newest data
-  await usb.read();
+  const first = await motor.read();
+
+  console.log('First read:', first);
+
   let data: false | ReadData;
 
   await delay(1);
 
   while (true) {
-    data = await usb.read();
+    data = await motor.read();
     if (!data) throw new Error('Data missing?');
     if (!data.mlxParsedResponse) {
       console.log(`No parsed response: [${data.mlxParsedResponse}]`);
@@ -78,6 +81,11 @@ usb.events.on('status', async (s: string) => {
       return;
       continue;
     } else break;
+  }
+
+  if (typeof data.mlxParsedResponse == 'string') {
+    console.log('Error decoding: ' + data.mlxParsedResponse);
+    return;
   }
 
   if (data.mlxParsedResponse.opcode == Opcode.Error_frame) {
@@ -96,4 +104,4 @@ usb.events.on('status', async (s: string) => {
 });
 
 // Actually start looking for the usb device
-usb.start(false);
+motor.start();
