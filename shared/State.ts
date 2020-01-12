@@ -1,4 +1,5 @@
 import { UserControlsFull } from './UserControls';
+import { MotorState } from './MotorData';
 
 /**
  * The shape of state is defined here.
@@ -30,6 +31,11 @@ export type State = {
    * List of serial numbers currently connected
    */
   connectedMotorSerials: string[];
+
+  /**
+   * The state of the active motor
+   */
+  motorState: MotorState;
 
   /**
    * Control constants

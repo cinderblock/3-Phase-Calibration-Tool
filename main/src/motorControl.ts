@@ -6,6 +6,8 @@ import { setupUserControls, realControls } from './State/UserControls';
 import initializeMotor from './Motors/CommHandler';
 import { start, addAttachListener } from 'smooth-control';
 
+let activeMotor: ReturnType<typeof initializeMotor> | undefined;
+
 function updateUI(window: BrowserWindow): void {
   window.webContents.send('StateUpdate', state);
 }
@@ -14,8 +16,18 @@ function updateMotor(): void {
   // TODO: take UI controls and turn them into motor commands
 }
 
-export function selectMotor(serial: string) {
+export function selectMotor(serial: string): void {
   // TODO: implement
+  if (activeMotor) {
+    activeMotor.close();
+  }
+
+  activeMotor = initializeMotor(serial, 0, true, state.motorState, () => {
+    // on attach
+    console.log('atched!');
+
+    realControls.connected = serial;
+  });
 }
 
 export function startMotorControl(window: BrowserWindow): () => void {
