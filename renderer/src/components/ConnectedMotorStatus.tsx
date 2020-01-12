@@ -43,6 +43,8 @@ export function ConnectedMotorStatus() {
 
   const clearFaults = useUserControls(() => ({ testCommand: 'clearFault' }));
 
+  const manualMode = useUserControls(() => ({ testCommand: 'manual' }));
+
   if (!state) return <></>;
 
   const { connected, data, processed, command, enabled } = state;
@@ -112,6 +114,12 @@ export function ConnectedMotorStatus() {
           Gate voltage: <DataPill>{processed?.gateVoltage?.toFixed(2)}</DataPill>
           <br />
           Total Current: <DataPill>{processed?.totalCurrent?.toFixed(3)}</DataPill>
+        </div>
+        <div>
+          <button onClick={manualMode}>Manual</button>
+        </div>
+        <div>
+          <pre>{JSON.stringify(data, null, 2)}</pre>
         </div>
       </div>
     </>

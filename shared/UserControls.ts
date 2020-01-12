@@ -1,6 +1,6 @@
 import { RecursivePartial } from './utils/RecursivePartial';
 
-export type TestCommand = 'debugMLX' | 'clearFault';
+export type TestCommand = 'debugMLX' | 'clearFault' | 'manual';
 
 export type UserControls = {
   /**
@@ -11,7 +11,19 @@ export type UserControls = {
   /**
    * Mode we're testing the motor in
    */
-  testCommand?: TestCommand;
+  testCommand?: TestCommand | undefined;
+
+  /**
+   * Desired drive angle for test
+   * @unit radian
+   */
+  angle?: number | undefined;
+
+  /**
+   * Desired drive amplitude for test
+   * @unit 0-255
+   */
+  amplitude?: number | undefined;
 };
 
 export type UserControlsAutomatic = {

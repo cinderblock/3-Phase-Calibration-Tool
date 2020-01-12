@@ -5,6 +5,9 @@ import { selectMotor, setTestMode } from '../motorControl';
 import { recursiveAssign } from '../utils/recursiveAssign';
 import { makeObjectSetterRecursive } from '../utils/makeProtectedObject';
 import { UserControlUpdate, UserControlsFull } from '../renderer-shared-types/UserControls';
+import { clampPositive } from '../utils/filters/clampRange';
+
+const AMPLITUDE_LIMIT = 100;
 
 // State of the system with initial values
 export const realControls: UserControlsFull = {
@@ -22,6 +25,16 @@ export const protectedControls = makeObjectSetterRecursive(realControls, {
   },
 
   testCommand: next => setTestMode(next),
+
+  angle(next) {
+    const num = Number(next);
+    if (Number.isFinite(num)) realControls.angle = clampPositive(num, 2 * Math.PI);
+  },
+
+  amplitude(next) {
+    const num = parseInt(next);
+    if (Number.isFinite(num)) realControls.amplitude = clampPositive(num, AMPLITUDE_LIMIT);
+  },
 });
 
 /**
@@ -31,7 +44,7 @@ export const protectedControls = makeObjectSetterRecursive(realControls, {
  */
 function handleIncomingControls(event: IpcMainEvent, userControlsUpdate: UserControlUpdate): void {
   // DEBUG
-  // console.log('received controls:', userControlsUpdate);
+  console.log('received controls:', userControlsUpdate);
 
   recursiveAssign(protectedControls, userControlsUpdate);
 }

@@ -38,6 +38,7 @@ export interface Motor {
   goToPosition: (pos: number) => false | Promise<void>;
   push: (amplitude: number) => void;
   close: () => void;
+  motor: ReturnType<typeof USB>;
 }
 
 export default function initializeMotor(
@@ -255,6 +256,7 @@ export default function initializeMotor(
     setConstant,
     goToPosition,
     push,
+    motor,
     close: (): void => motor.close(),
   };
 }
