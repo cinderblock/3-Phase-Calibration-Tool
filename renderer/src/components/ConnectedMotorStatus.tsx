@@ -64,7 +64,7 @@ export function ConnectedMotorStatus() {
   let detail: React.ReactNode;
 
   if (!data) {
-  } else if (isFaultState(data)) {
+  } else if (isFaultState(data) && data.fault !== ControllerFault.Init) {
     detail = (
       <>
         <button onClick={clearFaults}>Clear Fault</button>
