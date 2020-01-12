@@ -3,6 +3,8 @@ import { BrowserWindow } from 'electron';
 import * as debug from './utils/debug';
 import { state, updateTimes } from './State';
 import { setupUserControls } from './State/UserControls';
+import initializeMotor from './Motors/CommHandler';
+import { start, addAttachListener } from 'smooth-control';
 
 function updateUI(window: BrowserWindow): void {
   window.webContents.send('StateUpdate', state);
@@ -13,7 +15,14 @@ function updateMotor(): void {
 }
 
 export function startMotorControl(window: BrowserWindow): () => void {
+  const removeAttachListener = addAttachListener((serial, usbDevice, isDuplicate, consumer) => {
+    state.connectedMotorSerials.push(serial);
+  });
+
+  start();
+
   const main = setInterval(() => {
+    removeAttachListener();
     updateTimes();
     updateMotor();
     updateUI(window);

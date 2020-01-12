@@ -6,6 +6,7 @@ import USB, {
   PushCommand,
   ServoCommand,
   ReadData,
+  isNormalState,
 } from 'smooth-control';
 import { MotorState, ProcessedMotorData } from '../renderer-shared-types/MotorData';
 import { PIDs } from '../renderer-shared-types/utils/PIDTypes';
@@ -117,21 +118,41 @@ export default function initializeMotor(
 
   motor.onData(data => {
     // console.log(newData);
+
+    if (!sharedState.data) sharedState.data = {} as ReadData;
+    // TODO: Is this efficient?
+    Object.assign(sharedState.data, data);
+
+    if (!sharedState.processed) sharedState.processed = {} as ProcessedMotorData;
+
     // Extract the data we want from newData
-    const { velocity, amplitude, cpuTemp, vBatt, VDD, current } = data;
+    const { cpuTemp, vBatt, VDD, current } = data;
 
-    // TODO: glitch rejection
-    if (Math.abs(velocity) > maxVelocity) return;
-
-    const accumulatedEnergy = powerIntegrator(amplitude);
-
-    if ((cpuTemp > temperatureThreshold || accumulatedEnergy > powerThreshold) && enabled) {
+    if (cpuTemp > temperatureThreshold && enabled) {
       stop();
-      console.log('Emergency shutdown. Over' + (cpuTemp > temperatureThreshold ? 'temp' : 'accumulation'));
+      console.log('Emergency shutdown. Over temp');
       enabled = false;
     }
 
-    const position = countsToPosition(data.position) * direction;
+    if (isNormalState(data)) {
+      const { velocity, amplitude } = data;
+
+      // TODO: glitch rejection
+      if (Math.abs(velocity) > maxVelocity) return;
+
+      const accumulatedEnergy = powerIntegrator(amplitude);
+
+      if (accumulatedEnergy > powerThreshold && enabled) {
+        stop();
+        console.log('Emergency shutdown. Over' + 'accumulation');
+        enabled = false;
+      }
+
+      const position = countsToPosition(data.position) * direction;
+
+      sharedState.processed.accumulatedEnergy = accumulatedEnergy;
+      sharedState.processed.position = position;
+    }
 
     // ADC counts follow this equation
     // count = Vin * rBot/(rTop + rBot) * maxADC/vRef
@@ -147,13 +168,6 @@ export default function initializeMotor(
 
     const amps = (current * vRef) / (maxADC * 20 * 0.05);
 
-    if (!sharedState.data) sharedState.data = {} as ReadData;
-    // TODO: Is this efficient?
-    Object.assign(sharedState.data, data);
-
-    if (!sharedState.processed) sharedState.processed = {} as ProcessedMotorData;
-    sharedState.processed.accumulatedEnergy = accumulatedEnergy;
-    sharedState.processed.position = position;
     sharedState.processed.batteryVoltage = mainVoltage;
     sharedState.processed.gateVoltage = gateDriveVoltage;
     sharedState.processed.totalCurrent = amps;

@@ -6,6 +6,8 @@ import { State } from '../renderer-shared-types/State';
 export const state: State = {
   time: Date.now(),
 
+  connectedMotorSerials: [],
+
   userControls: protectedControls,
 };
 

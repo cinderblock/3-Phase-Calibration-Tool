@@ -27,6 +27,11 @@ export type State = {
   dt?: number;
 
   /**
+   * List of serial numbers currently connected
+   */
+  connectedMotorSerials: string[];
+
+  /**
    * Control constants
    */
   userControls: UserControlsFull;
