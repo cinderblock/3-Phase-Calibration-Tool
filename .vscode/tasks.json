@@ -2,22 +2,7 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Remote daemon kill",
-      "type": "shell",
-      "command": "yarn",
-      "args": ["remote", "kill"],
-      "options": {
-        "cwd": "${workspaceRoot}"
-      },
-      "problemMatcher": [],
-      "presentation": {
-        "reveal": "never",
-        "panel": "shared"
-      },
-      "group": "build"
-    },
-    {
-      "label": "WebUI Dev Server",
+      "label": "UI Dev Server",
       "type": "shell",
       "command": "yarn",
       "args": ["ui", "start"],
@@ -31,26 +16,24 @@
       "group": "build"
     },
     {
-      "label": "Server Deploy",
+      "label": "Backend Dev Mode",
       "type": "shell",
       "command": "yarn",
-      "args": ["deploy", "daemon"],
-      "presentation": {
-        "panel": "shared"
-      },
+      "args": ["main", "start"],
       "options": {
         "cwd": "${workspaceRoot}"
       },
       "problemMatcher": [],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
+      "presentation": {
+        "panel": "shared"
+      },
+      "group": "build"
     },
     {
       "label": "Development",
-      "dependsOn": ["WebUI Dev Server", "Server Deploy"],
-      "group": "build"
+      "dependsOn": ["UI Dev Server", "Backend Dev Mode"],
+      "group": "build",
+      "problemMatcher": []
     }
   ]
 }
