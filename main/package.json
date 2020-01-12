@@ -4,7 +4,7 @@
   "main": "./dist/electron.js",
   "scripts": {
     "postinstall": "electron-rebuild",
-    "start": "concurrently --handle-input \"wait-on http://localhost:3000 && cross-env NODE_ENV=dev nodemon --watch dist --exec \\\"electron dist/electron.js\\\"\" \"tsc --watch\""
+    "start": "concurrently --names \"main,TypeScript Compiler Watch\" --handle-input \"wait-on http://localhost:3000 && cross-env NODE_ENV=dev nodemon --watch dist --exec \\\"electron dist/electron.js\\\"\" \"tsc --watch\""
   },
   "dependencies": {
     "electron": "7.1.8",
