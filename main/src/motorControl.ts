@@ -16,6 +16,7 @@ function updateMotor(): void {
 
 export function startMotorControl(window: BrowserWindow): () => void {
   const removeAttachListener = addAttachListener((serial, usbDevice, isDuplicate, consumer) => {
+    console.log('Motor connected:', serial);
     state.connectedMotorSerials.push(serial);
   });
 
