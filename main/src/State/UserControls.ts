@@ -1,6 +1,6 @@
 import { ipcMain, IpcMainEvent } from 'electron';
 
-import { selectMotor } from '../motorControl';
+import { selectMotor, setTestMode } from '../motorControl';
 
 import { recursiveAssign } from '../utils/recursiveAssign';
 import { makeObjectSetterRecursive } from '../utils/makeProtectedObject';
@@ -20,6 +20,8 @@ export const protectedControls = makeObjectSetterRecursive(realControls, {
   connected(next) {
     if (typeof next === 'string') selectMotor(next);
   },
+
+  testCommand: next => setTestMode(next),
 });
 
 /**

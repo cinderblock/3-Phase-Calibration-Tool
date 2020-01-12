@@ -1,6 +1,7 @@
 import React from 'react';
 import { useBackendStateUpdate } from '../BackendConnection/BackendState';
 import { NormalData, CommonData, ReadData, FaultData, ManualData } from 'smooth-control';
+import { useUserControls } from '../BackendConnection/UserControls';
 
 /* Why can't we import these?
 import { ControllerState, ControllerFault } from 'smooth-control';
@@ -40,6 +41,8 @@ function isNormalState(data: ReadData): data is NormalData & CommonData {
 export function ConnectedMotorStatus() {
   const state = useBackendStateUpdate(s => s.motorState);
 
+  const clearFaults = useUserControls(() => ({ testCommand: 'clearFault' }));
+
   if (!state) return <></>;
 
   const { connected, data, processed, command, enabled } = state;
@@ -62,6 +65,12 @@ export function ConnectedMotorStatus() {
 
   if (!data) {
   } else if (isFaultState(data)) {
+    detail = (
+      <>
+        <button onClick={clearFaults}>Clear Fault</button>
+        <br />
+      </>
+    );
   } else if (isManualState(data) || isNormalState(data)) {
     detail = (
       <>
@@ -93,11 +102,11 @@ export function ConnectedMotorStatus() {
           </DataPill>
           {data?.state === ControllerState.Fault ? <> ({fault})</> : <></>}
           <br />
+          {detail}
           Temp: <DataPill>{data?.cpuTemp}</DataPill>
           <br />
           Current: <DataPill>{data?.current?.toFixed(3)}</DataPill>
           <br />
-          {detail}
           Battery voltage: {processed?.batteryVoltage?.toFixed(2)}
           <br />
           Gate voltage: <DataPill>{processed?.gateVoltage?.toFixed(2)}</DataPill>

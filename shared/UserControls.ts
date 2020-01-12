@@ -1,10 +1,17 @@
 import { RecursivePartial } from './utils/RecursivePartial';
 
+export type TestCommand = 'debugMLX' | 'clearFault';
+
 export type UserControls = {
   /**
    * Serial number of the device we're connecting to
    */
   connected?: string | undefined;
+
+  /**
+   * Mode we're testing the motor in
+   */
+  testCommand?: TestCommand;
 };
 
 export type UserControlsAutomatic = {
