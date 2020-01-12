@@ -11,7 +11,7 @@ export const realControls: UserControlsFull = {
 };
 
 export const protectedControls = makeObjectSetterRecursive(realControls, {
-  sequence: (next: any): void => {
+  sequence(next) {
     // TODO: validate sequence somehow
     if (Number.isFinite(next)) realControls.sequence = next;
   },
