@@ -7,6 +7,7 @@
   "license": "MIT",
   "scripts": {
     "setup": "yarn install && yarn main install && yarn ui install && yarn deploy install && install-vscode-extensions",
+    "check-files": "yarn install --check-files && yarn main install --check-files && yarn ui install --check-files && yarn deploy install --check-files && install-vscode-extensions",
     "synchronize-workspace": "yarn --non-interactive --no-progress && yarn main --non-interactive --no-progress && yarn deploy --non-interactive --no-progress && yarn ui --non-interactive --no-progress && install-vscode-extensions",
     "upgrade-all": "yarn upgrade --latest && yarn main upgrade --latest && yarn deploy upgrade --latest && yarn ui upgrade --latest",
     "lint": "eslint . --ext .ts,.tsx",
