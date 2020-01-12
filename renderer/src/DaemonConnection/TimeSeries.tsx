@@ -2,24 +2,27 @@ import React from 'react';
 import { TimeSeries } from 'react-smoothie';
 import { ITimeSeriesOptions } from 'smoothie';
 
-import socket from '.';
+import ipc from '.';
 import { DaemonStateReducer } from './DaemonState';
 
-import { noFail } from '../utils/noFail';
-
-import { State } from '../../../remote/shared/State';
+import { State } from '../shared/State';
 
 function makeTimeSeriesUpdate(
-  reducer: DaemonStateReducer<number | undefined>,
+  reducer: DaemonStateReducer<number | undefined | null>,
   timeSeriesOptions?: ITimeSeriesOptions,
 ): TimeSeries {
   const ret = new TimeSeries(timeSeriesOptions);
+  ipc.on('update', (event, state: State) => {
+    try {
+      const y = reducer(state);
 
-  reducer = noFail(reducer);
+      if (y === undefined) return;
+      if (y === null) return;
 
-  socket.on('update', (state: State) => {
-    const y = reducer(state);
-    if (y !== undefined) ret.append(state.time, y);
+      ret.append(state.time, y);
+    } catch (e) {
+      console.log('Error reducing value:', e);
+    }
   });
 
   return ret;
@@ -39,7 +42,7 @@ export function useTimeSeries(
   if (ref.current === null) {
     ref.current = new TimeSeries(timeSeriesOptions);
 
-    socket.on('update', (state: State) => {
+    ipc.on('update', (state: State) => {
       const y = reducer(state);
       if (y !== undefined) ref.current.append(state.time, y);
     });

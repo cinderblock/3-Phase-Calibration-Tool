@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import SocketConnection from '.';
+import ipc from '.';
 import ExponentialFilter from '../utils/ExponentialFilter';
-import { State as SharedState } from '../../../remote/shared/State';
+import { State as SharedState } from '../shared/State';
 
 let delta: number;
 
@@ -11,7 +11,7 @@ type Receiver = (delta: number) => void;
 
 const receivers: Receiver[] = [];
 
-SocketConnection.on('update', ({ time }: SharedState) => {
+ipc.on('update', (event, { time }: SharedState) => {
   const now = Date.now();
 
   delta = filter(time - now);

@@ -1,9 +1,9 @@
 import React from 'react';
-import { State } from '../../../remote/shared/State';
+import { State } from '../shared/State';
 import fastEqual from 'fast-deep-equal';
-import { noFail } from '../utils/noFail';
 import { useState, useEffect } from 'react';
-import socket from '.';
+import ipc from '.';
+import { IpcRendererEvent } from 'electron';
 
 export type DaemonStateReducer<T> = (state: State) => T;
 
@@ -19,18 +19,16 @@ export function useDaemonStateUpdate<T>(reducer: DaemonStateReducer<T>, equal?: 
 
   const [state, setState] = useState<T>(initialState as T);
 
-  reducer = noFail(reducer);
-
-  const listener = (nextState: State): void => {
-    const reduced = reducer(nextState);
-    if ((equal as Equal<T>)(reduced, state)) return;
-    setState(reduced);
-  };
-
   useEffect(() => {
-    socket.on('update', listener);
+    const listener = (event: IpcRendererEvent, nextState: State): void => {
+      const reduced = reducer(nextState);
+      if ((equal as Equal<T>)(reduced, state)) return;
+      setState(reduced);
+    };
+
+    ipc.on('update', listener);
     return (): void => {
-      socket.removeListener('update', listener);
+      ipc.removeListener('update', listener);
     };
   });
 

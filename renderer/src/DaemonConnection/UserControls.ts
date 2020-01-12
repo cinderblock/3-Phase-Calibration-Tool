@@ -1,5 +1,5 @@
-import { UserControllable, UserControlsFull } from '../../../remote/shared/UserControls';
-import socket from '.';
+import { UserControllable, UserControlsFull } from '../../../main/src/shared/UserControls';
+import ipc from '.';
 import { useCallback } from 'react';
 import { RecursivePartial } from '../utils/RecursivePartial';
 
@@ -15,7 +15,7 @@ export function updateUserControls(update: UserControllable): void {
 
   userControls.sequence = sequence++;
 
-  socket.emit('userControls', userControls);
+  ipc.send('userControls', userControls);
 
   console.log('Sending user controls:', userControls);
 }
