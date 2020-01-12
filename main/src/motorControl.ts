@@ -17,7 +17,7 @@ export function startMotorControl(window: BrowserWindow): () => void {
     updateTimes();
     updateMotor();
     updateUI(window);
-  }, 100);
+  }, 2);
 
   const controlsShutdown = setupUserControls();
 
