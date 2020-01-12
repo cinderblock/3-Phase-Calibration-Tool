@@ -1924,7 +1924,7 @@ simple-get@^3.0.3:
 
 "smooth-control@https://github.com/cinderblock/smooth-control.git#manual-transfers":
   version "0.0.0"
-  resolved "https://github.com/cinderblock/smooth-control.git#572b23b2085f5f7484808534f5c18b63e4039135"
+  resolved "https://github.com/cinderblock/smooth-control.git#93ff0eed2d169c016c78baf3563996787a5e005c"
   dependencies:
     mlx90363 "https://github.com/cinderblock/node-MLX90363.git"
     typed-emitter "^0.2.0"
