@@ -95,6 +95,52 @@ export function makeObjectSetterRecursive<T extends {}>(internal: T, setters: Ne
   return ret;
 }
 
+type SetterTyped<T = SetterArgType> = (next: T) => void;
+
+type SetterOrNestedTyped<T> = T extends object ? NestedSettersTyped<T> : SetterTyped<T>;
+
+type NestedSettersTyped<T> = { [P in keyof T]: SetterOrNestedTyped<T[P]> };
+
+function isNestedSettersTyped<T, P>(value: NestedSettersTyped<T> | SetterTyped<P>): value is NestedSettersTyped<T> {
+  return typeof value === 'object';
+}
+
+/**
+ * Create a new "virtual" object that wraps a real one storing arbitrary data.
+ *
+ * This will return an object that, upon any sets, instead passes the value to a "setter" function.
+ *
+ * Reads will come from the base object.
+ *
+ * The difference between this version and the base is that the setter object's functions include the expected type of the target.
+ * @param internal Object to wrap
+ * @param setters Functions to use to set new values
+ */
+export function makeObjectSetterRecursiveTyped<T extends {}>(internal: T, setters: NestedSettersTyped<Required<T>>): T {
+  const ret = {} as T;
+
+  for (const x in setters) {
+    type P = Extract<keyof T, string>;
+
+    const setterOrNested = setters[x] as NestedSettersTyped<Required<T[P]>> | SetterTyped<T[P]>;
+
+    const prop: PropertyDescriptor = isNestedSettersTyped(setterOrNested)
+      ? {
+          value: makeObjectSetterRecursiveTyped(internal[x], setterOrNested),
+        }
+      : {
+          set: setterOrNested,
+          get: (): T[Extract<keyof T, string>] => internal[x],
+        };
+
+    prop.enumerable = true;
+
+    Object.defineProperty(ret, x, prop);
+  }
+
+  return ret;
+}
+
 ////// USAGE /////
 
 /*
