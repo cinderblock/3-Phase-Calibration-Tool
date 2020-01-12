@@ -2,16 +2,16 @@ import React from 'react';
 import { State } from '../shared/State';
 import fastEqual from 'fast-deep-equal';
 import { useState, useEffect } from 'react';
-import ipc from '.';
+import backend from '.';
 import { IpcRendererEvent } from 'electron';
 
-export type DaemonStateReducer<T> = (state: State) => T;
+export type BackendStateMapper<T> = (state: State) => T;
 
 type Equal<T> = (a: T, b: T) => boolean;
 
-export function useDaemonStateUpdate<T>(reducer: DaemonStateReducer<T>, equal?: Equal<T>): T;
-export function useDaemonStateUpdate<T>(reducer: DaemonStateReducer<T>, initialState: T): T;
-export function useDaemonStateUpdate<T>(reducer: DaemonStateReducer<T>, equal?: Equal<T> | T, initialState?: T): T {
+export function useBackendStateUpdate<T>(mapper: BackendStateMapper<T>, equal?: Equal<T>): T;
+export function useBackendStateUpdate<T>(mapper: BackendStateMapper<T>, initialState: T): T;
+export function useBackendStateUpdate<T>(mapper: BackendStateMapper<T>, equal?: Equal<T> | T, initialState?: T): T {
   if (typeof equal != 'function') {
     initialState = equal;
     equal = fastEqual;
@@ -21,26 +21,26 @@ export function useDaemonStateUpdate<T>(reducer: DaemonStateReducer<T>, equal?: 
 
   useEffect(() => {
     const listener = (event: IpcRendererEvent, nextState: State): void => {
-      const reduced = reducer(nextState);
+      const reduced = mapper(nextState);
       if ((equal as Equal<T>)(reduced, state)) return;
       setState(reduced);
     };
 
-    ipc.on('update', listener);
+    backend.on('update', listener);
     return (): void => {
-      ipc.removeListener('update', listener);
+      backend.removeListener('update', listener);
     };
   });
 
   return state;
 }
 
-export function DaemonStateData<T>({
-  reducer,
+export function BackendStateData<T>({
+  mapper,
   equal,
 }: {
-  reducer: DaemonStateReducer<T>;
+  mapper: BackendStateMapper<T>;
   equal?: Equal<T>;
 }): JSX.Element {
-  return <>{useDaemonStateUpdate(reducer, equal)}</>;
+  return <>{useBackendStateUpdate(mapper, equal)}</>;
 }

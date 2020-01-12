@@ -1,5 +1,5 @@
 import { UserControllable, UserControlsFull } from '../../../main/src/shared/UserControls';
-import ipc from '.';
+import backend from '.';
 import { useCallback } from 'react';
 import { RecursivePartial } from '../utils/RecursivePartial';
 
@@ -15,7 +15,7 @@ export function updateUserControls(update: UserControllable): void {
 
   userControls.sequence = sequence++;
 
-  ipc.send('userControls', userControls);
+  backend.send('userControls', userControls);
 
   console.log('Sending user controls:', userControls);
 }

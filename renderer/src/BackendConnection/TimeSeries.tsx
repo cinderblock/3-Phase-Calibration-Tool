@@ -2,17 +2,17 @@ import React from 'react';
 import { TimeSeries } from 'react-smoothie';
 import { ITimeSeriesOptions } from 'smoothie';
 
-import ipc from '.';
-import { DaemonStateReducer } from './DaemonState';
+import backend from '.';
+import { BackendStateMapper } from './BackendState';
 
 import { State } from '../shared/State';
 
 function makeTimeSeriesUpdate(
-  reducer: DaemonStateReducer<number | undefined | null>,
+  reducer: BackendStateMapper<number | undefined | null>,
   timeSeriesOptions?: ITimeSeriesOptions,
 ): TimeSeries {
   const ret = new TimeSeries(timeSeriesOptions);
-  ipc.on('update', (event, state: State) => {
+  backend.on('update', (_, state: State) => {
     try {
       const y = reducer(state);
 
@@ -29,7 +29,7 @@ function makeTimeSeriesUpdate(
 }
 
 export function useTimeSeries(
-  reducer: DaemonStateReducer<number | undefined>,
+  reducer: BackendStateMapper<number | undefined>,
   timeSeriesOptions?: ITimeSeriesOptions,
 ): TimeSeries {
   const ref = React.useRef<TimeSeries | null>(null);

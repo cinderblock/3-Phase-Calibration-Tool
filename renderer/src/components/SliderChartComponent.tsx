@@ -3,7 +3,7 @@ import React from 'react';
 import SmoothieComponent, { SmoothieComponentProps, ToolTip } from 'react-smoothie';
 import Slider, { SliderProps } from 'rc-slider';
 import TimeAgo from 'react-timeago';
-import { useServerDelta, ServerTime } from '../DaemonConnection/ServerTime';
+import { useServerDelta, ServerTime } from '../BackendConnection/ServerTime';
 
 const tooltip: ToolTip = ({ time, data, display }: Parameters<ToolTip>[0]) => {
   if (!display) return <div />;

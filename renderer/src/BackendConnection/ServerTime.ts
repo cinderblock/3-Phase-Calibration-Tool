@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import ipc from '.';
+import backend from '.';
 import ExponentialFilter from '../utils/ExponentialFilter';
 import { State as SharedState } from '../shared/State';
 
@@ -11,7 +11,7 @@ type Receiver = (delta: number) => void;
 
 const receivers: Receiver[] = [];
 
-ipc.on('update', (event, { time }: SharedState) => {
+backend.on('update', (event, { time }: SharedState) => {
   const now = Date.now();
 
   delta = filter(time - now);
