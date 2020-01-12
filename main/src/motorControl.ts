@@ -2,7 +2,7 @@ import { BrowserWindow } from 'electron';
 
 import * as debug from './utils/debug';
 import { state, updateTimes } from './State';
-import { setupUserControls } from './State/UserControls';
+import { setupUserControls, realControls } from './State/UserControls';
 import initializeMotor from './Motors/CommHandler';
 import { start, addAttachListener } from 'smooth-control';
 
@@ -12,6 +12,10 @@ function updateUI(window: BrowserWindow): void {
 
 function updateMotor(): void {
   // TODO: take UI controls and turn them into motor commands
+}
+
+export function selectMotor(serial: string) {
+  // TODO: implement
 }
 
 export function startMotorControl(window: BrowserWindow): () => void {

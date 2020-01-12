@@ -1,10 +1,10 @@
-import { RunMode } from './MotorData';
-import { MotorsData } from './utils/MotorLayout';
-import { PIDConstants } from './utils/PIDTypes';
 import { RecursivePartial } from './utils/RecursivePartial';
 
-
 export type UserControls = {
+  /**
+   * Serial number of the device we're connecting to
+   */
+  connected?: string | undefined;
 };
 
 export type UserControlsAutomatic = {

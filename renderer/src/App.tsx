@@ -20,6 +20,7 @@ const App: React.FC = () => {
       <button onClick={useUserControls(() => ({}))}>Click me!</button>
       Time: <BackendStateData mapper={s => s.time} />
       {motorList}
+      Connected: <BackendStateData mapper={s => s.userControls.connected} />
     </div>
   );
 };

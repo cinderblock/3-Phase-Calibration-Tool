@@ -1,10 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { ipcMain, IpcMainEvent } from 'electron';
 
-import { makeObjectSetterRecursive } from '../utils/makeProtectedObject';
+import { selectMotor } from '../motorControl';
 
 import { recursiveAssign } from '../utils/recursiveAssign';
+import { makeObjectSetterRecursive } from '../utils/makeProtectedObject';
 import { UserControlUpdate, UserControlsFull } from '../renderer-shared-types/UserControls';
-import { ipcMain, IpcMainEvent } from 'electron';
+
 // State of the system with initial values
 export const realControls: UserControlsFull = {
   sequence: 0,
@@ -14,6 +15,10 @@ export const protectedControls = makeObjectSetterRecursive(realControls, {
   sequence(next) {
     // TODO: validate sequence somehow
     if (Number.isFinite(next)) realControls.sequence = next;
+  },
+
+  connected(next) {
+    if (typeof next === 'string') selectMotor(next);
   },
 });
 
