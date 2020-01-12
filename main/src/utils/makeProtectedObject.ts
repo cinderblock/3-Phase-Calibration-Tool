@@ -45,25 +45,40 @@ for (let x in protectedObject) {
 
 //*/
 
-type Setter<T> = T extends boolean ? (next: boolean) => void : (next: T) => void;
+/**
+ * Which setter argument type should we use?
+ */
+// type SetterArgType = unknown;
+type SetterArgType = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
-type SetterOrNested<T> = T extends object ? NestedSetters<T> : Setter<T>;
+type Setter = (next: SetterArgType) => void;
+
+type SetterOrNested<T> = T extends object ? NestedSetters<T> : Setter;
 
 type NestedSetters<T> = { [P in keyof T]: SetterOrNested<T[P]> };
 
-function isNestedSetters<T>(value: NestedSetters<T> | Setter<T>): value is NestedSetters<T> {
+function isNestedSetters<T>(value: NestedSetters<T> | Setter): value is NestedSetters<T> {
   return typeof value === 'object';
 }
 
-export function makeObjectSetterRecursive<T extends {}>(internal: T, setters: NestedSetters<T>): T {
+/**
+ * Create a new "virtual" object that wraps a real one storing arbitrary data.
+ *
+ * This will return an object that, upon any sets, instead passes the value to a "setter" function.
+ *
+ * Reads will come from the base object.
+ * @param internal Object to wrap
+ * @param setters Functions to use to set new values
+ */
+export function makeObjectSetterRecursive<T extends {}>(internal: T, setters: NestedSetters<Required<T>>): T {
   const ret = {} as T;
 
   for (const x in internal) {
     type P = Extract<keyof T, string>;
 
-    const setterOrNested = setters[x] as NestedSetters<T[P]> | Setter<T[P]>;
+    const setterOrNested = setters[x] as NestedSetters<Required<T[P]>> | Setter;
 
-    const prop: PropertyDescriptor = isNestedSetters<T[P]>(setterOrNested)
+    const prop: PropertyDescriptor = isNestedSetters(setterOrNested)
       ? {
           value: makeObjectSetterRecursive(internal[x], setterOrNested),
         }
