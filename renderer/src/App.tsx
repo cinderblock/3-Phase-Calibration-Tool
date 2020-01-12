@@ -3,7 +3,11 @@ import { BackendStateData, useBackendStateUpdate } from './BackendConnection/Bac
 import { useUserControls } from './BackendConnection/UserControls';
 
 function MotorButton({ motor: serial }: { motor: string }) {
-  return <div>serial: {serial}</div>;
+  return (
+    <div>
+      serial: {serial} <button onClick={useUserControls(() => ({ connected: serial }), [serial])}>Connect</button>
+    </div>
+  );
 }
 
 const App: React.FC = () => {
