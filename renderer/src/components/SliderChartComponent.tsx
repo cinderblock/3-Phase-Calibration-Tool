@@ -3,7 +3,6 @@ import React from 'react';
 import SmoothieComponent, { SmoothieComponentProps, ToolTip } from 'react-smoothie';
 import Slider, { SliderProps } from 'rc-slider';
 import TimeAgo from 'react-timeago';
-import { useServerDelta, ServerTime } from '../BackendConnection/ServerTime';
 
 const tooltip: ToolTip = ({ time, data, display }: Parameters<ToolTip>[0]) => {
   if (!display) return <div />;
@@ -19,7 +18,7 @@ const tooltip: ToolTip = ({ time, data, display }: Parameters<ToolTip>[0]) => {
       }}
     >
       <strong>
-        <TimeAgo date={time ?? 0} now={ServerTime} />
+        <TimeAgo date={time ?? 0} />
       </strong>
       {data ? (
         <ul style={{ margin: 0 }}>
@@ -44,21 +43,11 @@ export default function SliderChartComponent(props: {
   const height = props.height || 200;
   if (height < 0) throw new RangeError('Height is negative!');
 
-  // Only update if the delay error is greater than 30Hz period
-  const serverDelta = useServerDelta(1000 / 30);
-
   return (
     <>
       {props.slider && <Slider vertical style={{ float: 'right', height: props.height }} {...props.slider} />}
       <div style={{ marginRight: 20 }}>
-        <SmoothieComponent
-          responsive
-          tooltip={tooltip}
-          height={props.height}
-          millisPerPixel={10}
-          {...props.chart}
-          streamDelay={-serverDelta}
-        />
+        <SmoothieComponent responsive tooltip={tooltip} height={props.height} millisPerPixel={10} {...props.chart} />
       </div>
     </>
   );

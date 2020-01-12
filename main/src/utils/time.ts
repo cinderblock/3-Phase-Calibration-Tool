@@ -4,7 +4,7 @@ const startTime = process.hrtime();
  * High resolution number of seconds since start of execution
  */
 export function uptimeSeconds(): number {
-  // get time (in [sec,nsec]) relative to startTime
+  // get time (in [sec,nSec]) relative to startTime
   const timeHR = process.hrtime(startTime);
   // Convert to seconds, loosing some precision likely
   return timeHR[0] + timeHR[1] / 1e9;

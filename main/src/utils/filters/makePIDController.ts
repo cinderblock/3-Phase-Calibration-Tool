@@ -1,6 +1,6 @@
 import makeIntegrator from './makeIntegrator';
 import { Filter } from './FilterInterface';
-import { PIDConstants } from '../../../shared/utils/PIDTypes';
+import { PIDConstants } from '../../renderer-shared-types/utils/PIDTypes';
 
 export default function makePIDController({ kP, kI, kD }: PIDConstants): Filter & PIDConstants {
   let last: number | undefined;
@@ -8,7 +8,7 @@ export default function makePIDController({ kP, kI, kD }: PIDConstants): Filter 
 
   /**
    * Feed the next error signal into PID
-   * @param err The signal we're servoing to zero
+   * @param err The signal we're servo-ing to zero
    */
   function feed(err: number): number {
     // Invalid value checking

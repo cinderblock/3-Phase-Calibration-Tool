@@ -11,9 +11,9 @@ export function recursiveAssign<T extends {}>(target: T, update: RecursivePartia
   for (const key in update) {
     type U = T[Extract<keyof T, string>];
     if (typeof update[key] === 'object') {
-      recursiveAssign(target[key], update[key] as RecursivePartial<U>);
+      recursiveAssign(target[key as keyof T], update[key] as RecursivePartial<U>);
     } else {
-      target[key] = update[key] as U;
+      target[key as keyof T] = update[key] as U;
     }
   }
 }

@@ -1,10 +1,9 @@
-import { state } from '../State/main';
-import { Gpio } from '../utils/pigpio';
-import config from '../Config';
+import { state } from '../State';
 import MotorHandler, { Motor } from './CommHandler';
-import { mapMotors, MotorsData } from '../../shared/utils/MotorLayout';
 
-const Resets = mapMotors({ traction: 0, steering: 0 }, pin => new Gpio(pin, { mode: Gpio.OUTPUT }));
+/* Turn off this file for now
+
+import { mapMotors, MotorsData } from '../renderer-shared-types/utils/MotorLayout';
 
 let motors: MotorsData<Motor>;
 
@@ -34,3 +33,5 @@ function motorOnAttach(which: 'traction' | 'steering') {
     // TODO: stop any previous command. Clear faults
   };
 }
+
+//*/

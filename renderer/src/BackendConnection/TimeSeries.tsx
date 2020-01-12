@@ -5,14 +5,14 @@ import { ITimeSeriesOptions } from 'smoothie';
 import backend from '.';
 import { BackendStateMapper } from './BackendState';
 
-import { State } from '../shared/State';
+import { State } from '../main-shared-types/State';
 
 function makeTimeSeriesUpdate(
   reducer: BackendStateMapper<number | undefined | null>,
   timeSeriesOptions?: ITimeSeriesOptions,
 ): TimeSeries {
   const ret = new TimeSeries(timeSeriesOptions);
-  backend.on('update', (_, state: State) => {
+  backend.on('StateUpdate', (_, state: State) => {
     try {
       const y = reducer(state);
 
@@ -42,7 +42,7 @@ export function useTimeSeries(
   if (ref.current === null) {
     ref.current = new TimeSeries(timeSeriesOptions);
 
-    ipc.on('update', (state: State) => {
+    backend.on('StateUpdate', (state: State) => {
       const y = reducer(state);
       if (y !== undefined) ref.current.append(state.time, y);
     });

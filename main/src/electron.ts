@@ -1,6 +1,9 @@
-import { BrowserWindow, app, ipcMain } from 'electron';
-import * as isDev from 'electron-is-dev';
-import * as path from 'path';
+import { posix } from 'path';
+import isDev from 'electron-is-dev';
+import { BrowserWindow, app, screen } from 'electron';
+import { startMotorControl } from './motorControl';
+
+const { join } = posix;
 
 let mainWindow: BrowserWindow;
 
@@ -13,12 +16,10 @@ function createWindow(): void {
     },
   });
   mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`);
-  mainWindow.on('closed', () => mainWindow.destroy());
 
-  ipcMain.on('channel', (event, msg) => {
-    console.log(msg);
-    mainWindow.webContents.send('response', { title: 'mymessage', data: 1 });
-  });
+  const mainShutdown = startMotorControl(mainWindow);
+
+  mainWindow.on('closed', mainShutdown);
 }
 
 app.on('ready', createWindow);

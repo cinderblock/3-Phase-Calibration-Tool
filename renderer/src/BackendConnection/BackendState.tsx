@@ -1,5 +1,5 @@
 import React from 'react';
-import { State } from '../shared/State';
+import { State } from '../main-shared-types/State';
 import fastEqual from 'fast-deep-equal';
 import { useState, useEffect } from 'react';
 import backend from '.';
@@ -26,9 +26,10 @@ export function useBackendStateUpdate<T>(mapper: BackendStateMapper<T>, equal?: 
       setState(reduced);
     };
 
-    backend.on('update', listener);
+    backend.on('StateUpdate', listener);
+
     return (): void => {
-      backend.removeListener('update', listener);
+      backend.removeListener('StateUpdate', listener);
     };
   });
 

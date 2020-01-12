@@ -6,11 +6,25 @@ import { UserControlsFull } from './UserControls';
  */
 export type State = {
   /**
-   * System time, milliseconds.
+   * System time
    *
-   * Do not use for dt calculations. Is mangled regularly.
+   * @units milliseconds
    */
   time: number;
+
+  /**
+   * Program uptime
+   *
+   * @units seconds
+   */
+  uptime?: number;
+
+  /**
+   * System time delta from last run
+   *
+   * @units seconds
+   */
+  dt?: number;
 
   /**
    * Control constants
