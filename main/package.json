@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "./dist/electron.js",
   "scripts": {
-    "start": "concurrently \"tsc --watch\" \"wait-on http://localhost:3000 && cross-env NODE_ENV=dev nodemon --watch dist --exec \\\"electron dist/electron.js\\\"\""
+    "start": "concurrently --handle-input \"wait-on http://localhost:3000 && cross-env NODE_ENV=dev nodemon --watch dist --exec \\\"electron dist/electron.js\\\"\" \"tsc --watch\""
   },
   "dependencies": {
     "electron": "^7.1.8"
