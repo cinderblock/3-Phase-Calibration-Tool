@@ -1,9 +1,7 @@
-import { posix } from 'path';
+import { join } from 'path';
 import isDev from 'electron-is-dev';
 import { BrowserWindow, app, screen } from 'electron';
 import { startMotorControl } from './motorControl';
-
-const { join } = posix;
 
 let mainWindow: BrowserWindow;
 
@@ -41,7 +39,7 @@ function createWindow(): void {
   if (isDev) {
     mainWindow.loadURL('http://localhost:3000');
   } else {
-    mainWindow.loadFile(join(__dirname, '../build/index.html'));
+    mainWindow.loadFile(join(__dirname, '..', 'build', 'index.html'));
   }
 
   mainWindow.webContents.once('dom-ready', () => {
