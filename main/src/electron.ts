@@ -15,7 +15,12 @@ function createWindow(): void {
       nodeIntegration: true,
     },
   });
-  mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`);
+
+  if (isDev) {
+    mainWindow.loadURL('http://localhost:3000');
+  } else {
+    mainWindow.loadFile(join(__dirname, '../build/index.html'));
+  }
 
   const mainShutdown = startMotorControl(mainWindow);
 
