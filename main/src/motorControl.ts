@@ -24,7 +24,6 @@ export function startMotorControl(window: BrowserWindow): () => void {
   return (): void => {
     clearInterval(main);
     controlsShutdown();
-    window.destroy();
   };
 }
 

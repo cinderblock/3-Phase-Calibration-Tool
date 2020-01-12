@@ -44,9 +44,13 @@ function createWindow(): void {
     mainWindow.loadFile(join(__dirname, '../build/index.html'));
   }
 
-  const mainShutdown = startMotorControl(mainWindow);
+  mainWindow.webContents.once('dom-ready', () => {
+    const mainShutdown = startMotorControl(mainWindow);
 
-  mainWindow.on('closed', mainShutdown);
+    mainWindow.on('closed', mainShutdown);
+  });
+
+  mainWindow.on('closed', () => mainWindow.destroy());
 }
 
 app.on('ready', createWindow);
