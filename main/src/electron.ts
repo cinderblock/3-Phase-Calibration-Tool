@@ -1,3 +1,5 @@
+import 'source-map-support/register';
+
 import { join } from 'path';
 import isDev from 'electron-is-dev';
 import { BrowserWindow, app, screen } from 'electron';
