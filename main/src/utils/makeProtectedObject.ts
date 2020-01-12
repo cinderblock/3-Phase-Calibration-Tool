@@ -73,7 +73,7 @@ function isNestedSetters<T>(value: NestedSetters<T> | Setter): value is NestedSe
 export function makeObjectSetterRecursive<T extends {}>(internal: T, setters: NestedSetters<Required<T>>): T {
   const ret = {} as T;
 
-  for (const x in internal) {
+  for (const x in setters) {
     type P = Extract<keyof T, string>;
 
     const setterOrNested = setters[x] as NestedSetters<Required<T[P]>> | Setter;
