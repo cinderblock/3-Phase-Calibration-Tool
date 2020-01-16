@@ -183,20 +183,16 @@ Use Visual Studio Code.
 
 All of these are run from the top level directory.
 
-| Command                        | Description                                                                           |
-| ------------------------------ | ------------------------------------------------------------------------------------- |
-| `yarn setup`                   | Setup your local machine for development. Do this again to fix problems in dev env    |
-| `yarn ui dev`                  | Run the web **ui** on your local machine (_dev mode_)                                 |
-| `yarn daemon dev`              | Run **daemon** locally in watch mode with most recent local code                      |
-| `yarn deploy daemon-dev`       | Run local compiler in watch mode and **daemon** on remote with most recent local code |
-| `yarn ui add some-package`     | Add `some-package` to the ui                                                          |
-| `yarn ui upgrade`              | Upgrade ui packages to latest versions                                                |
-| `yarn upgrade-all`             | Upgrade all packages to latest versions                                               |
-| `yarn remote add some-package` | Add `some-package` to the daemon using the remote's yarn                              |
-| `yarn remote upgrade`          | Upgrade daemon packages to latest version using the remote's yarn                     |
-| `yarn remote kill`             | Kill the daemon on remote                                                             |
-| `yarn remote shutdown`         | Shutdown the remote system                                                            |
-| `yarn remote reboot`           | Reboot the remote system                                                              |
+| Command                    | Description                                                                           |
+| -------------------------- | ------------------------------------------------------------------------------------- |
+| `yarn`                     | Setup your local machine for development                                              |
+| `yarn ui start`            | Run the web **ui** on your local machine (_dev mode_)                                 |
+| `yarn main start`          | Run **daemon** locally in watch mode with most recent local code                      |
+| `yarn deploy daemon-dev`   | Run local compiler in watch mode and **daemon** on remote with most recent local code |
+| `yarn ui add some-package` | Add `some-package` to the ui                                                          |
+| `yarn ui upgrade`          | Upgrade ui packages to latest versions                                                |
+| `yarn upgrade-all`         | Upgrade all packages to latest versions                                               |
+| `yarn check-files`         | Check all installed packages for errors                                               |
 
 ### Raspberry Pi Setup
 
