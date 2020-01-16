@@ -7,7 +7,7 @@
     "start": "concurrently --names \"main,TypeScript Compiler Watch\" --handle-input \"wait-on http://localhost:3000 && cross-env NODE_ENV=dev nodemon --watch dist --exec \\\"electron dist/electron.js\\\"\" \"tsc --watch\""
   },
   "dependencies": {
-    "electron": "7.1.8",
+    "electron": "7.1.9",
     "electron-rebuild": "^1.8.8",
     "mlx90363": "https://github.com/cinderblock/node-MLX90363.git",
     "smooth-control": "https://github.com/cinderblock/smooth-control.git#manual-transfers"

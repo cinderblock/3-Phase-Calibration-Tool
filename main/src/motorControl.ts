@@ -4,8 +4,8 @@ import * as debug from './utils/debug';
 import { state, updateTimes } from './State';
 import { setupUserControls, realControls } from './State/UserControls';
 import initializeMotor from './Motors/CommHandler';
-import { start, addAttachListener, MLXCommand, CommandMode } from 'smooth-control';
-import { makePacket, Opcode, Marker, ErrorCode } from 'mlx90363';
+import { start, addAttachListener, CommandMode } from 'smooth-control';
+import { makePacket, Opcode, Marker } from 'mlx90363';
 
 let activeMotor: ReturnType<typeof initializeMotor> | undefined;
 
@@ -13,8 +13,32 @@ function updateUI(window: BrowserWindow): void {
   window.webContents.send('StateUpdate', state);
 }
 
+const data = makePacket({
+  opcode: Opcode.GET1,
+  marker: Marker.XYZ,
+  data16: [, 0xffff],
+});
+
+let blockSend = false;
+
+function getData() {
+  if (blockSend) return;
+  blockSend = true;
+
+  const res = activeMotor?.motor.write({ mode: CommandMode.MLXDebug, data });
+  if (!res) {
+    blockSend = false;
+    return;
+  }
+
+  res.then(() => {
+    blockSend = false;
+  });
+}
+
 function updateMotor(): void {
   // TODO: take UI controls and turn them into motor commands
+  getData();
 }
 
 export function clearFault(): void {
