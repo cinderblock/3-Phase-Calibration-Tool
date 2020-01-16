@@ -1,5 +1,5 @@
 {
   "hooks": {
-    "post-pull": "npm run synchronize-workspace"
+    "post-checkout": "npm run synchronize-workspace"
   }
 }
