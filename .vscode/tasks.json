@@ -6,12 +6,13 @@
       "type": "shell",
       "command": "yarn",
       "args": ["ui", "start"],
-      "options": {
-        "cwd": "${workspaceRoot}"
-      },
       "problemMatcher": [],
       "presentation": {
-        "panel": "shared"
+        "panel": "dedicated",
+        "clear": true,
+        "group": "development",
+        "reveal": "silent",
+        "revealProblems": "onProblem"
       },
       "group": "build"
     },
@@ -20,12 +21,13 @@
       "type": "shell",
       "command": "yarn",
       "args": ["main", "start"],
-      "options": {
-        "cwd": "${workspaceRoot}"
-      },
       "problemMatcher": [],
       "presentation": {
-        "panel": "shared"
+        "panel": "dedicated",
+        "clear": true,
+        "group": "development",
+        "reveal": "silent",
+        "revealProblems": "onProblem"
       },
       "group": "build"
     },
