@@ -9,6 +9,9 @@ module.exports = {
   webpack: {
     configure: {
       target,
+      resolve: {
+        symlinks: false,
+      },
     },
   },
 };
