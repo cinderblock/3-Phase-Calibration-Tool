@@ -3,7 +3,7 @@ import { ipcMain, IpcMainEvent } from 'electron';
 import { selectMotor, clearFault, sendMlxRead } from '../motorControl';
 
 import { recursiveAssign } from '../utils/recursiveAssign';
-import { makeObjectSetterRecursive } from '../utils/makeProtectedObject';
+import { makeObjectSetterRecursiveTyped } from '../utils/makeProtectedObject';
 import { UserControlUpdate, UserControlsFull, UserCommand, UserCommands } from '../renderer-shared-types/UserControls';
 import { clampPositive } from '../utils/filters/clampRange';
 
@@ -14,7 +14,7 @@ export const realControls: UserControlsFull = {
   sequence: 0,
 };
 
-export const protectedControls = makeObjectSetterRecursive(realControls, {
+export const protectedControls = makeObjectSetterRecursiveTyped(realControls, {
   sequence(next) {
     // TODO: validate sequence somehow
     if (Number.isFinite(next)) realControls.sequence = next;
@@ -25,13 +25,11 @@ export const protectedControls = makeObjectSetterRecursive(realControls, {
   },
 
   angle(next) {
-    const num = Number(next);
-    if (Number.isFinite(num)) realControls.angle = clampPositive(num, 2 * Math.PI);
+    if (Number.isFinite(next)) realControls.angle = clampPositive(next, 2 * Math.PI);
   },
 
   amplitude(next) {
-    const num = parseInt(next);
-    if (Number.isFinite(num)) realControls.amplitude = clampPositive(num, AMPLITUDE_LIMIT);
+    if (Number.isFinite(next)) realControls.amplitude = clampPositive(next, AMPLITUDE_LIMIT);
   },
 });
 

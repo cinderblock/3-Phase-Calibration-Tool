@@ -21,19 +21,19 @@ export type UserControls = {
   /**
    * Serial number of the device we're connecting to
    */
-  connected?: string | undefined;
+  connected?: string;
 
   /**
    * Desired drive angle for test
    * @unit radian
    */
-  angle?: number | undefined;
+  angle?: number;
 
   /**
    * Desired drive amplitude for test
    * @unit 0-255
    */
-  amplitude?: number | undefined;
+  amplitude?: number;
 };
 
 export type UserControlsAutomatic = {
