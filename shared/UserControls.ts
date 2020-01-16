@@ -1,17 +1,27 @@
 import { RecursivePartial } from './utils/RecursivePartial';
 
-export type TestCommand = 'debugMLX' | 'clearFault' | 'manual';
+export enum UserCommands {
+  ClearFault,
+  ReadMLX,
+}
+
+export type ClearFaultCommand = {
+  command: UserCommands.ClearFault;
+};
+
+export type ReadMlxCommand = {
+  command: UserCommands.ReadMLX;
+  which: 'xyz' | 'nop';
+  period?: number;
+};
+
+export type UserCommand = ClearFaultCommand | ReadMlxCommand;
 
 export type UserControls = {
   /**
    * Serial number of the device we're connecting to
    */
   connected?: string | undefined;
-
-  /**
-   * Mode we're testing the motor in
-   */
-  testCommand?: TestCommand | undefined;
 
   /**
    * Desired drive angle for test

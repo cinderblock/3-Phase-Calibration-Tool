@@ -1,10 +1,10 @@
 import { ipcMain, IpcMainEvent } from 'electron';
 
-import { selectMotor, setTestMode } from '../motorControl';
+import { selectMotor, clearFault, sendMlxRead } from '../motorControl';
 
 import { recursiveAssign } from '../utils/recursiveAssign';
 import { makeObjectSetterRecursive } from '../utils/makeProtectedObject';
-import { UserControlUpdate, UserControlsFull } from '../renderer-shared-types/UserControls';
+import { UserControlUpdate, UserControlsFull, UserCommand, UserCommands } from '../renderer-shared-types/UserControls';
 import { clampPositive } from '../utils/filters/clampRange';
 
 const AMPLITUDE_LIMIT = 100;
@@ -24,8 +24,6 @@ export const protectedControls = makeObjectSetterRecursive(realControls, {
     if (typeof next === 'string') selectMotor(next);
   },
 
-  testCommand: next => setTestMode(next),
-
   angle(next) {
     const num = Number(next);
     if (Number.isFinite(num)) realControls.angle = clampPositive(num, 2 * Math.PI);
@@ -44,15 +42,31 @@ export const protectedControls = makeObjectSetterRecursive(realControls, {
  */
 function handleIncomingControls(event: IpcMainEvent, userControlsUpdate: UserControlUpdate): void {
   // DEBUG
-  console.log('received controls:', userControlsUpdate);
+  console.log('Received Controls:', userControlsUpdate);
 
   recursiveAssign(protectedControls, userControlsUpdate);
 }
 
+function handleIncomingCommand(event: IpcMainEvent, command: UserCommand): void {
+  // DEBUG
+  console.log('Received Command:', command);
+
+  switch (command.command) {
+    default:
+      return;
+    case UserCommands.ClearFault:
+      return clearFault();
+    case UserCommands.ReadMLX:
+      if (!command.period) return sendMlxRead(command.which);
+  }
+}
+
 export function setupUserControls(): () => void {
   ipcMain.on('userControls', handleIncomingControls);
+  ipcMain.on('userCommand', handleIncomingCommand);
 
   return (): void => {
     ipcMain.removeListener('userControls', handleIncomingControls);
+    ipcMain.removeListener('userCommand', handleIncomingCommand);
   };
 }

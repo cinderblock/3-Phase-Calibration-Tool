@@ -1,7 +1,8 @@
 import React from 'react';
 import { useBackendStateUpdate } from '../BackendConnection/BackendState';
 import { NormalData, CommonData, ReadData, FaultData, ManualData } from 'smooth-control';
-import { useUserControls } from '../BackendConnection/UserControls';
+import { useUserControls, useUserCommand } from '../BackendConnection/UserControls';
+import { UserCommands } from '../main-shared-types/UserControls';
 
 /* Why can't we import these?
 import { ControllerState, ControllerFault } from 'smooth-control';
@@ -41,9 +42,9 @@ function isNormalState(data: ReadData): data is NormalData & CommonData {
 export function ConnectedMotorStatus() {
   const state = useBackendStateUpdate(s => s.motorState);
 
-  const clearFaults = useUserControls(() => ({ testCommand: 'clearFault' }));
+  const clearFaults = useUserCommand(() => ({ command: UserCommands.ClearFault }));
 
-  const manualMode = useUserControls(() => ({ testCommand: 'manual' }));
+  const manualMode = useUserCommand(() => ({ command: UserCommands.ReadMLX, which: 'xyz' }));
 
   if (!state) return <></>;
 
@@ -116,7 +117,7 @@ export function ConnectedMotorStatus() {
           Total Current: <DataPill>{processed?.totalCurrent?.toFixed(3)}</DataPill>
         </div>
         <div>
-          <button onClick={manualMode}>Manual</button>
+          <button onClick={manualMode}>Manual Read MLX</button>
         </div>
         <div>
           <pre>{JSON.stringify(data, null, 2)}</pre>

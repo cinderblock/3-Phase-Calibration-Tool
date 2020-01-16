@@ -1304,7 +1304,7 @@ mkdirp@0.5.1, mkdirp@^0.5.0, mkdirp@^0.5.1:
 
 "mlx90363@https://github.com/cinderblock/node-MLX90363.git":
   version "0.0.0"
-  resolved "https://github.com/cinderblock/node-MLX90363.git#09d44d8abc94f728f1c5ea93c22fe9b4f87d9076"
+  resolved "https://github.com/cinderblock/node-MLX90363.git#b55784ba2734ffc2d2a9ad0a77d15d7ceb71e637"
 
 ms@2.0.0:
   version "2.0.0"
@@ -1924,7 +1924,7 @@ simple-get@^3.0.3:
 
 "smooth-control@https://github.com/cinderblock/smooth-control.git#manual-transfers":
   version "0.0.0"
-  resolved "https://github.com/cinderblock/smooth-control.git#93ff0eed2d169c016c78baf3563996787a5e005c"
+  resolved "https://github.com/cinderblock/smooth-control.git#a6b70c77a55d1f6d51a63ab878eecc9750814c80"
   dependencies:
     mlx90363 "https://github.com/cinderblock/node-MLX90363.git"
     typed-emitter "^0.2.0"

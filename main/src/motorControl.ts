@@ -5,9 +5,7 @@ import { state, updateTimes } from './State';
 import { setupUserControls, realControls } from './State/UserControls';
 import initializeMotor from './Motors/CommHandler';
 import { start, addAttachListener, MLXCommand, CommandMode } from 'smooth-control';
-
-import { TestCommand } from './renderer-shared-types/UserControls';
-import { delay } from './utils/PromiseDelay';
+import { makePacket, Opcode, Marker, ErrorCode } from 'mlx90363';
 
 let activeMotor: ReturnType<typeof initializeMotor> | undefined;
 
@@ -15,50 +13,25 @@ function updateUI(window: BrowserWindow): void {
   window.webContents.send('StateUpdate', state);
 }
 
-let manualBusy = false;
-
 function updateMotor(): void {
   // TODO: take UI controls and turn them into motor commands
-
-  if (realControls.testCommand === 'manual' && !manualBusy) {
-    const angle = realControls.angle;
-    if (angle === undefined) return;
-    const res = activeMotor?.motor.write({ mode: CommandMode.Calibration, amplitude: 0, angle });
-
-    if (!res) {
-      console.log('Failed to send?');
-      realControls.testCommand = undefined;
-    } else {
-      manualBusy = true;
-      res
-        .then(() => delay(50))
-        .then(() => {
-          manualBusy = false;
-        });
-    }
-  }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function setTestMode(next: any): void {
-  // Next test mode
+export function clearFault(): void {
+  activeMotor?.clearFault();
+}
 
-  switch (next as TestCommand) {
-    case 'clearFault':
-      activeMotor?.clearFault();
-      break;
-    case 'debugMLX':
-      // activeMotor?.motor.write({ mode: CommandMode.MLXDebug,  });
-      break;
-    case 'manual':
-      if (realControls.testCommand === 'manual') return;
-      realControls.angle = 0;
-      break;
-    default:
-      return;
-  }
+export function sendMlxRead(mode: 'xyz' | 'nop'): void {
+  const data =
+    mode == 'nop'
+      ? makePacket({ opcode: Opcode.NOP__Challenge })
+      : makePacket({
+          opcode: Opcode.GET1,
+          marker: Marker.XYZ,
+          data16: [, 0xffff],
+        });
 
-  realControls.testCommand = next;
+  activeMotor?.motor.write({ mode: CommandMode.MLXDebug, data });
 }
 
 export function selectMotor(serial: string): void {
