@@ -57,8 +57,8 @@ type SetterOrNested<T> = T extends object ? NestedSetters<T> : Setter;
 
 type NestedSetters<T> = { [P in keyof T]: SetterOrNested<T[P]> };
 
-function isNestedSetters<T>(value: NestedSetters<T> | Setter): value is NestedSetters<T> {
-  return typeof value === 'object';
+function isSetter<T>(value: NestedSetters<T> | Setter): value is Setter {
+  return typeof value === 'function';
 }
 
 /**
@@ -80,12 +80,13 @@ export function makeObjectSetterRecursive<T extends {}>(internal: T, setters: Ne
 
     const prop: PropertyDescriptor = { enumerable: true };
 
-    if (isNestedSetters(setterOrNested)) {
-      prop.value = makeObjectSetterRecursive(internal[x], setterOrNested);
-    } else {
-      if (!setterOrNested) throw Error('Invalid setter');
+    if (!setterOrNested) throw Error('Invalid setter');
+
+    if (isSetter(setterOrNested)) {
       prop.set = setterOrNested;
       prop.get = (): T[Extract<keyof T, string>] => internal[x];
+    } else {
+      prop.value = makeObjectSetterRecursive(internal[x], setterOrNested);
     }
 
     Object.defineProperty(ret, x, prop);
@@ -100,8 +101,8 @@ type SetterOrNestedTyped<T> = T extends object ? NestedSettersTyped<T> : SetterT
 
 type NestedSettersTyped<T> = { [P in keyof T]: SetterOrNestedTyped<T[P]> };
 
-function isNestedSettersTyped<T, P>(value: NestedSettersTyped<T> | SetterTyped<P>): value is NestedSettersTyped<T> {
-  return typeof value === 'object';
+function isSetterTyped<T, P>(value: NestedSettersTyped<T> | SetterTyped<P>): value is SetterTyped<P> {
+  return typeof value === 'function';
 }
 
 /**
@@ -125,12 +126,13 @@ export function makeObjectSetterRecursiveTyped<T extends {}>(internal: T, setter
 
     const prop: PropertyDescriptor = { enumerable: true };
 
-    if (isNestedSettersTyped(setterOrNested)) {
-      prop.value = makeObjectSetterRecursiveTyped(internal[x], setterOrNested);
-    } else {
-      if (!setterOrNested) throw Error('Invalid setter');
+    if (!setterOrNested) throw Error('Invalid setter');
+
+    if (isSetterTyped(setterOrNested)) {
       prop.set = setterOrNested;
       prop.get = (): T[Extract<keyof T, string>] => internal[x];
+    } else {
+      prop.value = makeObjectSetterRecursiveTyped(internal[x], setterOrNested);
     }
 
     Object.defineProperty(ret, x, prop);
