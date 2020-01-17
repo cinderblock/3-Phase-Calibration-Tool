@@ -30,13 +30,13 @@ export const motorCountsPerRevolution = 3 * 256 * 15;
 
 export interface Motor {
   motorCountsPerRevolution: number;
-  stop: () => void;
+  stop: () => false | Promise<void>;
   enable: () => void;
-  disable: () => void;
-  clearFault: () => void;
-  setConstant: (constant: PIDs, value: number) => void;
+  disable: () => false | Promise<void>;
+  clearFault: () => false | Promise<void>;
+  setConstant: (constant: PIDs, value: number) => false | Promise<void>;
   goToPosition: (pos: number) => false | Promise<void>;
-  push: (amplitude: number) => void;
+  push: (amplitude: number) => false | Promise<void>;
   close: () => void;
   motor: ReturnType<typeof USB>;
 }
