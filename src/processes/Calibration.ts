@@ -13,7 +13,7 @@ export type ProcessedData = {
 export default function processData(
   forwardData: number[],
   reverseData: number[],
-  countsPerMechanicalRevolution: number
+  countsPerMechanicalRevolution: number,
 ): ProcessedData {
   function average(angles: number[]) {
     return angleAverage(angles, 1 << 14);
@@ -31,7 +31,7 @@ export default function processData(
     do {
       neighborhood = neighborhood.concat(
         arr[PositiveModulus(i - j, arr.length)],
-        arr[PositiveModulus(i + j, arr.length)]
+        arr[PositiveModulus(i + j, arr.length)],
       );
       j++;
     } while (j <= minWidth || neighborhood.length < minPoints);
@@ -52,7 +52,7 @@ export default function processData(
     const angle = i % countsPerMechanicalRevolution;
 
     // if the list exists, append to it
-    let t = inverses[mlxValue];
+    const t = inverses[mlxValue];
     if (t) t.push(angle);
     // Otherwise make a new list with a single item
     else inverses[mlxValue] = [angle];
@@ -71,7 +71,7 @@ export default function processData(
       neighborhood = neighborhood.concat(
         // Inverses were stored in original 14-bit values
         inverses[PositiveModulus(i * 4 - j, 2 ** 14)] || [],
-        inverses[PositiveModulus(i * 4 + j, 2 ** 14)] || []
+        inverses[PositiveModulus(i * 4 + j, 2 ** 14)] || [],
       );
     }
 
