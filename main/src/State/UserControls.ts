@@ -1,10 +1,16 @@
 import { ipcMain, IpcMainEvent } from 'electron';
 
-import { selectMotor, clearFault, sendMlxRead } from '../motorControl';
+import { selectMotor, clearFault, sendMlxReadManual } from '../motorControl';
 
 import { recursiveAssign } from '../utils/recursiveAssign';
 import { makeObjectSetterRecursiveTyped } from '../utils/makeProtectedObject';
-import { UserControlUpdate, UserControlsFull, UserCommand, UserCommands } from '../renderer-shared-types/UserControls';
+import {
+  UserControlUpdate,
+  UserControlsFull,
+  UserCommand,
+  UserCommands,
+  RunMode,
+} from '../renderer-shared-types/UserControls';
 import { clampPositive } from '../utils/filters/clampRange';
 
 const AMPLITUDE_LIMIT = 100;
@@ -12,6 +18,7 @@ const AMPLITUDE_LIMIT = 100;
 // State of the system with initial values
 export const realControls: UserControlsFull = {
   sequence: 0,
+  mode: RunMode.Disconnected,
 };
 
 export const protectedControls = makeObjectSetterRecursiveTyped(realControls, {
@@ -30,6 +37,13 @@ export const protectedControls = makeObjectSetterRecursiveTyped(realControls, {
 
   amplitude(next) {
     if (Number.isFinite(next)) realControls.amplitude = clampPositive(next, AMPLITUDE_LIMIT);
+  },
+
+  mode(next) {
+    if (typeof next !== 'number') return;
+    if (!Object.values(RunMode).includes(next)) return;
+
+    realControls.mode = next;
   },
 });
 
@@ -55,7 +69,7 @@ function handleIncomingCommand(event: IpcMainEvent, command: UserCommand): void 
     case UserCommands.ClearFault:
       return clearFault();
     case UserCommands.ReadMLX:
-      if (!command.period) return sendMlxRead(command.which);
+      if (!command.period) return sendMlxReadManual(command.which);
   }
 }
 

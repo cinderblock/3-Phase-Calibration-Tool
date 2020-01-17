@@ -15,6 +15,13 @@ export type ReadMlxCommand = {
   period?: number;
 };
 
+export enum RunMode {
+  Disconnected,
+  Manual,
+  Automatic,
+  Calibration,
+}
+
 export type UserCommand = ClearFaultCommand | ReadMlxCommand;
 
 export type UserControls = {
@@ -34,6 +41,11 @@ export type UserControls = {
    * @unit 0-255
    */
   amplitude?: number;
+
+  /**
+   * Mode that this program is running in
+   */
+  mode: RunMode;
 };
 
 export type UserControlsAutomatic = {
