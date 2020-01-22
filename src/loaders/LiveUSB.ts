@@ -1,6 +1,6 @@
 import { DataPoint } from '../DataPoint';
 import { DataFormat } from './DataFormat';
-import USBInterface, { CommandMode, MLXCommand, Command, ReadData } from 'smooth-control';
+import USBInterface, { CommandMode, MLXCommand, Command, ReadData, isManualState } from 'smooth-control';
 import { makePacket, Opcode, Marker, ErrorCode } from 'mlx90363';
 import { delay } from '../utils/delay';
 import PositiveModulus from '../utils/PositiveModulus';
@@ -16,7 +16,7 @@ export default async function loadDataFromUSB(
   cyclePerRev: number,
   revolutions: number,
   maxAmplitude: number,
-  logger: (step: number, dir: number, data: DataPoint) => void
+  logger: (step: number, dir: number, data: DataPoint) => void,
 ): Promise<DataFormat> {
   return new Promise((resolve, reject) => {
     const forward: DataPoint[] = [];
@@ -62,14 +62,17 @@ export default async function loadDataFromUSB(
     };
 
     function sendCommand(command: Command) {
-      return new Promise(res => {
-        try {
-          usb.write(command, res);
-        } catch (e) {
-          console.log('not Sent because:', e);
-          res();
-        }
-      });
+      const res = usb.write(command);
+
+      if (!res) throw new Error('Motor disconnected?');
+
+      return res.then(
+        () => true,
+        e => {
+          console.log('Motor error:', e);
+          return false;
+        },
+      );
     }
 
     let errors = 0;
@@ -77,7 +80,7 @@ export default async function loadDataFromUSB(
       if (errors > 0) errors -= 0.1;
     }, 100);
 
-    function maybeThrow(message: String) {
+    function maybeThrow(message: string) {
       errors++;
       if (errors < 5) {
         console.error('Error suppressed:', message);
@@ -111,18 +114,19 @@ export default async function loadDataFromUSB(
       while (true) {
         await sendCommand(GetAlpha);
         // Give sensor time to make reading
-        await delay(2);
+        await delay(3);
         await sendCommand(GetXYZ);
 
-        const xyzDelay = delay(1);
+        const xyzDelay = delay(3);
 
         // Force AVR USB to update USB buffer data once
         let data = await getData();
 
         do {
           data = await getData();
-          if (!data) throw 'Data missing';
-        } while (!data.mlxParsedResponse);
+          if (!data) throw new Error('Data missing');
+          if (!isManualState(data)) throw new Error('Motor fault!');
+        } while (!data.mlxDataValid || !data.mlxParsedResponse);
 
         if (typeof data.mlxParsedResponse == 'string') {
           maybeThrow('MLX data parsing error: ' + data.mlxParsedResponse);
@@ -134,21 +138,31 @@ export default async function loadDataFromUSB(
           continue;
         }
 
-        if (data.mlxParsedResponse.opcode == Opcode.Error_frame) {
-          console.log(
-            'Error frame. Error:',
-            data.mlxParsedResponse.error === undefined ? 'undefined??' : ErrorCode[data.mlxParsedResponse.error]
-          );
-          maybeThrow('Received Error Frame');
+        if (data.mlxParsedResponse.marker == Marker.Opcode) {
+          if (data.mlxParsedResponse.opcode == Opcode.Error_frame) {
+            console.log(
+              'Error frame. Error:',
+              data.mlxParsedResponse.error === undefined ? 'undefined??' : ErrorCode[data.mlxParsedResponse.error],
+            );
+            maybeThrow('Received Error Frame');
+            continue;
+          }
+
+          if (data.mlxParsedResponse.opcode == Opcode.NothingToTransmit) {
+            maybeThrow('Nothing to transmit');
+            continue;
+          }
+
+          maybeThrow('Why are we getting an OpCode response?');
           continue;
         }
 
-        if (data.mlxParsedResponse.opcode == Opcode.NothingToTransmit) {
-          maybeThrow('Nothing to transmit');
+        if (data.mlxParsedResponse.marker !== Marker.Alpha) {
+          maybeThrow('Not alpha type message?!?');
           continue;
         }
 
-        if (data.mlxParsedResponse.alpha === undefined) throw 'Parsing failure? - Alpha';
+        if (data.mlxParsedResponse.alpha === undefined) throw new Error('Parsing failure? - Alpha');
 
         const { current, cpuTemp: temperature, AS, BS, CS } = data;
 
@@ -163,8 +177,9 @@ export default async function loadDataFromUSB(
 
         do {
           dataXYZ = await getData();
-          if (!dataXYZ) throw 'XYZ data missing';
-        } while (!dataXYZ.mlxParsedResponse);
+          if (!dataXYZ) throw new Error('XYZ data missing');
+          if (!isManualState(dataXYZ)) throw new Error('Motor fault!');
+        } while (!dataXYZ.mlxDataValid || !dataXYZ.mlxParsedResponse);
 
         if (typeof dataXYZ.mlxParsedResponse == 'string') {
           maybeThrow('MLX data parsing error: ' + dataXYZ.mlxParsedResponse);
@@ -176,25 +191,36 @@ export default async function loadDataFromUSB(
           continue;
         }
 
-        if (dataXYZ.mlxParsedResponse.opcode == Opcode.Error_frame) {
-          console.log(
-            'Error frame. Error:',
-            dataXYZ.mlxParsedResponse.error === undefined ? 'undefined??' : ErrorCode[dataXYZ.mlxParsedResponse.error]
-          );
-          maybeThrow('Received Error Frame XYZ');
+        if (dataXYZ.mlxParsedResponse.marker == Marker.Opcode) {
+          if (dataXYZ.mlxParsedResponse.opcode == Opcode.Error_frame) {
+            console.log(
+              'Error frame. Error:',
+              dataXYZ.mlxParsedResponse.error === undefined
+                ? 'undefined??'
+                : ErrorCode[dataXYZ.mlxParsedResponse.error],
+            );
+            maybeThrow('Received Error Frame XYZ');
+            continue;
+          }
+
+          if (dataXYZ.mlxParsedResponse.opcode == Opcode.NothingToTransmit) {
+            maybeThrow('Nothing to transmit XYZ');
+            continue;
+          }
+        }
+
+        if (dataXYZ.mlxParsedResponse.marker !== Marker.XYZ) {
+          maybeThrow('Not alpha type message?!?');
           continue;
         }
 
-        if (dataXYZ.mlxParsedResponse.opcode == Opcode.NothingToTransmit) {
-          maybeThrow('Nothing to transmit XYZ');
-          continue;
-        }
+        const { x, y, z, computed } = dataXYZ.mlxParsedResponse;
 
-        const { x, y, z } = dataXYZ.mlxParsedResponse;
+        if (x === undefined) throw new Error('Parsing failure? - x');
+        if (y === undefined) throw new Error('Parsing failure? - y');
+        if (z === undefined) throw new Error('Parsing failure? - z');
 
-        if (x === undefined) throw 'Parsing failure? - x';
-        if (y === undefined) throw 'Parsing failure? - y';
-        if (z === undefined) throw 'Parsing failure? - z';
+        if (computed.alpha != alpha) console.log('Difference detected:', computed.alpha - alpha);
 
         // Only record data in range of good motion
         if (step >= 0 && step < End) {
@@ -267,7 +293,7 @@ export default async function loadDataFromUSB(
             'Current:',
             data.current,
             'VG:',
-            VG
+            VG,
           );
           lastPrint = temp;
         }

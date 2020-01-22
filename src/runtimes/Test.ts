@@ -5,6 +5,9 @@ import USBInterface, {
   ControllerState,
   ControllerFault,
   start,
+  FaultData,
+  NormalData,
+  isNormalState,
 } from 'smooth-control';
 import readline from 'readline';
 import chalk from 'chalk';
@@ -27,7 +30,7 @@ let amplitude: number = process.argv[2] ? +process.argv[2] : 30;
 
 console.log('Amplitude:', amplitude);
 
-let calibrated = false;
+const calibrated = false;
 
 let lastState: ControllerState;
 let lastFault: ControllerFault;
@@ -61,7 +64,7 @@ async function main() {
     await new Promise<void>((resolve, reject) => {
       const once = usb.onData(data => {
         lastState = data.state;
-        lastFault = data.fault;
+        lastFault = (data as FaultData).fault;
         once();
         resolve();
       });
@@ -78,7 +81,7 @@ async function main() {
         const once = usb.onData(data => {
           console.log(data.current);
           lastState = data.state;
-          lastFault = data.fault;
+          lastFault = (data as FaultData).fault;
           if (data.state === ControllerState.Fault && data.fault === ControllerFault.Init) {
             once();
             resolve();
@@ -105,11 +108,11 @@ async function main() {
     const once = usb.onData(data => {
       once();
 
-      if (!data.calibrated) {
-        console.log('Uncalibrated!');
-        usb.close();
-        return;
-      }
+      // if (!(data as NormalData).calibrated) {
+      //   console.log('UncalibratUncalibrated!');
+      //   usb.close();
+      //   return;
+      // }
       console.log('Calibrated!');
 
       let writes = 0;
@@ -138,7 +141,7 @@ async function main() {
           'Position:',
           pos,
           'Alpha/4:',
-          alpha
+          alpha,
         );
         writes = 0;
         CRCfails = 0;
@@ -146,6 +149,8 @@ async function main() {
         current = 0;
         temperature = 0;
       }, 1000);
+
+      let errs = 0;
 
       const dataHandlerStop = usb.onData(data => {
         if (data.state !== lastState) {
@@ -161,15 +166,20 @@ async function main() {
           console.log('New Fault:', ControllerFault[data.fault]);
         }
 
+        if (!isNormalState(data)) {
+          if (errs++ > 10) throw new Error('bad state!' + data.state);
+          return;
+        }
+
         CRCfails += data.mlxCRCFailures;
         controlLoops += data.controlLoops;
         current = currentFilter(data.current);
         temperature = tempFilter(data.cpuTemp);
         pos = data.position;
-        if (data.mlxParsedResponse && typeof data.mlxParsedResponse != 'string') {
-          if (data.mlxParsedResponse.alpha !== undefined)
-            alpha = Math.round(((data.mlxParsedResponse && data.mlxParsedResponse.alpha) || 0) / 4);
-        }
+        // if (data.mlxParsedResponse && typeof data.mlxParsedResponse != 'string') {
+        //   if (data.mlxParsedResponse.alpha !== undefined)
+        //     alpha = Math.round(((data.mlxParsedResponse && data.mlxParsedResponse.alpha) || 0) / 4);
+        // }
 
         // console.log({ calibrated, ...data });
       });
@@ -180,13 +190,22 @@ async function main() {
 
       let zero = Date.now();
 
+      let busy = false;
+
       async function loop() {
         let command = amplitude;
 
         if (runMode == 'oscillate') command *= Math.sin(((Date.now() - zero) / 1000) * 2 * Math.PI * Frequency);
 
-        usb.write({ mode, command });
-        writes++;
+        if (!busy) {
+          writes++;
+          const res = usb.write({ mode, command });
+
+          if (res) {
+            busy = true;
+            res.then(() => (busy = false));
+          }
+        }
       }
 
       let interval = setInterval(loop, 1000 / 300);
@@ -220,14 +239,18 @@ async function main() {
         }
       });
 
-      function die() {
+      async function die() {
         console.log('Dying');
         // Shutdown running write loop
         clearInterval(WPS);
         clearInterval(interval);
         dataHandlerStop();
         // Stop the motor
-        usb.write({ mode, command: 0 }, usb.close);
+        const res = usb.write({ mode, command: 0 });
+
+        if (res) await res;
+
+        usb.close();
 
         // Just in case, really exit after a short delay.
         setTimeout(() => {
