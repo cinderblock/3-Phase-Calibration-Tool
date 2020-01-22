@@ -1,8 +1,21 @@
 import React from 'react';
 import { useBackendStateUpdate } from '../BackendConnection/BackendState';
 import { NormalData, CommonData, ReadData, FaultData, ManualData } from 'smooth-control';
-import { useUserControls, useUserCommand } from '../BackendConnection/UserControls';
+import { useUserCommand } from '../BackendConnection/UserControls';
 import { UserCommands } from '../main-shared-types/UserControls';
+
+import {
+  ResponsiveContainer,
+  ScatterChart,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  Line,
+  ZAxis,
+  Scatter,
+} from 'recharts';
 
 /* Why can't we import these?
 import { ControllerState, ControllerFault } from 'smooth-control';
@@ -39,14 +52,49 @@ function isNormalState(data: ReadData): data is NormalData & CommonData {
   return data.state === ControllerState.Normal;
 }
 
-export function ConnectedMotorStatus() {
+function PositionChart() {
+  return (
+    <ResponsiveContainer aspect={1}>
+      <ScatterChart margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis
+          scale="linear"
+          type="number"
+          dataKey="x"
+          name="X"
+          domain={[-100, 100]}
+          label="X"
+          interval={0}
+          minTickGap={40}
+          mirror={true}
+        />
+        <YAxis scale="linear" type="number" dataKey="y" name="Y" domain={[-100, 100]} mirror={true} label="Y" />
+        <ZAxis dataKey="z" range={[0, 200]} name="score" unit="km" />
+        <Tooltip />
+        <Legend />
+        <Scatter
+          name="A school"
+          data={[
+            { x: 1, y: 1, z: 19 },
+            { x: 1.5, y: 0, z: 2 },
+            { x: 1, y: -1, z: 3 },
+            { x: 0, y: -1.5, z: 4 },
+            { x: -1, y: -1, z: 5 },
+            { x: -1.5, y: 0, z: 6 },
+          ]}
+          fill="#8884d8"
+        />
+      </ScatterChart>
+    </ResponsiveContainer>
+  );
+}
+
+function PrettyState() {
   const state = useBackendStateUpdate(s => s.motorState);
 
   const clearFaults = useUserCommand(() => ({ command: UserCommands.ClearFault }));
 
-  const manualMode = useUserCommand(() => ({ command: UserCommands.ReadMLX, which: 'xyz' }));
-
-  if (!state) return <></>;
+  if (!state) return null;
 
   const { connected, data, processed, command, enabled } = state;
 
@@ -89,38 +137,61 @@ export function ConnectedMotorStatus() {
 
   return (
     <>
+      <h5>
+        <DataPill>{connected ? 'Connected' : 'Missing'}</DataPill>
+      </h5>
+      {disabled}
+      Mode: <DataPill>{command?.mode}</DataPill>
+      <br />
+      Command: <DataPill>{command?.command}</DataPill>
+      <br />
+      State:{' '}
+      <DataPill color={data?.state === ControllerState.Fault ? 'danger' : 'primary'}>
+        {data && ControllerState[data.state]}
+      </DataPill>
+      {data?.state === ControllerState.Fault ? <> ({fault})</> : <></>}
+      <br />
+      {detail}
+      Temp: <DataPill>{data?.cpuTemp}</DataPill>
+      <br />
+      Current: <DataPill>{data?.current?.toFixed(3)}</DataPill>
+      <br />
+      Battery voltage: {processed?.batteryVoltage?.toFixed(2)}
+      <br />
+      Gate voltage: <DataPill>{processed?.gateVoltage?.toFixed(2)}</DataPill>
+      <br />
+      Total Current: <DataPill>{processed?.totalCurrent?.toFixed(3)}</DataPill>
+    </>
+  );
+}
+
+function RawValues() {
+  const data = useBackendStateUpdate(s => s.motorState.data);
+
+  return <pre>{JSON.stringify(data, null, 2)}</pre>;
+}
+
+export function ConnectedMotorStatus() {
+  const state = useBackendStateUpdate(s => !s.motorState);
+
+  const manualMode = useUserCommand(() => ({ command: UserCommands.ReadMLX, which: 'xyz' }));
+
+  if (state) return <></>;
+
+  return (
+    <>
       <div>
+        <div style={{ maxWidth: 500 }}>
+          <PositionChart />
+        </div>
         <div style={{ color: 'black', textAlign: 'left', padding: 5 }}>
-          <h5>
-            <DataPill>{connected ? 'Connected' : 'Missing'}</DataPill>
-          </h5>
-          {disabled}
-          Mode: <DataPill>{command?.mode}</DataPill>
-          <br />
-          Command: <DataPill>{command?.command}</DataPill>
-          <br />
-          State:{' '}
-          <DataPill color={data?.state === ControllerState.Fault ? 'danger' : 'primary'}>
-            {data && ControllerState[data.state]}
-          </DataPill>
-          {data?.state === ControllerState.Fault ? <> ({fault})</> : <></>}
-          <br />
-          {detail}
-          Temp: <DataPill>{data?.cpuTemp}</DataPill>
-          <br />
-          Current: <DataPill>{data?.current?.toFixed(3)}</DataPill>
-          <br />
-          Battery voltage: {processed?.batteryVoltage?.toFixed(2)}
-          <br />
-          Gate voltage: <DataPill>{processed?.gateVoltage?.toFixed(2)}</DataPill>
-          <br />
-          Total Current: <DataPill>{processed?.totalCurrent?.toFixed(3)}</DataPill>
+          <PrettyState />
         </div>
         <div>
           <button onClick={manualMode}>Manual Read MLX</button>
         </div>
         <div>
-          <pre>{JSON.stringify(data, null, 2)}</pre>
+          <RawValues />
         </div>
       </div>
     </>
