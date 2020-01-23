@@ -11,6 +11,7 @@ export function clampRange(x: number, min: number, max: number): number;
  * @param range max/min range to clamp value to
  */
 export function clampRange(x: number, range: number): number;
+
 export function clampRange(x: number, min: number, max?: number): number {
   // Make max optional (will use symmetric range around 0)
   if (max === undefined) max = -min;
