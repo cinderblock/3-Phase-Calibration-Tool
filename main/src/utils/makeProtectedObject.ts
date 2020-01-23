@@ -58,7 +58,7 @@ type SetterOrNested<T> = T extends object ? NestedSetters<T> : Setter;
 type NestedSetters<T> = { [P in keyof T]: SetterOrNested<T[P]> };
 
 function isSetter<T>(value: NestedSetters<T> | Setter): value is Setter {
-  return typeof value === 'function';
+  return typeof value !== 'object';
 }
 
 /**
@@ -71,12 +71,12 @@ function isSetter<T>(value: NestedSetters<T> | Setter): value is Setter {
  * @param setters Functions to use to set new values
  */
 export function makeObjectSetterRecursive<T extends {}>(internal: T, setters: NestedSetters<Required<T>>): T {
-  const ret = {} as T;
+  const ret = {} as Required<T>;
 
   for (const x in setters) {
-    type P = Extract<keyof T, string>;
+    type P = T[typeof x];
 
-    const setterOrNested = setters[x] as NestedSetters<Required<T[P]>> | Setter;
+    const setterOrNested = setters[x] as Setter | NestedSetters<Required<P>>;
 
     const prop: PropertyDescriptor = { enumerable: true };
 
@@ -84,7 +84,7 @@ export function makeObjectSetterRecursive<T extends {}>(internal: T, setters: Ne
 
     if (isSetter(setterOrNested)) {
       prop.set = setterOrNested;
-      prop.get = (): T[Extract<keyof T, string>] => internal[x];
+      prop.get = (): P => internal[x];
     } else {
       prop.value = makeObjectSetterRecursive(internal[x], setterOrNested);
     }
@@ -95,11 +95,15 @@ export function makeObjectSetterRecursive<T extends {}>(internal: T, setters: Ne
   return ret;
 }
 
-type SetterTyped<T = SetterArgType> = (next: T) => void;
+type SetterTyped<T> = (next: T) => void;
 
 type SetterOrNestedTyped<T> = T extends object ? NestedSettersTyped<T> : SetterTyped<T>;
 
 type NestedSettersTyped<T> = { [P in keyof T]: SetterOrNestedTyped<T[P]> };
+
+function isNestedSetterTyped<T, P>(value: NestedSettersTyped<T> | SetterTyped<P>): value is NestedSettersTyped<T> {
+  return typeof value === 'object';
+}
 
 function isSetterTyped<T, P>(value: NestedSettersTyped<T> | SetterTyped<P>): value is SetterTyped<P> {
   return typeof value === 'function';
@@ -117,12 +121,12 @@ function isSetterTyped<T, P>(value: NestedSettersTyped<T> | SetterTyped<P>): val
  * @param setters Functions to use to set new values
  */
 export function makeObjectSetterRecursiveTyped<T extends {}>(internal: T, setters: NestedSettersTyped<Required<T>>): T {
-  const ret = {} as T;
+  const ret = {} as Required<T>;
 
   for (const x in setters) {
-    type P = Extract<keyof T, string>;
+    type P = T[typeof x];
 
-    const setterOrNested = setters[x] as NestedSettersTyped<Required<T[P]>> | SetterTyped<T[P]>;
+    const setterOrNested = setters[x] as SetterTyped<P> | NestedSettersTyped<Required<P>>;
 
     const prop: PropertyDescriptor = { enumerable: true };
 
@@ -130,7 +134,7 @@ export function makeObjectSetterRecursiveTyped<T extends {}>(internal: T, setter
 
     if (isSetterTyped(setterOrNested)) {
       prop.set = setterOrNested;
-      prop.get = (): T[Extract<keyof T, string>] => internal[x];
+      prop.get = (): P => internal[x];
     } else {
       prop.value = makeObjectSetterRecursiveTyped(internal[x], setterOrNested);
     }
