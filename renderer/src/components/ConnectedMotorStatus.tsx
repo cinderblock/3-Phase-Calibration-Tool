@@ -1,6 +1,7 @@
 import React from 'react';
 import { useBackendStateUpdate } from '../BackendConnection/BackendState';
 import { NormalData, CommonData, ReadData, FaultData, ManualData } from 'smooth-control';
+import { Marker } from 'mlx90363';
 import { useUserCommand } from '../BackendConnection/UserControls';
 import { UserCommands } from '../main-shared-types/UserControls';
 
@@ -74,14 +75,24 @@ function PositionChart() {
         <Legend />
         <Scatter
           name="A school"
-          data={[
-            { x: 1, y: 1, z: 19 },
-            { x: 1.5, y: 0, z: 2 },
-            { x: 1, y: -1, z: 3 },
-            { x: 0, y: -1.5, z: 4 },
-            { x: -1, y: -1, z: 5 },
-            { x: -1.5, y: 0, z: 6 },
-          ]}
+          data={useBackendStateUpdate(s => {
+            // if (!s.motorState.connected) return [{}];
+            // if (!s.motorState.data) return [{}];
+
+            // if (isFaultState(s.motorState.data)) return [{}];
+            // if (isManualState(s.motorState.data)) {
+            //   if (s.motorState.data.mlxDataValid) {
+            //     const response = s.motorState.data.mlxParsedResponse;
+            //     if (typeof response == 'string') throw new Error(response);
+
+            //     if (response.marker === Marker.XYZ) {
+            //       return [{ x: response.x, y: response.y, z: response.z }];
+            //     }
+            //   }
+            // }
+
+            return [{}];
+          })}
           fill="#8884d8"
         />
       </ScatterChart>
