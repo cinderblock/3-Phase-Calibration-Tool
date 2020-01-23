@@ -16,10 +16,44 @@ export type ReadMlxCommand = {
 };
 
 export enum RunMode {
+  /**
+   * Motor disconnected. Initial condition.
+   */
   Disconnected,
+  /**
+   * Manually send each command to the motor
+   */
   Manual,
+  /**
+   * Regularly send commands to the motor. Prevents timeouts
+   */
   Automatic,
+  /**
+   * Running an automated calibration sequence
+   */
   Calibration,
+}
+
+export enum MotorCommandMode {
+  /**
+   * Set coils to a fixed motor phase
+   */
+  PhasePosition,
+
+  /**
+   * Use motor's internal synchronous drive mode
+   */
+  Synchronous,
+
+  /**
+   * Constant "push" (Approximates torque. Falls off with speed)
+   */
+  Push,
+
+  /**
+   * Motor Internal Servo Mode
+   */
+  Servo,
 }
 
 export type UserCommand = ClearFaultCommand | ReadMlxCommand;
@@ -31,21 +65,46 @@ export type UserControls = {
   connected?: string;
 
   /**
-   * Desired drive angle for test
-   * @unit radian
-   */
-  angle?: number;
-
-  /**
-   * Desired drive amplitude for test
-   * @unit 0-255
-   */
-  amplitude?: number;
-
-  /**
    * Mode that this program is running in
    */
   mode: RunMode;
+
+  /**
+   * Time to wait between MLX readings
+   * @unit milliseconds
+   */
+  mlxCommandInterval: number;
+
+  drive: {
+    /**
+     * Time to wait between Motor commands
+     * @unit milliseconds
+     */
+    CommandInterval: number;
+
+    /**
+     * In RunMode.Automatic, how should we tell the motor to behave?
+     */
+    CommandMode: MotorCommandMode;
+
+    /**
+     * Desired drive angle for test
+     * @unit radian
+     */
+    angle?: number;
+
+    /**
+     * Desired drive amplitude for test
+     * @unit [0, 255]
+     */
+    amplitude?: number;
+
+    /**
+     * Desired drive amplitude for test
+     * @unit [-255, 255]
+     */
+    velocity?: number;
+  };
 };
 
 export type UserControlsAutomatic = {

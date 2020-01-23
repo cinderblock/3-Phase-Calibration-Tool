@@ -6,7 +6,7 @@ import { setupUserControls, realControls, protectedControls } from './State/User
 import initializeMotor from './Motors/CommHandler';
 import { start, addAttachListener, CommandMode, Command } from 'smooth-control';
 import { makePacket, Opcode, Marker } from 'mlx90363';
-import { RunMode } from './renderer-shared-types/UserControls';
+import { RunMode, MotorCommandMode } from './renderer-shared-types/UserControls';
 
 let activeMotor: ReturnType<typeof initializeMotor> | undefined;
 
@@ -42,22 +42,108 @@ const getXYZPacket = makePacket({
   data16: [, 0xffff],
 });
 
-function getData(): void {
+let mlxBlockingDelay: NodeJS.Timeout | undefined;
+
+function updateMlxData(): void {
+  if (mlxBlockingDelay) return;
+
   const res = safeSend({ mode: CommandMode.MLXDebug, data: getXYZPacket });
+
   if (res === null) {
     console.log('Motor missing');
     realControls.mode = RunMode.Manual;
+    return;
   }
   if (res === undefined) {
     // Still sending last command
+    return;
+  }
+
+  mlxBlockingDelay = setTimeout(() => {
+    mlxBlockingDelay = undefined;
+  }, realControls.mlxCommandInterval);
+
+  // No reason to keep process running if this timeout gets lost
+  mlxBlockingDelay.unref();
+}
+
+function sendCurrentMotorCommandAutomatic(): ReturnType<typeof safeSend> | undefined {
+  switch (realControls.drive.CommandMode) {
+    case MotorCommandMode.PhasePosition:
+      if (realControls.drive.angle === undefined) return undefined;
+      if (realControls.drive.amplitude === undefined) return undefined;
+      return safeSend({
+        mode: CommandMode.Calibration,
+        angle: realControls.drive.angle,
+        amplitude: realControls.drive.amplitude,
+      });
+
+    case MotorCommandMode.Synchronous:
+      if (realControls.drive.velocity === undefined) return undefined;
+      if (realControls.drive.amplitude === undefined) return undefined;
+      return safeSend({
+        mode: CommandMode.SynchronousDrive,
+        amplitude: realControls.drive.amplitude,
+        velocity: realControls.drive.velocity,
+      });
+
+    case MotorCommandMode.Push:
+    case MotorCommandMode.Servo:
+      return undefined;
   }
 }
 
-function updateMotor(): void {
-  // TODO: take UI controls and turn them into motor commands
+function sendCurrentMotorCommand(): ReturnType<typeof safeSend> | undefined {
+  switch (realControls.mode) {
+    case RunMode.Disconnected:
+    default:
+      return null;
+    case RunMode.Manual:
+      // All command sends to motor re initiated by user
+      return undefined;
 
+    case RunMode.Automatic:
+      return sendCurrentMotorCommandAutomatic();
+
+    case RunMode.Calibration:
+      throw new Error('Not Yet Implemented');
+  }
+}
+
+let motorBlockingDelay: NodeJS.Timeout | undefined;
+
+function updateMotorData(): void {
+  if (motorBlockingDelay) return;
+
+  const res = sendCurrentMotorCommand();
+
+  if (res === null) {
+    // console.log('Motor missing');
+    realControls.mode = RunMode.Manual;
+    return;
+  }
+  if (res === undefined) {
+    // Missing required info
+    return;
+  }
+  if (res === false) {
+    // Motor missing
+    return;
+  }
+
+  motorBlockingDelay = setTimeout(() => {
+    motorBlockingDelay = undefined;
+  }, realControls.drive.CommandInterval);
+
+  // No reason to keep process running if this timeout gets lost
+  motorBlockingDelay.unref();
+}
+
+function updateMotor(): void {
   if (realControls.mode === RunMode.Automatic || realControls.mode === RunMode.Calibration) {
-    getData();
+    updateMlxData();
+
+    updateMotorData();
   }
 }
 
