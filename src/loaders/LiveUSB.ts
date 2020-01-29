@@ -220,8 +220,6 @@ export default async function loadDataFromUSB(
         if (y === undefined) throw new Error('Parsing failure? - y');
         if (z === undefined) throw new Error('Parsing failure? - z');
 
-        if (computed.alpha != alpha) console.log('Difference detected:', computed.alpha - alpha);
-
         // Only record data in range of good motion
         if (step >= 0 && step < End) {
           (dir > 0 ? forward : reverse)[step] = {
