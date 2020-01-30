@@ -1887,7 +1887,7 @@ mkdirp@^0.5.0, mkdirp@^0.5.1:
 
 "mlx90363@https://github.com/cinderblock/node-MLX90363.git":
   version "0.0.0"
-  resolved "https://github.com/cinderblock/node-MLX90363.git#9c9eb67eefdc25eae9da95fc6b39e85651fb1a33"
+  resolved "https://github.com/cinderblock/node-MLX90363.git#bfef7be8e08b8ff7955e0b062c33653701bf55a5"
 
 moment@^2.10.2:
   version "2.24.0"
@@ -2729,7 +2729,7 @@ slice-ansi@^2.1.0:
 
 "smooth-control@https://github.com/cinderblock/smooth-control.git#manual-transfers":
   version "0.0.0"
-  resolved "https://github.com/cinderblock/smooth-control.git#115d1b86ac1746e6013d0b9bc5d68822872af9de"
+  resolved "https://github.com/cinderblock/smooth-control.git#b742114c3b239157944a20195ccb962a76e86f61"
   dependencies:
     mlx90363 "https://github.com/cinderblock/node-MLX90363.git"
     typed-emitter "^0.2.0"

@@ -1,16 +1,25 @@
 import USBInterface, {
   MLXCommand,
-  ReadData,
   addAttachListener,
   CommandMode,
   MlxResponseState,
   start,
+  isManualState,
 } from 'smooth-control';
 import readline from 'readline';
 import chalk from 'chalk';
-import { Opcode, parseData, makePacket, EEchallenge } from 'mlx90363';
+import {
+  IncomingOpcode,
+  OutgoingOpcode,
+  parseData,
+  makePacket,
+  EEchallenge,
+  Marker,
+  Messages,
+  NamedEEMemoryLocations,
+} from 'mlx90363';
 
-function delay(ms: number) {
+function delay(ms: number): Promise<void> {
   return new Promise(res => setTimeout(res, ms));
 }
 
@@ -19,13 +28,13 @@ const rl = readline.createInterface({
   output: process.stdout,
 });
 
-function prompt(prompt: string) {
-  return new Promise<string>((resolve, reject) => {
+function prompt(prompt: string): Promise<string> {
+  return new Promise<string>(resolve => {
     rl.question(prompt, resolve);
   });
 }
 
-async function main() {
+async function main(): Promise<void> {
   let def = 'None';
 
   start();
@@ -54,22 +63,24 @@ async function main() {
 
     const command: MLXCommand = { mode, data: buff };
 
-    function sendCommand(command: MLXCommand) {
+    function sendCommand(command: MLXCommand): Promise<void> {
       // console.log(command);
-      return new Promise(res => usb.write(command, res));
+      const res = usb.write(command);
+
+      if (!res) throw new Error('Disconnected?');
+
+      return res as Promise<void>;
     }
 
-    const MAPXYZ = 0x102a;
-
-    const eeAddr = 0x102e;
+    const loc = NamedEEMemoryLocations.VIRTUALGAINMAX;
 
     // Prepare a memory read
     // Read same location twice for now...
-    buff.writeUInt16LE(eeAddr, 0);
-    buff.writeUInt16LE(eeAddr, 2);
-    buff[6] = 0b11000000 | Opcode.MemoryRead;
+    buff.writeUInt16LE(loc, 0);
+    buff.writeUInt16LE(loc, 2);
+    buff[6] = 0b11000000 | OutgoingOpcode.MemoryRead;
 
-    let result;
+    let result: Messages;
 
     await sendCommand(command);
 
@@ -83,10 +94,15 @@ async function main() {
 
       const halfSecWaitMinimum = delay(500);
 
-      if (data && data.mlxResponseState && data.mlxResponse) {
+      if (data && isManualState(data) && data.mlxDataValid && data.mlxResponseState && data.mlxResponse) {
         if (data.mlxResponseState > MlxResponseState.failedCRC) {
           result = parseData(data.mlxResponse);
-          if (result.data0 !== undefined) break;
+          if (
+            result.marker === Marker.Opcode &&
+            result.opcode === IncomingOpcode.MemoryRead_Answer &&
+            result.data0 !== undefined
+          )
+            break;
           else console.log('Received unexpected response:', result);
         } else console.log('CRC Invalid on device?');
       } else console.log('Response missing?');
@@ -100,7 +116,7 @@ async function main() {
 
     console.log(result);
 
-    const eeKey = EEchallenge[(eeAddr / 2) & 0b11111];
+    const eeKey = EEchallenge[(loc / 2) & 0b11111];
     // const eeValue = (result.data0 & ~0b111) | +(await prompt('Mode?: ')).trim();
     let lowGain = +(await prompt('LowGain: ')).trim();
 
@@ -121,13 +137,13 @@ async function main() {
       return;
     }
 
-    await prompt(`EEWrite value: 0x${eeValue.toString(16)} to: 0x${eeAddr.toString(16)}?`);
+    await prompt(`EEWrite value: 0x${eeValue.toString(16)} to: 0x${loc.toString(16)}?`);
 
     rl.close();
 
     command.data = makePacket({
-      opcode: Opcode.EEPROMWrite,
-      data8: [0, eeAddr],
+      opcode: OutgoingOpcode.EEPROMWrite,
+      data8: [0, loc],
       data16: [, eeKey, eeValue],
     });
 
@@ -141,33 +157,44 @@ async function main() {
     await delay(10);
 
     command.data = makePacket({
-      opcode: Opcode.EEReadChallenge,
+      opcode: OutgoingOpcode.EEReadChallenge,
     });
 
     console.log('Reading EEPROM Write challenge');
     await sendCommand(command);
 
     await usb.read();
-    let data = await usb.read();
 
-    if (!data || !data.mlxResponse) throw 'wtf!';
+    let temp = usb.read();
+
+    if (!temp) throw new Error('Motor disconnected!');
+
+    let data = await temp;
+
+    if (!isManualState(data)) throw new Error('Wrong state!');
+    if (!data.mlxDataValid) throw new Error('Invalid MLX data??');
+    if (!data.mlxResponse) throw new Error('wtf');
 
     result = parseData(data.mlxResponse);
 
-    if (result.opcode == Opcode.EEPROMWrite_Status) {
+    if (result.marker !== Marker.Opcode) throw new Error('Wrong opcode?!');
+
+    if (result.opcode == IncomingOpcode.EEPROMWrite_Status) {
       console.log('Wrong key. Used:', eeKey);
-      throw 'Wrong Key';
+      throw new Error('Wrong Key');
     }
+
+    if (result.opcode !== IncomingOpcode.EEPROMWrite_Challenge) throw new Error('wrong type!');
 
     console.log('EEWrite Challenge:', result);
 
-    if (result.challengeKey === undefined) throw 'wtf2!';
+    if (result.challengeKey === undefined) throw new Error('wtf2!');
 
     // Magic "hashing" algorithm
     const keyEcho = result.challengeKey ^ 0x1234;
 
     command.data = makePacket({
-      opcode: Opcode.EEChallengeAns,
+      opcode: OutgoingOpcode.EEChallengeAns,
       data16: [, keyEcho, ~keyEcho & 0xffff],
     });
 
@@ -175,15 +202,24 @@ async function main() {
     await sendCommand(command);
 
     await usb.read();
-    data = await usb.read();
 
-    if (!data || !data.mlxResponse) throw '...';
+    temp = usb.read();
+
+    if (!temp) throw new Error('Motor disconnected!');
+
+    data = await temp;
+
+    if (!isManualState(data)) throw new Error('Wrong state!');
+    if (!data.mlxDataValid) throw new Error('Invalid MLX data??');
+    if (!data.mlxResponse) throw new Error('wtf');
 
     result = parseData(data.mlxResponse);
 
-    if (result.opcode != Opcode.EEReadAnswer) {
+    if (result.marker !== Marker.Opcode) throw new Error('Wrong opcode?!');
+
+    if (result.opcode != IncomingOpcode.EEReadAnswer) {
       console.log('Received unexpected response to EEReadChallenge from MLX');
-      throw 'not ok';
+      throw new Error('not ok');
     }
 
     console.log('Received ReadAnswer as expected');
@@ -191,24 +227,34 @@ async function main() {
     // Only need tEEWrite, which is 1ms, but whatever
     await delay(100);
 
-    command.data = makePacket({ opcode: Opcode.NOP__Challenge });
+    command.data = makePacket({ opcode: OutgoingOpcode.NOP__Challenge });
 
     console.log('Sending NOP to retrieve EEWrite status');
     await sendCommand(command);
 
     await usb.read();
-    data = await usb.read();
 
-    if (!data || !data.mlxResponse) throw 'wtf';
+    temp = usb.read();
+
+    if (!temp) throw new Error('Motor disconnected!');
+
+    data = await temp;
+
+    if (!isManualState(data)) throw new Error('Wrong state!');
+    if (!data.mlxDataValid) throw new Error('Invalid MLX data??');
+    if (!data.mlxResponse) throw new Error('wtf');
 
     result = parseData(data.mlxResponse);
+
+    if (result.marker !== Marker.Opcode) throw new Error('Wrong opcode?!');
+
     console.log('EE Write result:', result);
 
-    if (result.opcode != Opcode.EEPROMWrite_Status) throw 'Ugh';
+    if (result.opcode != IncomingOpcode.EEPROMWrite_Status) throw new Error('Ugh');
 
     if (result.code === 1) console.log('EEPROM Write successful!');
 
-    command.data = makePacket({ opcode: Opcode.Reboot });
+    command.data = makePacket({ opcode: OutgoingOpcode.Reboot });
 
     console.log('Rebooting MLX');
     await sendCommand(command);
