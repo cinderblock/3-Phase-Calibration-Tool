@@ -18,7 +18,7 @@ export default async function loadDataFromUSB(
   maxAmplitude: number,
   logger: (step: number, dir: number, data: DataPoint) => void,
 ): Promise<DataFormat> {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     const forward: DataPoint[] = [];
     const reverse: DataPoint[] = [];
     const usb = USBInterface(serial);
@@ -27,9 +27,6 @@ export default async function loadDataFromUSB(
     const End = cycle * cyclePerRev * revolutions;
 
     const mode = CommandMode.Calibration;
-
-    // Running smoothed version of alpha value
-    let alpha: number;
 
     // Current calibration direction
     let dir = stepSize;
@@ -61,7 +58,9 @@ export default async function loadDataFromUSB(
       data: makePacket({ opcode: OutgoingOpcode.NOP__Challenge }),
     };
 
-    function sendCommand(command: Command) {
+    function sendCommand(command: Command): Promise<boolean> {
+      // Don't convert this function to async. We want it to throw quickly.
+
       const res = usb.write(command);
 
       if (!res) throw new Error('Motor disconnected?');
@@ -80,7 +79,7 @@ export default async function loadDataFromUSB(
       if (errors > 0) errors -= 0.1;
     }, 100);
 
-    function maybeThrow(message: string) {
+    function maybeThrow(message: string): void {
       errors++;
       if (errors < 5) {
         console.error('Error suppressed:', message);
@@ -89,8 +88,8 @@ export default async function loadDataFromUSB(
       throw message;
     }
 
-    function getData() {
-      return new Promise<ReadData>(resolve => {
+    function getData(): Promise<ReadData> {
+      return new Promise(resolve => {
         const once = usb.onData(data => {
           once();
           resolve(data);
