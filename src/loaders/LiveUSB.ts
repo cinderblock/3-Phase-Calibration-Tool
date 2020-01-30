@@ -1,7 +1,7 @@
 import { DataPoint } from '../DataPoint';
 import { DataFormat } from './DataFormat';
 import USBInterface, { CommandMode, MLXCommand, Command, ReadData, isManualState } from 'smooth-control';
-import { makePacket, Opcode, Marker, ErrorCode } from 'mlx90363';
+import { makePacket, OutgoingOpcode, IncomingOpcode, Marker, ErrorCode } from 'mlx90363';
 import { delay } from '../utils/delay';
 import PositiveModulus from '../utils/PositiveModulus';
 import percent from '../utils/percent';
@@ -43,7 +43,7 @@ export default async function loadDataFromUSB(
     const GetAlpha: MLXCommand = {
       mode: CommandMode.MLXDebug,
       data: makePacket({
-        opcode: Opcode.GET1,
+        opcode: OutgoingOpcode.GET1,
         marker: Marker.Alpha,
         data16: [, 0xffff],
       }),
@@ -51,14 +51,14 @@ export default async function loadDataFromUSB(
     const GetXYZ: MLXCommand = {
       mode: CommandMode.MLXDebug,
       data: makePacket({
-        opcode: Opcode.GET1,
+        opcode: OutgoingOpcode.GET1,
         marker: Marker.XYZ,
         data16: [, 0xffff],
       }),
     };
     const MLXNOP: MLXCommand = {
       mode: CommandMode.MLXDebug,
-      data: makePacket({ opcode: Opcode.NOP__Challenge }),
+      data: makePacket({ opcode: OutgoingOpcode.NOP__Challenge }),
     };
 
     function sendCommand(command: Command) {
@@ -139,7 +139,7 @@ export default async function loadDataFromUSB(
         }
 
         if (data.mlxParsedResponse.marker == Marker.Opcode) {
-          if (data.mlxParsedResponse.opcode == Opcode.Error_frame) {
+          if (data.mlxParsedResponse.opcode == IncomingOpcode.Error_frame) {
             console.log(
               'Error frame. Error:',
               data.mlxParsedResponse.error === undefined ? 'undefined??' : ErrorCode[data.mlxParsedResponse.error],
@@ -148,7 +148,7 @@ export default async function loadDataFromUSB(
             continue;
           }
 
-          if (data.mlxParsedResponse.opcode == Opcode.NothingToTransmit) {
+          if (data.mlxParsedResponse.opcode == IncomingOpcode.NothingToTransmit) {
             maybeThrow('Nothing to transmit');
             continue;
           }
@@ -192,7 +192,7 @@ export default async function loadDataFromUSB(
         }
 
         if (dataXYZ.mlxParsedResponse.marker == Marker.Opcode) {
-          if (dataXYZ.mlxParsedResponse.opcode == Opcode.Error_frame) {
+          if (dataXYZ.mlxParsedResponse.opcode == IncomingOpcode.Error_frame) {
             console.log(
               'Error frame. Error:',
               dataXYZ.mlxParsedResponse.error === undefined
@@ -203,7 +203,7 @@ export default async function loadDataFromUSB(
             continue;
           }
 
-          if (dataXYZ.mlxParsedResponse.opcode == Opcode.NothingToTransmit) {
+          if (dataXYZ.mlxParsedResponse.opcode == IncomingOpcode.NothingToTransmit) {
             maybeThrow('Nothing to transmit XYZ');
             continue;
           }
