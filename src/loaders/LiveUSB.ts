@@ -106,7 +106,9 @@ export default async function loadDataFromUSB(
 
       console.log('Starting');
 
-      await usb.write({ mode: CommandMode.ClearFault });
+      const fault = usb.write({ mode: CommandMode.ClearFault });
+      if (!fault) throw new Error('USB Command not sent!');
+      await fault;
 
       let lastPrint;
 
@@ -124,7 +126,10 @@ export default async function loadDataFromUSB(
         do {
           data = await getData();
           if (!data) throw new Error('Data missing');
-          if (!isManualState(data)) throw new Error('Motor fault!');
+          if (!isManualState(data)) {
+            console.log(data);
+            throw new Error('Motor fault!');
+          }
         } while (!data.mlxDataValid || !data.mlxParsedResponse);
 
         if (typeof data.mlxParsedResponse == 'string') {
