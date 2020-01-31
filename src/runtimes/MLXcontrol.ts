@@ -267,6 +267,9 @@ async function main(): Promise<void> {
     });
 
     usb.close();
+
+    // TODO: don't force exit. Just funny cleanup after ourselves
+    process.exit(0);
   });
 }
 
