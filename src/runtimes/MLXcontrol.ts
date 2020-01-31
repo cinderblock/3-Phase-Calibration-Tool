@@ -259,6 +259,13 @@ async function main(): Promise<void> {
     console.log('Rebooting MLX');
     await sendCommand(command);
 
+    // Tell the motor to run once. After we exit, motor will self reset
+    await usb.write({
+      mode: CommandMode.Calibration,
+      amplitude: 0,
+      angle: 0,
+    });
+
     usb.close();
   });
 }
