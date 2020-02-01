@@ -15,11 +15,6 @@ import DataOutputs from '../processes/DataOutputs';
 const chartWidth = 600;
 const chartHeight = chartWidth;
 
-const cyclesPerRev = 15;
-const revolutions = 2;
-
-const maxAmplitude = 55;
-
 async function main() {
   let def = 'None';
   let rePrompt = false;
@@ -36,10 +31,15 @@ async function main() {
 
   let resultSerial: string;
 
+  let cyclesPerRev: number;
+  let revolutions: number;
+  let maxAmplitude: number;
+
   if (!fresh) {
     resultSerial = uuid();
 
     resultSerial = (await CLI.prompt(`New serial number [${resultSerial}]: `)).trim() || resultSerial;
+    cyclesPerRev = parseInt((await CLI.prompt('Cycles per Rev: ')).trim()) || 15;
 
     CLI.close();
 
@@ -47,6 +47,10 @@ async function main() {
 
     data = loadDataFromCSV(rawDataFilename);
   } else {
+    cyclesPerRev = parseInt((await CLI.prompt('Cycles per Rev [15]: ')).trim()) || 15;
+    revolutions = parseInt((await CLI.prompt('Revolutions [2]: ')).trim()) || 2;
+    maxAmplitude = parseInt((await CLI.prompt('Amplitude [55]: ')).trim()) || 55;
+
     console.log('Cycles per Rev:', cyclesPerRev);
     console.log('Revolutions:', revolutions);
     console.log('Amplitude:', maxAmplitude);
@@ -80,9 +84,7 @@ async function main() {
 
     data = loadDataFromUSB(selectedSerial, cyclesPerRev, revolutions, maxAmplitude, (step, dir, data) => {
       logger.write(
-        `${step},${data.alpha},${dir},${data.x},${data.y},${data.z},${data.current},${data.temperature},${data.AS},${
-          data.BS
-        },${data.CS},,${data.VG}${EOL}`
+        `${step},${data.alpha},${dir},${data.x},${data.y},${data.z},${data.current},${data.temperature},${data.AS},${data.BS},${data.CS},,${data.VG}${EOL}`,
       );
     });
 
