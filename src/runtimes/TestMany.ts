@@ -193,6 +193,7 @@ async function main(): Promise<void> {
   start();
 
   const cleanupAttach = addAttachListener(serial => {
+    console.log('Attaching to', serial);
     initializeMotor(USBInterface(serial, { debug: true }));
   });
 
