@@ -2732,7 +2732,7 @@ slice-ansi@^2.1.0:
 
 "smooth-control@https://github.com/cinderblock/smooth-control.git#manual-transfers":
   version "0.0.0"
-  resolved "https://github.com/cinderblock/smooth-control.git#c1457d0ec6faa2a997e9abc27b38dc90bd63f972"
+  resolved "https://github.com/cinderblock/smooth-control.git#434aff49de5007ba9e8b916a9aa894d957933a34"
   dependencies:
     mlx90363 "https://github.com/cinderblock/node-MLX90363.git"
     typed-emitter "^0.2.0"
