@@ -296,7 +296,7 @@ async function main(): Promise<void> {
     }
   });
 
-  let busy = false;
+  const busy: boolean[] = [];
 
   async function loop() {
     let command = amplitude;
@@ -305,7 +305,7 @@ async function main(): Promise<void> {
 
     motors.forEach(async (m, index) => {
       if (!m) return;
-      if (busy) return;
+      if (busy[index]) return;
 
       const res = m.write({ mode, command: index % 2 ? command : -command });
 
@@ -314,7 +314,7 @@ async function main(): Promise<void> {
         return;
       }
 
-      busy = true;
+      busy[index] = true;
 
       try {
         await res;
@@ -323,7 +323,7 @@ async function main(): Promise<void> {
         console.log('Write Error!!!!', e);
       }
 
-      busy = false;
+      busy[index] = false;
     });
   }
 
