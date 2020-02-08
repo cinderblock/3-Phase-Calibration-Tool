@@ -6,6 +6,7 @@ import USBInterface, {
   ControllerFault,
   start,
 } from 'smooth-control';
+import Koa from 'koa';
 import readline from 'readline';
 import chalk from 'chalk';
 import ExponentialFilter from '../utils/ExponentialFilter';
@@ -192,6 +193,8 @@ async function main(): Promise<void> {
 
   start();
 
+  const app = new Koa();
+
   const cleanupAttach = addAttachListener(serial => {
     console.log('Attaching to', serial);
     initializeMotor(USBInterface(serial, { debug: true }));
@@ -267,7 +270,7 @@ async function main(): Promise<void> {
 
   let zero = Date.now();
 
-  rl.on('line', input => {
+  const handleCommand: (input: string) => void = input => {
     input = input.trim();
     if (!input) amplitude = 0;
 
@@ -294,7 +297,22 @@ async function main(): Promise<void> {
       intervalDivider = +input.substring(1);
       restartInterval();
     }
+  };
+
+  app.use(async ctx => {
+    ctx.body = 'Hello World';
+
+    console.log('ctx.querystring:', ctx.querystring);
+
+    const input = ctx.querystring.trim();
+    if (!input) return;
+
+    handleCommand(input);
   });
+
+  app.listen(3000);
+
+  rl.on('line', handleCommand);
 
   const busy: boolean[] = [];
 
@@ -335,6 +353,8 @@ async function main(): Promise<void> {
   }
 
   async function die() {
+    // TODO: shutdown koa
+
     // Just in case, really exit after a short delay.
     setTimeout(() => {
       console.log('Forcing quit');
