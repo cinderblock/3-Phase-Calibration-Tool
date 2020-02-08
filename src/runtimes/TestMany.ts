@@ -302,7 +302,7 @@ async function main(): Promise<void> {
 
     if (runMode == 'oscillate') command *= Math.sin(((Date.now() - zero) / 1000) * 2 * Math.PI * frequency);
 
-    motors.forEach((m, index) => {
+    motors.forEach(async (m, index) => {
       if (!m) return;
       if (busy) return;
 
@@ -315,17 +315,14 @@ async function main(): Promise<void> {
 
       busy = true;
 
-      res
-        .then(() => {
-          // data written...
-          writes++;
-        })
-        .catch(e => {
-          console.log('Write Error!!!!', e);
-        })
-        .then(() => {
-          busy = false;
-        });
+      try {
+        await res;
+        writes++;
+      } catch (e) {
+        console.log('Write Error!!!!', e);
+      }
+
+      busy = false;
     });
   }
 
