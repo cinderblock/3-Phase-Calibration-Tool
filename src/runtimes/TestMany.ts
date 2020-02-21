@@ -12,6 +12,8 @@ import chalk from 'chalk';
 import ExponentialFilter from '../utils/ExponentialFilter';
 import 'source-map-support/register';
 
+import { createHttpTerminator } from 'http-terminator';
+
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
@@ -310,7 +312,11 @@ async function main(): Promise<void> {
     handleCommand(input);
   });
 
-  app.listen(3000);
+  const server = app.listen(3000);
+
+  const httpTerminator = createHttpTerminator({
+    server,
+  });
 
   rl.on('line', handleCommand);
 
@@ -353,7 +359,10 @@ async function main(): Promise<void> {
   }
 
   async function die() {
-    // TODO: shutdown koa
+    httpTerminator.terminate().catch(e => {
+      console.log('Problem terminating http');
+      console.log(e);
+    });
 
     // Just in case, really exit after a short delay.
     setTimeout(() => {

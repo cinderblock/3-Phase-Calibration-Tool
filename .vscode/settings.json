@@ -22,9 +22,8 @@
 
   "files.exclude": {
     "main/src/renderer-shared-types/**": true,
-    "renderer/src/main-shared-types/**": true,
-    "**/node_modules": true,
-    "**/yarn.lock": true
+    "renderer/src/main-shared-types/**": true
+    // "**/node_modules": true,
   },
 
   "typescript.tsdk": "node_modules/typescript/lib"

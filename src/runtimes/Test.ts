@@ -118,7 +118,12 @@ async function main() {
       let writes = 0;
       let CRCfails = 0;
       let controlLoops = 0;
+      let extra4: number;
+      let extra2: number;
+      let extra1: number;
 
+      const velocityFilter = ExponentialFilter(0.1);
+      let velocity = 0;
       const currentFilter = ExponentialFilter(0.1);
       let current: number;
       const tempFilter = ExponentialFilter(0.1);
@@ -142,6 +147,11 @@ async function main() {
           pos,
           'Alpha/4:',
           alpha,
+          'Velocity',
+          Math.round(velocity),
+          extra4,
+          extra2,
+          extra1,
         );
         writes = 0;
         CRCfails = 0;
@@ -171,7 +181,10 @@ async function main() {
           return;
         }
 
-        CRCfails += data.mlxCRCFailures;
+        extra4 = data.extra4;
+        extra2 = data.extra2;
+        extra1 = data.extra1;
+        velocity = velocityFilter(data.velocity);
         controlLoops += data.controlLoops;
         current = currentFilter(data.current);
         temperature = tempFilter(data.cpuTemp);
