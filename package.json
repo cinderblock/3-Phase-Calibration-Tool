@@ -6,9 +6,9 @@
   "author": "Cameron Tacklind <cameron@tacklind.com>",
   "license": "MIT",
   "scripts": {
-    "install": "yarn main install && yarn ui install && yarn remote install && install-vscode-extensions",
-    "check-files": "yarn install --ignore-scripts --check-files && yarn main install --check-files && yarn ui install --check-files && yarn remote install --check-files && install-vscode-extensions",
-    "synchronize-workspace": "yarn install --ignore-scripts --non-interactive --no-progress && yarn main install --non-interactive --no-progress && yarn remote install --non-interactive --no-progress && yarn ui install --non-interactive --no-progress && install-vscode-extensions",
+    "install": "yarn main install && yarn ui install && yarn remote install && npx install-vscode-extensions",
+    "check-files": "yarn install --ignore-scripts --check-files && yarn main install --check-files && yarn ui install --check-files && yarn remote install --check-files && npx install-vscode-extensions",
+    "synchronize-workspace": "yarn install --ignore-scripts --non-interactive --no-progress && yarn main install --non-interactive --no-progress && yarn remote install --non-interactive --no-progress && yarn ui install --non-interactive --no-progress && npx install-vscode-extensions",
     "upgrade-all": "yarn upgrade --latest && yarn main upgrade --latest && yarn remote upgrade --latest && yarn ui upgrade --latest",
     "lint": "eslint . --ext .ts,.tsx",
     "ui": "yarn --cwd renderer",
