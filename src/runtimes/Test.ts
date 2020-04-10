@@ -27,6 +27,7 @@ function prompt(prompt: string) {
 const mode = CommandMode.Push;
 
 let amplitude: number = process.argv[2] ? +process.argv[2] : 30;
+let asymmetry = 0;
 
 console.log('Amplitude:', amplitude);
 
@@ -195,7 +196,11 @@ async function main() {
       async function loop() {
         let command = amplitude;
 
-        if (runMode == 'oscillate') command *= Math.sin(((Date.now() - zero) / 1000) * 2 * Math.PI * Frequency);
+        const t = (Date.now() - zero) / 1000;
+
+        const oscillation = Math.sin(t * 2 * Math.PI * Frequency);
+
+        if (runMode == 'oscillate') command *= oscillation - asymmetry;
 
         if (!busy) {
           writes++;
@@ -231,6 +236,10 @@ async function main() {
         if (input[0] == 'c') {
           runMode = 'constant';
           amplitude = +input.substring(1);
+        }
+
+        if (input[0] == 'a') {
+          asymmetry = +input.substring(1);
         }
 
         if (input[0] == 'f') {
