@@ -7,17 +7,17 @@
     "start": "npx concurrently --names \"main,TypeScript Compiler Watch\" --handle-input \"wait-on http://localhost:3000 && cross-env NODE_ENV=dev nodemon --watch dist --exec \\\"electron dist/electron.js\\\"\" \"tsc --watch\""
   },
   "dependencies": {
-    "electron": "7.1.9",
-    "electron-rebuild": "^1.8.8",
+    "electron": "8.2.1",
+    "electron-rebuild": "^1.10.1",
     "mlx90363": "https://github.com/cinderblock/node-MLX90363.git",
     "smooth-control": "https://github.com/cinderblock/smooth-control.git#manual-transfers"
   },
   "devDependencies": {
-    "concurrently": "^5.0.2",
-    "cross-env": "^6.0.3",
-    "electron-is-dev": "^1.1.0",
-    "nodemon": "^2.0.2",
-    "typescript": "^3.5.2",
-    "wait-on": "^3.2.0"
+    "concurrently": "^5.1.0",
+    "cross-env": "^7.0.2",
+    "electron-is-dev": "^1.2.0",
+    "nodemon": "^2.0.3",
+    "typescript": "^3.8.3",
+    "wait-on": "^4.0.2"
   }
 }
