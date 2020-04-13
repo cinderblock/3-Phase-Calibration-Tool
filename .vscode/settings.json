@@ -1,19 +1,6 @@
 {
   "editor.formatOnSave": true,
 
-  "[javascript]": {
-    "editor.formatOnSave": false
-  },
-  "[javascriptreact]": {
-    "editor.formatOnSave": false
-  },
-  "[typescript]": {
-    "editor.formatOnSave": false
-  },
-  "[typescriptreact]": {
-    "editor.formatOnSave": false
-  },
-
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
   },
@@ -21,8 +8,6 @@
   "eslint.packageManager": "yarn",
 
   "files.exclude": {
-    "main/src/shared/**": true,
-    "renderer/src/shared/**": true,
     "**/node_modules": true,
     "**/yarn.lock": true
   },
