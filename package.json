@@ -24,6 +24,9 @@
     "fieldtest": "ts-node ./src/runtimes/FieldTest",
     "test": "ts-node ./src/runtimes/Test"
   },
+  "engines": {
+    "npm": "yarn is required"
+  },
   "dependencies": {
     "@types/chart.js": "^2.9.19",
     "@types/crc": "^3.4.0",
