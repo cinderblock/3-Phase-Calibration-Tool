@@ -11,7 +11,7 @@
     "synchronize-workspace": "yarn install --ignore-scripts --non-interactive --no-progress && yarn main install --non-interactive --no-progress && yarn remote install --non-interactive --no-progress && yarn ui install --non-interactive --no-progress && npx install-vscode-extensions",
     "upgrade-all": "yarn upgrade --latest && yarn main upgrade --latest && yarn remote upgrade --latest && yarn ui upgrade --latest",
     "lint": "eslint . --ext .ts,.tsx",
-    "ui": "yarn --cwd renderer",
+    "ui": "yarn --cwd ui",
     "main": "yarn --cwd main",
     "remote": "yarn --cwd remote/deploy",
     "start": "ts-node ./src/runtimes/Calibrate",
