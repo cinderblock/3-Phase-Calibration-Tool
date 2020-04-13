@@ -2,7 +2,7 @@ import React from 'react';
 import { useBackendStateUpdate } from '../BackendConnection/BackendState';
 import { NormalData, CommonData, ReadData, FaultData, ManualData } from 'smooth-control';
 import { useUserControls, useUserCommand } from '../BackendConnection/UserControls';
-import { UserCommands } from '../main-shared-types/UserControls';
+import { UserCommands } from '../shared/UserControls';
 
 /* Why can't we import these?
 import { ControllerState, ControllerFault } from 'smooth-control';

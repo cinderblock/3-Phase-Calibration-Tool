@@ -2,7 +2,7 @@ import React from 'react';
 import { useBackendStateUpdate } from './BackendConnection/BackendState';
 import { ConnectedMotorStatus } from './components/ConnectedMotorStatus';
 import { useUserControls } from './BackendConnection/UserControls';
-import { RunMode } from './main-shared-types/UserControls';
+import { RunMode } from './shared/UserControls';
 
 function RunModePicker() {
   return (

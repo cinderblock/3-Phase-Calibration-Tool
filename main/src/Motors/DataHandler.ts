@@ -3,7 +3,7 @@ import MotorHandler, { Motor } from './CommHandler';
 
 /* Turn off this file for now
 
-import { mapMotors, MotorsData } from '../renderer-shared-types/utils/MotorLayout';
+import { mapMotors, MotorsData } from '../shared/utils/MotorLayout';
 
 let motors: MotorsData<Motor>;
 

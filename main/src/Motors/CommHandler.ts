@@ -8,8 +8,8 @@ import USB, {
   ReadData,
   isNormalState,
 } from 'smooth-control';
-import { MotorState, ProcessedMotorData } from '../renderer-shared-types/MotorData';
-import { PIDs } from '../renderer-shared-types/utils/PIDTypes';
+import { MotorState, ProcessedMotorData } from '../shared/MotorData';
+import { PIDs } from '../shared/utils/PIDTypes';
 import { PowerAccumulationApproximator } from './PowerAccumulationApproximator';
 import { makeCountConverter } from './CountConverter';
 

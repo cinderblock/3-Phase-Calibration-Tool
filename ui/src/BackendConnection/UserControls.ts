@@ -1,4 +1,4 @@
-import { UserControllable, UserControlsFull, UserCommand } from '../main-shared-types/UserControls';
+import { UserControllable, UserControlsFull, UserCommand } from '../shared/UserControls';
 import backend from '.';
 import { useCallback } from 'react';
 import { RecursivePartial } from '../utils/RecursivePartial';

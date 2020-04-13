@@ -1,6 +1,6 @@
 import makeIntegrator from './makeIntegrator';
 import { Filter } from './FilterInterface';
-import { PIDConstants } from '../../renderer-shared-types/utils/PIDTypes';
+import { PIDConstants } from '../../shared/utils/PIDTypes';
 
 export default function makePIDController({ kP, kI, kD }: PIDConstants): Filter & PIDConstants {
   let last: number | undefined;

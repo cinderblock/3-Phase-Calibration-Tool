@@ -3,7 +3,7 @@
     "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDirs": ["src", ".."],
     "esModuleInterop": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
@@ -14,5 +14,5 @@
     "sourceMap": true,
     "jsx": "preserve"
   },
-  "include": ["src/**/*"]
+  "include": ["src", "../shared"]
 }

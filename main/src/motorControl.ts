@@ -6,7 +6,7 @@ import { setupUserControls, realControls, protectedControls } from './State/User
 import initializeMotor from './Motors/CommHandler';
 import { start, addAttachListener, CommandMode, Command } from 'smooth-control';
 import { makePacket, Opcode, Marker } from 'mlx90363';
-import { RunMode, MotorCommandMode } from './renderer-shared-types/UserControls';
+import { RunMode, MotorCommandMode } from './shared/UserControls';
 
 let activeMotor: ReturnType<typeof initializeMotor> | undefined;
 

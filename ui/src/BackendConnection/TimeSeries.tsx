@@ -5,7 +5,7 @@ import { ITimeSeriesOptions } from 'smoothie';
 import backend from '.';
 import { BackendStateMapper } from './BackendState';
 
-import { State } from '../main-shared-types/State';
+import { State } from '../shared/State';
 
 function makeTimeSeriesUpdate(
   reducer: BackendStateMapper<number | undefined | null>,

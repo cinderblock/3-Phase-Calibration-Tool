@@ -1,4 +1,4 @@
-import { State } from '../main-shared-types/State';
+import { State } from '../shared/State';
 
 import { ipcRenderer as backend } from 'electron';
 

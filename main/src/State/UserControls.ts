@@ -11,7 +11,7 @@ import {
   UserCommands,
   RunMode,
   MotorCommandMode,
-} from '../renderer-shared-types/UserControls';
+} from '../shared/UserControls';
 import { clampPositive, clampRange } from '../utils/filters/clampRange';
 
 const AMPLITUDE_LIMIT = 100;

@@ -1,6 +1,6 @@
 import { protectedControls } from './UserControls';
 
-import { State } from '../renderer-shared-types/State';
+import { State } from '../shared/State';
 
 // State of the system with initial values
 export const state: State = {

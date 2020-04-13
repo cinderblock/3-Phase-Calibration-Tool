@@ -1,5 +1,5 @@
 import React from 'react';
-import { State } from '../main-shared-types/State';
+import { State } from '../shared/State';
 import fastEqual from 'fast-deep-equal';
 import { useState, useEffect } from 'react';
 import backend from '.';

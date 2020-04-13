@@ -21,8 +21,8 @@
   "eslint.packageManager": "yarn",
 
   "files.exclude": {
-    "main/src/renderer-shared-types/**": true,
-    "renderer/src/main-shared-types/**": true,
+    "main/src/shared/**": true,
+    "renderer/src/shared/**": true,
     "**/node_modules": true,
     "**/yarn.lock": true
   },
