@@ -1,17 +1,23 @@
 import USBInterface, {
   CommandMode,
   addAttachListener,
-  ReadData,
   ControllerState,
   ControllerFault,
   start,
   FaultData,
-  NormalData,
+  Command,
   isNormalState,
+  ServoCommand,
+  PushCommand,
+  isServoCommand,
+  isServoPositionCommand,
+  MultiTurnFromNumber,
 } from 'smooth-control';
 import readline from 'readline';
 import chalk from 'chalk';
 import ExponentialFilter from '../utils/ExponentialFilter';
+import { clearInterval } from 'timers';
+import { ServoMode, isServoAmplitudeCommand, isFaultState, isInitData } from 'smooth-control/dist/parseData';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -29,6 +35,8 @@ const mode = CommandMode.Push;
 let amplitude: number = process.argv[2] ? +process.argv[2] : 30;
 let asymmetry = 0;
 
+let CyclesPerRevolution: number;
+
 console.log('Amplitude:', amplitude);
 
 const calibrated = false;
@@ -36,10 +44,10 @@ const calibrated = false;
 let lastState: ControllerState;
 let lastFault: ControllerFault;
 
-type RunMode = 'oscillate' | 'constant';
+type RunMode = 'sinusoidal' | 'constant' | 'square';
 
 async function main() {
-  let runMode: RunMode = 'oscillate';
+  let runMode: RunMode = 'sinusoidal';
   let def = 'None';
 
   const stopAttachListening = await addAttachListener(id => {
@@ -65,7 +73,8 @@ async function main() {
     await new Promise<void>((resolve, reject) => {
       const once = usb.onData(data => {
         lastState = data.state;
-        lastFault = (data as FaultData).fault;
+        if (isFaultState(data)) lastFault = data.fault;
+
         once();
         resolve();
       });
@@ -109,12 +118,21 @@ async function main() {
     const once = usb.onData(data => {
       once();
 
-      // if (!(data as NormalData).calibrated) {
-      //   console.log('UncalibratUncalibrated!');
-      //   usb.close();
-      //   return;
-      // }
-      console.log('Calibrated!');
+      if (!isFaultState(data) || !isInitData(data)) {
+        throw new Error('Invalid initial state!');
+      }
+
+      console.log(data);
+
+      if (!data.calibration) {
+        console.log('Uncalibrated!');
+        usb.close();
+        return;
+      }
+
+      CyclesPerRevolution = data.cyclesPerRevolution;
+
+      console.log(`Calibrated (v${data.calibration.version}) at:`, data.calibration.time);
 
       let writes = 0;
       let CRCfails = 0;
@@ -126,6 +144,7 @@ async function main() {
       let temperature: number;
       let pos: number;
       let alpha: number;
+      let commandAmplitude: number;
 
       const WPS = setInterval(() => {
         console.log(
@@ -141,8 +160,11 @@ async function main() {
           temperature.toFixed(1),
           'Position:',
           pos,
+          'command',
+          commandAmplitude,
           'Alpha/4:',
           alpha,
+          regularCommand,
         );
         writes = 0;
         CRCfails = 0;
@@ -176,7 +198,9 @@ async function main() {
         controlLoops += data.controlLoops;
         current = currentFilter(data.current);
         temperature = tempFilter(data.cpuTemp);
-        pos = data.position;
+        if (data.position !== undefined) pos = data.position;
+        commandAmplitude = data.amplitude;
+
         // if (data.mlxParsedResponse && typeof data.mlxParsedResponse != 'string') {
         //   if (data.mlxParsedResponse.alpha !== undefined)
         //     alpha = Math.round(((data.mlxParsedResponse && data.mlxParsedResponse.alpha) || 0) / 4);
@@ -193,31 +217,88 @@ async function main() {
 
       let busy = false;
 
-      async function loop() {
-        let command = amplitude;
+      const extraCommands: Command[] = [];
+
+      const regularCommand: ServoCommand | PushCommand = { mode, command: 0 };
+
+      let lastSign: 1 | -1 = 1;
+
+      async function sendCommand(): Promise<void> {
+        if (busy) return;
+
+        let value = amplitude;
 
         const t = (Date.now() - zero) / 1000;
 
-        const oscillation = Math.sin(t * 2 * Math.PI * Frequency);
+        const oscillation = Math.sin(t * 2 * Math.PI * Frequency) - asymmetry;
 
-        if (runMode == 'oscillate') command *= oscillation - asymmetry;
+        if (runMode == 'sinusoidal') value *= oscillation;
 
-        if (!busy) {
-          writes++;
-          const res = usb.write({ mode, command });
+        const sign = Math.sign(oscillation) as 1 | -1 | 0;
 
-          if (res) {
-            busy = true;
-            res.then(() => (busy = false));
+        if (sign) lastSign = sign;
+
+        if (runMode == 'square') value *= sign || lastSign;
+
+        if (isServoCommand(regularCommand)) {
+          if (isServoPositionCommand(regularCommand)) {
+            const newCommand = MultiTurnFromNumber(value, CyclesPerRevolution);
+            Object.assign(regularCommand, newCommand);
           }
+          if (isServoAmplitudeCommand(regularCommand)) {
+            regularCommand.command = value;
+          }
+        } else {
+          regularCommand.command = value;
         }
+
+        writes++;
+
+        const override = extraCommands.shift();
+
+        const res = usb.write(override || regularCommand);
+
+        if (!res) {
+          if (override) extraCommands.unshift(override);
+          return;
+        }
+
+        busy = true;
+
+        await res;
+
+        busy = false;
       }
 
-      let interval = setInterval(loop, 1000 / 300);
+      let interval: NodeJS.Timeout;
+
+      let errors = 0;
+
+      function loop(): void {
+        sendCommand().catch(e => {
+          if (e.errno === 0) return;
+
+          console.log('Error in loop:');
+          console.log(e);
+          console.log('writes:', writes);
+
+          if ((errors += 2) > 5) {
+            clearInterval(interval);
+            process.exitCode = 1;
+          }
+        });
+
+        if (errors > 0) errors--;
+      }
+
+      interval = setInterval(loop, 1000 / 300);
 
       rl.on('line', input => {
         input = input.trim();
-        if (!input) amplitude = 0;
+        if (!input) {
+          regularCommand.mode = CommandMode.Push;
+          amplitude = 0;
+        }
 
         if (input[0] == 'i') {
           clearInterval(interval);
@@ -226,10 +307,10 @@ async function main() {
         }
 
         if (input[0] == 'o') {
-          if (runMode != 'oscillate' || !amplitude) {
+          if (runMode != 'sinusoidal' || !amplitude) {
             zero = Date.now();
           }
-          runMode = 'oscillate';
+          runMode = 'sinusoidal';
           amplitude = +input.substring(1);
         }
 
@@ -245,6 +326,38 @@ async function main() {
         if (input[0] == 'f') {
           amplitude = 0;
           Frequency = +input.substring(1);
+        }
+
+        if (input == 'servo') {
+          Object.assign(regularCommand, {
+            mode: CommandMode.Servo,
+            servoMode: ServoMode.Position,
+            kP: 0,
+            kI: 0,
+            kD: 0,
+          });
+        }
+
+        if (input == 'push') {
+          Object.assign(regularCommand, {
+            mode: CommandMode.Servo,
+            servoMode: ServoMode.Amplitude,
+          });
+        }
+
+        if (input == 'square') {
+          runMode = 'square';
+        }
+
+        if (input.startsWith('kp')) {
+          if (isServoCommand(regularCommand) && isServoPositionCommand(regularCommand)) {
+            regularCommand.kP = +input.substring(2);
+          }
+        }
+        if (input.startsWith('kd')) {
+          if (isServoCommand(regularCommand) && isServoPositionCommand(regularCommand)) {
+            regularCommand.kD = +input.substring(2);
+          }
         }
       });
 

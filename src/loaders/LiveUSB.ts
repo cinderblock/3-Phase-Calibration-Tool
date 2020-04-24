@@ -1,6 +1,13 @@
 import { DataPoint } from '../DataPoint';
 import { DataFormat } from './DataFormat';
-import USBInterface, { CommandMode, MLXCommand, Command, ReadData, isManualState } from 'smooth-control';
+import USBInterface, {
+  CommandMode,
+  MLXCommand,
+  Command,
+  ReadData,
+  isManualState,
+  MlxResponseState,
+} from 'smooth-control';
 import { makePacket, OutgoingOpcode, IncomingOpcode, Marker, ErrorCode } from 'mlx90363';
 import { delay } from '../utils/delay';
 import PositiveModulus from '../utils/PositiveModulus';
@@ -130,7 +137,7 @@ export default async function loadDataFromUSB(
             console.log(data);
             throw new Error('Motor fault!');
           }
-        } while (!data.mlxDataValid || !data.mlxParsedResponse);
+        } while (data.mlxResponseState <= MlxResponseState.failedCRC || !data.mlxParsedResponse);
 
         if (typeof data.mlxParsedResponse == 'string') {
           maybeThrow('MLX data parsing error: ' + data.mlxParsedResponse);
@@ -183,7 +190,7 @@ export default async function loadDataFromUSB(
           dataXYZ = await getData();
           if (!dataXYZ) throw new Error('XYZ data missing');
           if (!isManualState(dataXYZ)) throw new Error('Motor fault!');
-        } while (!dataXYZ.mlxDataValid || !dataXYZ.mlxParsedResponse);
+        } while (dataXYZ.mlxResponseState <= MlxResponseState.failedCRC || !dataXYZ.mlxParsedResponse);
 
         if (typeof dataXYZ.mlxParsedResponse == 'string') {
           maybeThrow('MLX data parsing error: ' + dataXYZ.mlxParsedResponse);
