@@ -94,7 +94,7 @@ async function main(): Promise<void> {
 
       const halfSecWaitMinimum = delay(500);
 
-      if (data && isManualState(data) && data.mlxDataValid && data.mlxResponseState && data.mlxResponse) {
+      if (data && isManualState(data)) {
         if (data.mlxResponseState > MlxResponseState.failedCRC) {
           result = parseData(data.mlxResponse);
           if (
@@ -172,7 +172,6 @@ async function main(): Promise<void> {
     let data = await temp;
 
     if (!isManualState(data)) throw new Error('Wrong state!');
-    if (!data.mlxDataValid) throw new Error('Invalid MLX data??');
     if (!data.mlxResponse) throw new Error('wtf');
 
     result = parseData(data.mlxResponse);
@@ -210,7 +209,6 @@ async function main(): Promise<void> {
     data = await temp;
 
     if (!isManualState(data)) throw new Error('Wrong state!');
-    if (!data.mlxDataValid) throw new Error('Invalid MLX data??');
     if (!data.mlxResponse) throw new Error('wtf');
 
     result = parseData(data.mlxResponse);
@@ -241,7 +239,6 @@ async function main(): Promise<void> {
     data = await temp;
 
     if (!isManualState(data)) throw new Error('Wrong state!');
-    if (!data.mlxDataValid) throw new Error('Invalid MLX data??');
     if (!data.mlxResponse) throw new Error('wtf');
 
     result = parseData(data.mlxResponse);
