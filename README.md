@@ -9,7 +9,7 @@
 > built on STM32G4 and CAN-FD. That work is not public.
 >
 > The code here is preserved as-is; it is no longer maintained, and its
-> dependencies are years out of date. Last substantive work: December 2022.
+> dependencies are years out of date. Last substantive work: January 2020.
 
 Generates memory .hex file of lookup table data and ID page.
 
