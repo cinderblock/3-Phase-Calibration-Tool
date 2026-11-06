@@ -1,5 +1,16 @@
 # 3-Phase-Calibration-Tool
 
+> ## Retired
+>
+> This project is retired and the repository is archived, read-only.
+>
+> The hardware it drives — the Smooth Control / Quantum Drive / Hover Drive
+> motors and their AVR controller — has been superseded by a new generation
+> built on STM32G4 and CAN-FD. That work is not public.
+>
+> The code here is preserved as-is; it is no longer maintained, and its
+> dependencies are years out of date. Last substantive work: December 2022.
+
 Generates memory .hex file of lookup table data and ID page.
 
 ## Running
